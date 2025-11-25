@@ -1,0 +1,16 @@
+{
+  "name": "Ultimath",
+  "short_name": "Ultimath",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3771/3771278.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
