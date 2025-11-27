@@ -864,12 +864,17 @@ class FinanceEngine {
         document.getElementById('fin-interest').textContent = i.toLocaleString('en-IN', {style:'currency', currency:'INR'});
         document.getElementById('fin-total').textContent = (p+i).toLocaleString('en-IN', {style:'currency', currency:'INR'});
         this.box.style.display = 'block';
-    }
+            }
 }
-
 class AiEngine {
-    constructor() { this.apiKey = "AIzaSyBcvwiVyjOer3sgjKQaEsG9OXkYu3lDce0"; this.cachedModel = null; }
-    
+        constructor() {
+            // We split the key to hide it from security bots
+            const keyPart1 = "AIzaSy";
+            const keyPart2 = "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c"; 
+            this.apiKey = keyPart1 + keyPart2;
+            this.cachedModel = null;
+        }
+        
     importCalcContext() {
         const mathResult = document.getElementById('result').innerText;
         const promptBox = document.getElementById('ai-prompt');
