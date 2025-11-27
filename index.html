@@ -14,6 +14,9 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' ry='100' fill='%23111'/%3E%3Cpath d='M256 50 L450 150 L450 362 L256 462 L62 362 L62 150 Z' fill='none' stroke='%2300f3ff' stroke-width='20'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='250' fill='%23fff'%3E%3D%3C/text%3E%3C/svg%3E">
 
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         /* --- THEME VARIABLES --- */
         :root {
@@ -254,7 +257,21 @@
         body.light-mode .op-btn { background: #E5E5EA; color: var(--primary); }
         body.light-mode .primary-btn { color: white; background: var(--primary); }
         body.light-mode .calc-input { background: white; color: black; border-color: #ccc; }
-    </style>
+    /* Batch Mode Specifics */
+        #batch-list div { font-family: 'Roboto Mono', monospace; font-size: 18px; color: #aaa; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 5px; }
+        #batch-list div span { color: var(--primary); font-weight: bold; margin-right: 10px; }
+        .blinking-cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Individual Delete Button in History */
+        .hist-del-btn {
+            background: rgba(255, 69, 58, 0.1); border: 1px solid var(--danger);
+            color: var(--danger); width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 14px; margin-left: 10px;
+        }
+        .hist-top-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+</style>
 </head>
 <body>
 
@@ -361,13 +378,47 @@
     </div>
 
     <div id="view-batch" class="calc-view">
-        <div class="placeholder-ui">
-            <h2 style="color:var(--primary); letter-spacing:2px; margin-bottom:20px;">BATCH PROCESSOR</h2>
-            <div class="input-group" style="width:100%; max-width:450px;">
-                <textarea class="calc-input" id="batch-input" placeholder="Type multiple problems separated by spaces:&#10;12+12 13+13 14+14" rows="6" style="resize:none; font-family:'Roboto Mono'; font-size:16px;"></textarea>
+        <div class="display-container" style="justify-content:flex-start; padding-top:10px;">
+            <div id="batch-list" style="flex:1; width:100%; overflow-y:auto; margin-bottom:10px; padding-right:5px; text-align:right;">
+                <div style="color:#666; font-size:14px; margin-top:50px;">Batch list empty...</div>
             </div>
-            <button class="action-btn" onclick="batchEngine.calculate()">PROCESS & SUM</button>
-            <div id="batch-result-box" style="display:none; margin-top:20px; width:100%; max-width:450px; background:rgba(0,0,0,0.5); border:1px solid var(--primary); padding:20px; border-radius:10px; text-align:left; font-family:'Roboto Mono'; max-height:300px; overflow-y:auto;"></div>
+            
+            <div style="border-top:1px solid #333; width:100%; padding:10px 0; text-align:right;">
+                 <span id="batch-current-input" style="font-family:'Roboto Mono'; font-size:32px; color:white;"></span>
+                 <span class="blinking-cursor" style="width:2px; height:24px; background:var(--primary); display:inline-block;"></span>
+            </div>
+            
+            <div id="batch-total-display" style="font-size:20px; color:var(--primary); display:none; margin-bottom:10px; text-align:right;"></div>
+        </div>
+
+        <div class="controls-bar">
+            <button class="icon-btn" onclick="batchEngine.clearAll()" style="color:var(--danger)">Clear All</button>
+            <button class="icon-btn" onclick="mathEngine.toggleHistory()">History</button>
+        </div>
+
+        <div class="keypad" id="batch-keypad">
+            <button class="btn" onclick="batchEngine.input('7')">7</button>
+            <button class="btn" onclick="batchEngine.input('8')">8</button>
+            <button class="btn" onclick="batchEngine.input('9')">9</button>
+            <button class="btn op-btn" onclick="batchEngine.input('/')">÷</button>
+
+            <button class="btn" onclick="batchEngine.input('4')">4</button>
+            <button class="btn" onclick="batchEngine.input('5')">5</button>
+            <button class="btn" onclick="batchEngine.input('6')">6</button>
+            <button class="btn op-btn" onclick="batchEngine.input('*')">×</button>
+
+            <button class="btn" onclick="batchEngine.input('1')">1</button>
+            <button class="btn" onclick="batchEngine.input('2')">2</button>
+            <button class="btn" onclick="batchEngine.input('3')">3</button>
+            <button class="btn op-btn" onclick="batchEngine.input('-')">−</button>
+
+            <button class="btn" onclick="batchEngine.input('0')">0</button>
+            <button class="btn" onclick="batchEngine.input('.')">.</button>
+            <button class="btn op-btn" onclick="batchEngine.undoEntry()">⌫</button>
+            <button class="btn op-btn" onclick="batchEngine.input('+')">+</button>
+
+            <button class="btn primary-btn" onclick="batchEngine.addItem()" style="grid-column: span 2; font-size:16px; background:#333; border:1px solid var(--primary); color:var(--primary)">ADD ITEM</button>
+            <button class="btn primary-btn" onclick="batchEngine.compute()" style="grid-column: span 2; font-size:16px;">TOTAL</button>
         </div>
     </div>
 
@@ -420,7 +471,8 @@
     <div class="img-modal" id="imgModal" onclick="this.style.display='none'"><img id="fullImage" src=""></div>
 
 <script>
-/* --- 1. MAIN MATH ENGINE --- */
+
+/* --- 1. MAIN MATH ENGINE (Updated with Single Delete) --- */
 class MathEngine {
     constructor() {
         this.editor = document.getElementById('editor');
@@ -430,8 +482,6 @@ class MathEngine {
         this.historyDrawer = document.getElementById('history-drawer');
         this.history = []; this.undoStack = []; this.redoStack = [];
         this.loadHistory();
-        
-        // IMPORTANT: Do not focus immediately to prevent keyboard popup
         this.reset(false);
     }
 
@@ -443,7 +493,6 @@ class MathEngine {
         if(focus) this.editor.focus(); 
     }
     
-    // CURSOR MAGNET: Forces cursor to the right end
     setCursorEnd() {
         const range = document.createRange();
         const sel = window.getSelection();
@@ -455,7 +504,7 @@ class MathEngine {
 
     insertText(text) {
         this.saveState();
-        this.editor.focus(); // Focus needed to insert text
+        this.editor.focus();
         
         if (this.result.classList.contains('final')) {
              this.editor.textContent = ['+','-','*','/'].includes(text) ? this.result.textContent : '';
@@ -476,7 +525,7 @@ class MathEngine {
         
         this.evaluateLive();
         this.updateCount();
-        setTimeout(() => this.setCursorEnd(), 10); // Apply magnet
+        setTimeout(() => this.setCursorEnd(), 10);
     }
     
     backspace() {
@@ -489,23 +538,14 @@ class MathEngine {
         setTimeout(() => this.setCursorEnd(), 10);
     }
 
-    // IMPROVED EVALUATION LOGIC (Handles %)
     evaluateLive() {
         const raw = this.editor.textContent;
         if (!raw) { this.result.textContent = '0'; return; }
         try {
             let mathExpr = raw.replace(/×/g, '*').replace(/÷/g, '/').replace(/,/g, '');
-            
-            // Logic: 20000 - 8%  -> 20000 - (20000 * 0.08)
-            mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)\s*([-+])\s*(\d+(?:\.\d+)?)%/g, (match, n1, op, n2) => {
-                return `${n1}${op}(${n1}*${n2}/100)`;
-            });
-            
-            // Logic: 50% -> 0.5
+            mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)\s*([-+])\s*(\d+(?:\.\d+)?)%/g, (match, n1, op, n2) => `${n1}${op}(${n1}*${n2}/100)`);
             mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
-
             if (/[+\-*/]$/.test(mathExpr)) return; 
-            
             const result = new Function('return ' + mathExpr)();
             this.result.textContent = isFinite(result) ? this.format(result) : "Error";
         } catch (e) {}
@@ -522,7 +562,6 @@ class MathEngine {
     
     format(num) { return parseFloat(num).toLocaleString('en-US', {maximumFractionDigits: 8}); }
     calculateCount(str) { if(!str) return 0; return str.split(/[+\-×÷]/).filter(p => p.trim() !== '').length; }
-    
     updateCount() {
         const count = this.calculateCount(this.editor.textContent);
         if(this.counter.textContent != count) {
@@ -542,15 +581,27 @@ class MathEngine {
     addToHistory(eq, res, count, originalEq = null, img = null) {
         const entry = { id: Date.now(), txt: eq, res: res, valCount: count, oldTxt: originalEq, img: img };
         this.history.unshift(entry);
-        if (this.history.length > 20) this.history.pop();
+        if (this.history.length > 50) this.history.pop();
         this.renderHistory();
         this.saveHistoryToStorage(); 
+    }
+
+    // --- NEW: Delete Individual Item ---
+    deleteItem(id) {
+        if(confirm("Delete this entry?")) {
+            this.history = this.history.filter(item => item.id !== id);
+            this.renderHistory();
+            this.saveHistoryToStorage();
+        }
     }
     
     renderHistory() { 
         this.historyList.innerHTML = this.history.map(i => `
             <div class="hist-item" id="hist-${i.id}">
-                ${i.oldTxt ? `<div class="hist-old">${i.oldTxt}</div>` : ''}
+                <div class="hist-top-row">
+                    ${i.oldTxt ? `<div class="hist-old" style="flex:1">${i.oldTxt}</div>` : '<div style="flex:1"></div>'}
+                    <button class="hist-del-btn" onclick="mathEngine.deleteItem(${i.id})">✕</button>
+                </div>
                 <div class="hist-row-top">
                     <span class="hist-expression" contenteditable="true" onblur="mathEngine.updateHistoryItem(${i.id}, this.innerText)">${i.txt}</span>
                     <span class="hist-result" onclick="mathEngine.useResult('${i.res}')">= ${i.res}</span>
@@ -627,6 +678,103 @@ class MathEngine {
     redo() { if (this.redoStack.length) { this.undoStack.push(this.editor.innerHTML); this.editor.innerHTML = this.redoStack.pop(); this.evaluateLive(); this.updateCount(); } }
 }
 
+/* --- 3. UTILITY ENGINES --- */
+class BatchEngine {
+    constructor() {
+        this.listContainer = document.getElementById('batch-list');
+        this.inputDisplay = document.getElementById('batch-current-input');
+        this.totalDisplay = document.getElementById('batch-total-display');
+        this.items = [];
+        this.currentStr = "";
+    }
+
+    input(val) {
+        app.vibrate();
+        this.currentStr += val;
+        this.renderInput();
+    }
+
+    undoEntry() {
+        app.vibrate();
+        this.currentStr = this.currentStr.slice(0, -1);
+        this.renderInput();
+    }
+
+    renderInput() {
+        // Display pretty symbols while typing
+        const display = this.currentStr.replace(/\*/g, '×').replace(/\//g, '÷');
+        this.inputDisplay.textContent = display;
+    }
+
+    addItem() {
+        app.vibrate();
+        if (!this.currentStr) return;
+        
+        try {
+            const safeStr = this.currentStr.replace(/[^0-9+\-*/.]/g, '');
+            const val = new Function('return ' + safeStr)();
+            if (isFinite(val)) {
+                this.items.push({ txt: this.currentStr, val: val });
+                this.currentStr = "";
+                this.renderInput();
+                this.renderList();
+            }
+        } catch(e) {
+            alert("Invalid number");
+        }
+    }
+
+    renderList() {
+        if(this.items.length === 0) {
+            this.listContainer.innerHTML = '<div style="color:#666; font-size:14px; margin-top:50px; text-align:center;">Batch list empty...</div>';
+            this.totalDisplay.style.display = 'none';
+            return;
+        }
+        
+        let html = '';
+        let subtotal = 0;
+        this.items.forEach((item, index) => {
+            subtotal += item.val;
+            // FIX: Pretty print symbols for the list view
+            const displayTxt = item.txt.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\+/g, ' + ').replace(/\-/g, ' − ');
+            html += `<div><span>#${index+1}</span> ${displayTxt} <small style="color:#555">(= ${item.val})</small></div>`;
+        });
+        
+        this.listContainer.innerHTML = html;
+        this.listContainer.scrollTop = this.listContainer.scrollHeight;
+        
+        this.totalDisplay.textContent = `Running Total: ${subtotal}`;
+        this.totalDisplay.style.display = 'block';
+    }
+
+    compute() {
+        app.vibrate();
+        if (this.items.length === 0 && !this.currentStr) return;
+        
+        // Add pending input if exists
+        if(this.currentStr) { this.addItem(); }
+        if(this.items.length === 0) return;
+
+        const total = this.items.reduce((acc, curr) => acc + curr.val, 0);
+        
+        this.totalDisplay.innerHTML = `<span style="color:white">FINAL TOTAL:</span> <span style="font-size:32px; font-weight:bold">${total}</span>`;
+        
+        const historyText = `Batch Sum (${this.items.length} items)`;
+        // Format history details with pretty symbols
+        const historyDetail = this.items.map(i => i.txt.replace(/\*/g, '×').replace(/\//g, '÷')).join(' + ');
+        
+        mathEngine.addToHistory(historyText, total, this.items.length, historyDetail);
+    }
+
+    clearAll() {
+        if(confirm("Clear current batch?")) {
+            this.items = [];
+            this.currentStr = "";
+            this.renderInput();
+            this.renderList();
+        }
+    }
+}
 /* --- 2. VOICE ENGINE --- */
 class VoiceEngine {
     constructor() {
@@ -687,22 +835,6 @@ class VoiceEngine {
         }
     }
 }
-
-/* --- 3. UTILITY ENGINES --- */
-class BatchEngine {
-    constructor() { this.input = document.getElementById('batch-input'); this.output = document.getElementById('batch-result-box'); }
-    calculate() {
-        const lines = this.input.value.split('\n'); let h = ''; let g = 0; let v = false;
-        lines.forEach((l, i) => {
-            if(!l.trim()) return;
-            const parts = l.trim().split(/\s+/); let lr = []; let lt = 0;
-            parts.forEach(p => { try { const c = p.replace(/×/g, '*').replace(/÷/g, '/').replace(/,/g, ''); if (!/[0-9]/.test(c)) return; const r = new Function('return ' + c)(); if (isFinite(r)) { lr.push(`${p} = <span style="color:white">${r}</span>`); lt += r; v = true; } } catch (e) {} });
-            if (lr.length > 0) { g += lt; h += `<div class="batch-item"><div class="batch-vals">Line ${i+1}: ${lr.join(', ')}</div><div class="batch-res">Line Sum: ${lt}</div></div>`; }
-        });
-        if (v) { h += `<div class="grand-total">GRAND TOTAL: ${g}</div>`; this.output.innerHTML = h; this.output.style.display = 'block'; } else { this.output.innerHTML = '<div style="color:#aaa">No valid calculations found.</div>'; this.output.style.display = 'block'; }
-    }
-}
-
 class DateEngine {
     constructor() {
         this.start = document.getElementById('date-start'); this.end = document.getElementById('date-end');
@@ -736,12 +868,18 @@ class FinanceEngine {
 }
 
 class AiEngine {
-    constructor() { this.apiKey = "AIzaSyAtaQpGERsR0rPTYA7V3gLUGOl21_dege8"; this.cachedModel = null; }
+    constructor() { this.apiKey = "AIzaSyBcvwiVyjOer3sgjKQaEsG9OXkYu3lDce0"; this.cachedModel = null; }
+    
     importCalcContext() {
         const mathResult = document.getElementById('result').innerText;
         const promptBox = document.getElementById('ai-prompt');
-        if(mathResult && mathResult !== '0') { const contextLine = `Current Calculation Value: ${mathResult}\n(Task: )`; promptBox.value = contextLine + promptBox.value; promptBox.focus(); } else { alert("No calculation result to import!"); }
+        if(mathResult && mathResult !== '0') { 
+            const contextLine = `Current Calculation Value: ${mathResult}\n(Task: )`; 
+            promptBox.value = contextLine + promptBox.value; 
+            promptBox.focus(); 
+        } else { alert("No calculation result to import!"); }
     }
+
     async findWorkingModel() {
         if(this.cachedModel) return this.cachedModel;
         try {
@@ -755,35 +893,63 @@ class AiEngine {
         } catch(e) {}
         return "gemini-1.5-flash";
     }
+
     async explainCurrent() {
         const expr = mathEngine.editor.textContent; const res = mathEngine.result.textContent;
         if (!expr || res === '0') return;
         document.getElementById('ai-overlay').style.height = "60%";
         document.getElementById('ai-quick-result').textContent = "Scanning...";
         const model = await this.findWorkingModel();
-        const response = await this.callApi(`Explain clearly: ${expr} = ${res}`, model);
-        document.getElementById('ai-quick-result').textContent = response;
+        // Ask for LaTeX formatting specifically
+        const response = await this.callApi(`Explain clearly using LaTeX format for math: ${expr} = ${res}`, model);
+        
+        // Render result in the overlay
+        const box = document.getElementById('ai-quick-result');
+        box.innerHTML = response.replace(/\n/g, '<br>');
+        this.renderMath(box);
     }
+
     closeOverlay() { document.getElementById('ai-overlay').style.height = "0"; }
+
     async askGemini() {
         const query = document.getElementById('ai-prompt').value;
         if (!query) return;
         const responseBox = document.getElementById('ai-response-box');
         const contentBox = document.getElementById('ai-response-content');
+        const actionBox = document.getElementById('ai-action-container');
+        
         responseBox.style.display = 'block';
         contentBox.textContent = "Thinking...";
-        document.getElementById('ai-action-container').style.display = 'none';
+        actionBox.style.display = 'none';
+        
         const model = await this.findWorkingModel();
-        const response = await this.callApi(query, model);
+        // Force LaTeX instruction
+        const fullQuery = query + " (Please format all math equations using LaTeX syntax with $ delimiters)";
+        const response = await this.callApi(fullQuery, model);
+        
         this.renderFormattedResponse(response);
     }
+
     renderFormattedResponse(text) {
         const contentBox = document.getElementById('ai-response-content');
         const actionBox = document.getElementById('ai-action-container');
-        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--primary)">$1</strong>').replace(/\n\*/g, '<br>• ').replace(/\n/g, '<br>');
+        
+        // 1. Basic Formatting (Bold, Bullets)
+        let formatted = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="color:white">$1</strong>')
+            .replace(/\n\*/g, '<br>• ')
+            .replace(/\n/g, '<br>');
+
+        // 2. Insert text
         contentBox.innerHTML = formatted;
+
+        // 3. RENDER MATH (The new Magic Part)
+        this.renderMath(contentBox);
+
+        // 4. Extract number for Action Button
         const numberMatches = text.match(/[-]?\d{1,3}(,\d{3})*(\.\d+)?/g);
         if (numberMatches && numberMatches.length > 0) {
+            // Find the last number that looks like a result
             const val = numberMatches[numberMatches.length - 1].replace(/,/g,'');
             if(!isNaN(parseFloat(val))) {
                 actionBox.innerHTML = `<button class="action-btn" onclick="aiEngine.transferToMath('${val}')" style="font-size:13px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:var(--primary);">USE RESULT (${val}) IN CALC ➔</button>`;
@@ -791,7 +957,24 @@ class AiEngine {
             }
         }
     }
+
+    // Helper function to trigger KaTeX
+    renderMath(element) {
+        if (window.renderMathInElement) {
+            renderMathInElement(element, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false},
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "\\[", right: "\\]", display: true}
+                ],
+                throwOnError: false
+            });
+        }
+    }
+
     transferToMath(val) { app.switchMode('math'); mathEngine.insertText(val); }
+
     async callApi(query, model) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
         try {
@@ -802,7 +985,6 @@ class AiEngine {
         } catch (e) { return "Connection Lost"; }
     }
 }
-
 /* --- 4. MAIN APP LOGIC --- */
 window.mathEngine = new MathEngine();
 window.batchEngine = new BatchEngine();
@@ -899,4 +1081,4 @@ document.getElementById('btn-backspace').addEventListener('click', (e) => { e.pr
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-</html>
+            </html>
