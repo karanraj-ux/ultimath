@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' ry='100' fill='%23111'/%3E%3Cpath d='M256 50 L450 150 L450 362 L256 462 L62 362 L62 150 Z' fill='none' stroke='%2300f3ff' stroke-width='20'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='250' fill='%23fff'%3E%3D%3C/text%3E%3C/svg%3E">
 
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
@@ -38,12 +38,8 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            height: 100vh;      
-            height: 100dvh;     
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            height: 100vh; height: 100dvh; width: 100vw;
+            overflow: hidden; display: flex; flex-direction: column;
             font-family: 'Rajdhani', sans-serif;
             color: var(--text-main);
             background-color: #000;
@@ -52,11 +48,8 @@
         }
 
         body::before {
-            content: "";
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); 
-            z-index: -1;
-            backdrop-filter: blur(30px);
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: -1; backdrop-filter: blur(30px);
         }
 
         /* TOP BAR */
@@ -64,27 +57,10 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 25px; width: 100%; flex-shrink: 0; z-index: 50;
         }
-        .app-title {
-            font-size: 18px; font-weight: 700; letter-spacing: 2px;
-            color: var(--text-main); text-shadow: 0 0 10px rgba(255,255,255,0.3);
-            display: flex; align-items: center; gap: 8px;
-        }
-        .current-mode-label {
-            font-size: 10px; background: var(--primary-dim); color: var(--primary);
-            padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 243, 255, 0.3);
-            text-transform: uppercase;
-        }
-        .menu-trigger {
-            background: transparent; border: 1px solid var(--glass-border); color: var(--primary);
-            width: 44px; height: 44px; border-radius: 12px; font-size: 24px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 0 15px var(--primary-dim);
-            transition: all 0.3s ease;
-        }
-        .menu-trigger:active {
-            transform: scale(0.9); background: var(--primary); color: black;
-            box-shadow: 0 0 25px var(--primary-glow);
-        }
+        .app-title { font-size: 18px; font-weight: 700; letter-spacing: 2px; color: var(--text-main); text-shadow: 0 0 10px rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; }
+        .current-mode-label { font-size: 10px; background: var(--primary-dim); color: var(--primary); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 243, 255, 0.3); text-transform: uppercase; }
+        .menu-trigger { background: transparent; border: 1px solid var(--glass-border); color: var(--primary); width: 44px; height: 44px; border-radius: 12px; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 0 15px var(--primary-dim); transition: all 0.3s ease; }
+        .menu-trigger:active { transform: scale(0.9); background: var(--primary); color: black; box-shadow: 0 0 25px var(--primary-glow); }
 
         /* DRAWER (LAUNCHER) */
         .app-launcher {
@@ -95,26 +71,12 @@
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
         .app-launcher.active { opacity: 1; pointer-events: all; }
-        .launcher-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-            width: 100%; max-width: 350px; padding: 20px;
-        }
-        .launcher-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
-            border-radius: 20px; padding: 25px 10px;
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .launcher-btn:active {
-            transform: scale(0.95); background: rgba(255,255,255,0.1); border-color: var(--primary);
-        }
+        .launcher-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 350px; padding: 20px; }
+        .launcher-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; }
+        .launcher-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); border-color: var(--primary); }
         .l-icon { font-size: 32px; margin-bottom: 5px; }
         .l-label { color: var(--text-main); font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 14px; text-transform: uppercase; }
-        .launcher-close {
-            margin-top: 40px; background: transparent; border: 1px solid #333;
-            color: #666; padding: 10px 30px; border-radius: 30px;
-            font-size: 14px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
-        }
+        .launcher-close { margin-top: 40px; background: transparent; border: 1px solid #333; color: #666; padding: 10px 30px; border-radius: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
         .launcher-footer { position: absolute; bottom: 40px; display: flex; gap: 20px; }
 
         /* DISPLAY */
@@ -131,10 +93,7 @@
             border-radius: 8px; pointer-events: none; letter-spacing: -0.5px;
             transition: transform 0.1s, color 0.1s;
         }
-        .counter-pop {
-            transform: scale(1.4); color: black; background: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
+        .counter-pop { transform: scale(1.4); color: black; background: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
         .expression-editor {
             font-family: 'Roboto Mono', monospace; color: var(--text-sec);
             font-size: 24px; min-height: 40px; width: 100%; text-align: right;
@@ -146,22 +105,11 @@
             font-size: 65px; font-weight: 600; line-height: 1;
             transition: all 0.2s; text-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 2;
         }
-        .live-result.final {
-            color: var(--primary); text-shadow: 0 0 35px var(--primary-glow);
-            transform: scale(1.02);
-        }
+        .live-result.final { color: var(--primary); text-shadow: 0 0 35px var(--primary-glow); transform: scale(1.02); }
 
-        /* CONTROLS & KEYPAD */
-        .controls-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 25px 15px 25px; width: 100%; max-width: 500px; margin: 0 auto; flex-shrink: 0;
-        }
-        .icon-btn {
-            background: transparent; color: var(--text-sec); border: none;
-            padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
-            cursor: pointer; transition: color 0.2s; text-transform: uppercase;
-            letter-spacing: 1px; font-family: 'Rajdhani', sans-serif;
-        }
+        /* CONTROLS */
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 25px 15px 25px; width: 100%; max-width: 500px; margin: 0 auto; flex-shrink: 0; }
+        .icon-btn { background: transparent; color: var(--text-sec); border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.2s; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
         .icon-btn:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); }
         .icon-btn:active { color: var(--primary); }
         .listening-mode { color: var(--danger) !important; text-shadow: 0 0 15px var(--danger); animation: pulseRed 1s infinite; }
@@ -182,63 +130,65 @@
             backdrop-filter: blur(10px); transition: transform 0.05s, background 0.2s;
             user-select: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .btn:active, .btn.pressed {
-            transform: scale(0.95); background: rgba(255,255,255,0.15);
-            border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim);
-        }
+        .btn:active, .btn.pressed { transform: scale(0.95); background: rgba(255,255,255,0.15); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
         .op-btn { background: rgba(255,255,255,0.08); color: var(--primary); font-size: 30px; }
-        .primary-btn {
-            background: var(--primary); color: #000; border: none;
-            box-shadow: 0 0 30px var(--primary-glow); font-weight: 700; font-size: 32px;
-        }
+        .primary-btn { background: var(--primary); color: #000; border: none; box-shadow: 0 0 30px var(--primary-glow); font-weight: 700; font-size: 32px; }
         .primary-btn:active, .primary-btn.pressed { transform: scale(0.95); filter: brightness(1.1); }
 
-        /* COMMON UI ELEMENTS */
         .calc-view { display: none; flex: 1; flex-direction: column; height: 100%; }
         .calc-view.active-view { display: flex; animation: hudFadeIn 0.3s ease-out; }
         @keyframes hudFadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
         .placeholder-ui { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; overflow-y: auto; }
         .input-group { width: 100%; max-width: 350px; margin-bottom: 25px; }
         .input-label { color: var(--primary); font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
-        .calc-input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
-            padding: 16px; border-radius: 12px; color: white; font-size: 18px;
-            outline: none; font-family: 'Roboto Mono', monospace; transition: border-color 0.2s;
-        }
+        .calc-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; color: white; font-size: 18px; outline: none; font-family: 'Roboto Mono', monospace; transition: border-color 0.2s; }
         .calc-input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
-        .action-btn {
-            background: var(--primary); color: black; font-weight: 700; border: none;
-            padding: 16px; width: 100%; max-width: 350px; border-radius: 30px;
-            font-size: 16px; cursor: pointer; box-shadow: 0 0 20px var(--primary-glow);
-            font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .result-display {
-            margin-top: 30px; width: 100%; max-width: 350px; background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border); border-radius: 16px; padding: 25px;
-            text-align: center; backdrop-filter: blur(10px);
-        }
+        .action-btn { background: var(--primary); color: black; font-weight: 700; border: none; padding: 16px; width: 100%; max-width: 350px; border-radius: 30px; font-size: 16px; cursor: pointer; box-shadow: 0 0 20px var(--primary-glow); font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .result-display { margin-top: 30px; width: 100%; max-width: 350px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 16px; padding: 25px; text-align: center; backdrop-filter: blur(10px); }
 
-        /* OVERLAYS */
+        /* --- HISTORY OVERLAY --- */
+        /* This default block applies to "No Theme" (Dark mode) */
         .history-overlay {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 0;
-            background: #0a0a0c; border-top: 1px solid var(--primary);
-            box-shadow: 0 -20px 50px rgba(0,0,0,0.9); transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            background: #ffffff; /* White Background as requested */
+            color: #000000;      /* Black Text as requested */
+            border-top: 1px solid #ccc;
+            box-shadow: 0 -20px 50px rgba(0,0,0,0.5); 
+            transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             z-index: 100; overflow: hidden; display: flex; flex-direction: column;
         }
         .history-overlay.open { height: 70%; }
-        .history-header { padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; background: #0a0a0c;}
-        .history-content { flex: 1; overflow-y: auto; padding: 20px; font-family: 'Roboto Mono', monospace; }
-        .hist-item { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; animation: slideIn 0.3s ease-out; cursor: pointer; }
-        .hist-item:active { background: rgba(255,255,255,0.02); }
-        .hist-expression { color: var(--text-sec); font-size: 16px; }
-        .hist-result { color: var(--primary); font-weight: bold; font-size: 22px; text-align: right; }
-        .hist-count { color: #555; font-size: 11px; text-align: right; }
-        .hist-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
-        .hist-btn { background: transparent; border: 1px solid #333; color: #666; padding: 6px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .hist-btn:hover { border-color: var(--primary); color: var(--text-main); }
-        .hist-img-preview { max-width: 100px; max-height: 100px; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
         
+        /* Header inside History */
+        .history-header { 
+            padding: 20px; border-bottom: 1px solid #eee; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #ffffff; /* White */
+        }
+        
+        .history-content { flex: 1; overflow-y: auto; padding: 20px; font-family: 'Roboto Mono', monospace; }
+        
+        .hist-item { 
+            padding: 20px 0; border-bottom: 1px solid #eee; 
+            display: flex; flex-direction: column; gap: 8px; 
+            animation: slideIn 0.3s ease-out; cursor: default; 
+        }
+        .hist-item:active { background: #f5f5f5; }
+        
+        .hist-expression { 
+            color: #000000; /* Black text for expression */
+            font-size: 18px; font-weight: 500; cursor: pointer; 
+        }
+        
+        .hist-result { color: #007AFF; font-weight: bold; font-size: 22px; text-align: right; }
+        .hist-count { color: #888; font-size: 11px; text-align: right; }
+        .hist-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
+        .hist-btn { background: transparent; border: 1px solid #ddd; color: #555; padding: 6px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .hist-btn:hover { border-color: #007AFF; color: #000; }
+        .hist-del-btn { background: rgba(255, 69, 58, 0.1); border: 1px solid var(--danger); color: var(--danger); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; margin-left: 10px; }
+        .hist-img-preview { max-width: 100px; max-height: 100px; border-radius: 8px; margin-top: 10px; border: 1px solid #ccc; }
+        .hist-top-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+
         #file-input { display: none; }
         .img-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; justify-content: center; align-items: center; }
         .img-modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
@@ -257,20 +207,12 @@
         body.light-mode .op-btn { background: #E5E5EA; color: var(--primary); }
         body.light-mode .primary-btn { color: white; background: var(--primary); }
         body.light-mode .calc-input { background: white; color: black; border-color: #ccc; }
-    /* Batch Mode Specifics */
+        
+        /* Batch Mode Specifics */
         #batch-list div { font-family: 'Roboto Mono', monospace; font-size: 18px; color: #aaa; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 5px; }
         #batch-list div span { color: var(--primary); font-weight: bold; margin-right: 10px; }
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
-
-        /* Individual Delete Button in History */
-        .hist-del-btn {
-            background: rgba(255, 69, 58, 0.1); border: 1px solid var(--danger);
-            color: var(--danger); width: 30px; height: 30px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 14px; margin-left: 10px;
-        }
-        .hist-top-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
 </style>
 </head>
 <body>
@@ -285,21 +227,11 @@
     <div id="app-launcher" class="app-launcher">
         <h2 style="color:white; letter-spacing:3px; margin-bottom:30px;">TOOLS</h2>
         <div class="launcher-grid">
-            <div class="launcher-btn" onclick="app.switchMode('math')">
-                <span class="l-icon">🧮</span><span class="l-label">Calculator</span>
-            </div>
-            <div class="launcher-btn" onclick="app.switchMode('ai')">
-                <span class="l-icon">🧠</span><span class="l-label" style="color:var(--primary)">AI Core</span>
-            </div>
-            <div class="launcher-btn" onclick="app.switchMode('batch')">
-                <span class="l-icon">📝</span><span class="l-label">Batch</span>
-            </div>
-            <div class="launcher-btn" onclick="app.switchMode('finance')">
-                <span class="l-icon">💰</span><span class="l-label">Finance</span>
-            </div>
-            <div class="launcher-btn" onclick="app.switchMode('date')">
-                <span class="l-icon">📅</span><span class="l-label">Date</span>
-            </div>
+            <div class="launcher-btn" onclick="app.switchMode('math')"><span class="l-icon">🧮</span><span class="l-label">Calculator</span></div>
+            <div class="launcher-btn" onclick="app.switchMode('ai')"><span class="l-icon">🧠</span><span class="l-label" style="color:var(--primary)">AI Core</span></div>
+            <div class="launcher-btn" onclick="app.switchMode('batch')"><span class="l-icon">📝</span><span class="l-label">Batch</span></div>
+            <div class="launcher-btn" onclick="app.switchMode('finance')"><span class="l-icon">💰</span><span class="l-label">Finance</span></div>
+            <div class="launcher-btn" onclick="app.switchMode('date')"><span class="l-icon">📅</span><span class="l-label">Date</span></div>
         </div>
         <div class="launcher-footer">
             <button class="icon-btn" onclick="app.toggleTheme()" style="border:1px solid #444; color:white;">🎨 Theme</button>
@@ -333,22 +265,18 @@
             <button class="btn top-btn" data-key="()">()</button>
             <button class="btn top-btn" data-key="%">%</button>
             <button class="btn op-btn" data-key="/">÷</button>
-
             <button class="btn" data-key="7">7</button>
             <button class="btn" data-key="8">8</button>
             <button class="btn" data-key="9">9</button>
             <button class="btn op-btn" data-key="*">×</button>
-
             <button class="btn" data-key="4">4</button>
             <button class="btn" data-key="5">5</button>
             <button class="btn" data-key="6">6</button>
             <button class="btn op-btn" data-key="-">−</button>
-
             <button class="btn" data-key="1">1</button>
             <button class="btn" data-key="2">2</button>
             <button class="btn" data-key="3">3</button>
             <button class="btn op-btn" data-key="+">+</button>
-
             <button class="btn top-btn" data-key="neg">+/-</button>
             <button class="btn" data-key="0">0</button>
             <button class="btn top-btn" data-key=".">.</button>
@@ -357,19 +285,19 @@
 
         <div class="history-overlay" id="history-drawer">
             <div class="history-header">
-                <button class="icon-btn" onclick="mathEngine.toggleHistory()">Close</button>
-                <span style="color:var(--primary); font-weight:bold; letter-spacing:1px;">HISTORY LOG</span>
+                <button class="icon-btn" style="color:#007AFF" onclick="mathEngine.toggleHistory()">Close</button>
+                <span style="color:#000; font-weight:bold; letter-spacing:1px;">HISTORY LOG</span>
                 <div style="display:flex; gap:10px">
-                    <button class="icon-btn" onclick="mathEngine.exportAsImage()">Img</button>
-                    <button class="icon-btn" onclick="mathEngine.exportHistory()">Txt</button>
+                    <button class="icon-btn" style="color:#555" onclick="mathEngine.exportAsImage()">Img</button>
+                    <button class="icon-btn" style="color:#555" onclick="mathEngine.exportHistory()">Txt</button>
                     <button class="icon-btn" style="color:var(--danger)" onclick="mathEngine.clearHistory()">Clear</button>
                 </div>
             </div>
             <div class="history-content" id="history-list"></div>
         </div>
         
-        <div class="history-overlay" id="ai-overlay">
-            <div class="history-header">
+        <div class="history-overlay" id="ai-overlay" style="background:#0a0a0c; color:white">
+            <div class="history-header" style="background:#0a0a0c; border-color:#333">
                 <span style="color:var(--primary); font-weight:bold;">AI ANALYSIS</span>
                 <button class="icon-btn" onclick="aiEngine.closeOverlay()">Close</button>
             </div>
@@ -382,41 +310,33 @@
             <div id="batch-list" style="flex:1; width:100%; overflow-y:auto; margin-bottom:10px; padding-right:5px; text-align:right;">
                 <div style="color:#666; font-size:14px; margin-top:50px;">Batch list empty...</div>
             </div>
-            
             <div style="border-top:1px solid #333; width:100%; padding:10px 0; text-align:right;">
                  <span id="batch-current-input" style="font-family:'Roboto Mono'; font-size:32px; color:white;"></span>
                  <span class="blinking-cursor" style="width:2px; height:24px; background:var(--primary); display:inline-block;"></span>
             </div>
-            
             <div id="batch-total-display" style="font-size:20px; color:var(--primary); display:none; margin-bottom:10px; text-align:right;"></div>
         </div>
-
         <div class="controls-bar">
             <button class="icon-btn" onclick="batchEngine.clearAll()" style="color:var(--danger)">Clear All</button>
             <button class="icon-btn" onclick="mathEngine.toggleHistory()">History</button>
         </div>
-
         <div class="keypad" id="batch-keypad">
             <button class="btn" onclick="batchEngine.input('7')">7</button>
             <button class="btn" onclick="batchEngine.input('8')">8</button>
             <button class="btn" onclick="batchEngine.input('9')">9</button>
             <button class="btn op-btn" onclick="batchEngine.input('/')">÷</button>
-
             <button class="btn" onclick="batchEngine.input('4')">4</button>
             <button class="btn" onclick="batchEngine.input('5')">5</button>
             <button class="btn" onclick="batchEngine.input('6')">6</button>
             <button class="btn op-btn" onclick="batchEngine.input('*')">×</button>
-
             <button class="btn" onclick="batchEngine.input('1')">1</button>
             <button class="btn" onclick="batchEngine.input('2')">2</button>
             <button class="btn" onclick="batchEngine.input('3')">3</button>
             <button class="btn op-btn" onclick="batchEngine.input('-')">−</button>
-
             <button class="btn" onclick="batchEngine.input('0')">0</button>
             <button class="btn" onclick="batchEngine.input('.')">.</button>
             <button class="btn op-btn" onclick="batchEngine.undoEntry()">⌫</button>
             <button class="btn op-btn" onclick="batchEngine.input('+')">+</button>
-
             <button class="btn primary-btn" onclick="batchEngine.addItem()" style="grid-column: span 2; font-size:16px; background:#333; border:1px solid var(--primary); color:var(--primary)">ADD ITEM</button>
             <button class="btn primary-btn" onclick="batchEngine.compute()" style="grid-column: span 2; font-size:16px;">TOTAL</button>
         </div>
@@ -454,9 +374,7 @@
         <div class="placeholder-ui">
             <h2 style="color:var(--primary); letter-spacing:2px; margin-bottom:20px;">AI CORE LINK</h2>
             <div class="input-group" style="width:100%; max-width:400px; position:relative;">
-                <button class="icon-btn" onclick="aiEngine.importCalcContext()" style="width:100%; margin-bottom:10px; border:1px solid #333; color:#aaa; font-size:12px; display:flex; justify-content:center; align-items:center; gap:8px;">
-                    ⚡ IMPORT FROM CALCULATOR
-                </button>
+                <button class="icon-btn" onclick="aiEngine.importCalcContext()" style="width:100%; margin-bottom:10px; border:1px solid #333; color:#aaa; font-size:12px; display:flex; justify-content:center; align-items:center; gap:8px;">⚡ IMPORT FROM CALCULATOR</button>
                 <textarea class="calc-input" id="ai-prompt" placeholder="Ask Gemini..." rows="4" style="resize:none;"></textarea>
             </div>
             <button class="action-btn" onclick="aiEngine.askGemini()">EXECUTE QUERY</button>
@@ -466,13 +384,10 @@
             </div>
         </div>
     </div>
-
     <input type="file" id="file-input" accept="image/*" capture="environment">
     <div class="img-modal" id="imgModal" onclick="this.style.display='none'"><img id="fullImage" src=""></div>
 
 <script>
-
-/* --- 1. MAIN MATH ENGINE (Updated with Single Delete) --- */
 class MathEngine {
     constructor() {
         this.editor = document.getElementById('editor');
@@ -480,11 +395,13 @@ class MathEngine {
         this.counter = document.getElementById('op-counter');
         this.historyList = document.getElementById('history-list');
         this.historyDrawer = document.getElementById('history-drawer');
-        this.history = []; this.undoStack = []; this.redoStack = [];
-        this.loadHistory();
+        this.history = []; 
+        this.undoStack = []; 
+        this.redoStack = [];
+        this.loadHistory(); 
         this.reset(false);
     }
-
+    
     reset(focus = true) { 
         this.editor.textContent = ''; 
         this.result.textContent = '0'; 
@@ -493,117 +410,142 @@ class MathEngine {
         if(focus) this.editor.focus(); 
     }
     
-    setCursorEnd() {
-        const range = document.createRange();
-        const sel = window.getSelection();
-        range.selectNodeContents(this.editor);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
+    setCursorEnd() { 
+        const range = document.createRange(); 
+        const sel = window.getSelection(); 
+        range.selectNodeContents(this.editor); 
+        range.collapse(false); 
+        sel.removeAllRanges(); 
+        sel.addRange(range); 
     }
-
+    
     insertText(text) {
-        this.saveState();
+        this.saveState(); 
         this.editor.focus();
         
-        if (this.result.classList.contains('final')) {
-             this.editor.textContent = ['+','-','*','/'].includes(text) ? this.result.textContent : '';
-             this.result.classList.remove('final');
+        if (this.result.classList.contains('final')) { 
+            this.editor.textContent = ['+','-','*','/'].includes(text) ? this.result.textContent : ''; 
+            this.result.classList.remove('final'); 
         }
+        
         let displayOp = text === '*' ? '×' : text === '/' ? '÷' : text;
-        const content = this.editor.textContent;
-        const lastChar = content.slice(-1);
-        const isOp = ['+', '-', '×', '÷'].includes(displayOp);
+        const content = this.editor.textContent; 
+        const lastChar = content.slice(-1); 
+        const isOp = ['+', '-', '×', '÷'].includes(displayOp); 
         const isLastOp = ['+', '-', '×', '÷'].includes(lastChar);
         
-        if (isOp && isLastOp) {
-            if (displayOp === '-' && ['×', '÷'].includes(lastChar)) { document.execCommand('insertText', false, displayOp); } 
-            else { document.execCommand('delete'); document.execCommand('insertText', false, displayOp); }
+        if (isOp && isLastOp) { 
+            if (displayOp === '-' && ['×', '÷'].includes(lastChar)) { 
+                document.execCommand('insertText', false, displayOp); 
+            } else { 
+                document.execCommand('delete'); 
+                document.execCommand('insertText', false, displayOp); 
+            } 
         } else { 
             document.execCommand('insertText', false, displayOp); 
         }
         
-        this.evaluateLive();
-        this.updateCount();
+        this.evaluateLive(); 
+        this.updateCount(); 
         setTimeout(() => this.setCursorEnd(), 10);
     }
     
-    backspace() {
-        this.saveState();
-        this.editor.focus();
-        if (this.result.classList.contains('final')) { this.reset(); return; }
-        document.execCommand('delete');
-        this.evaluateLive();
-        this.updateCount();
-        setTimeout(() => this.setCursorEnd(), 10);
+    backspace() { 
+        this.saveState(); 
+        this.editor.focus(); 
+        if (this.result.classList.contains('final')) { 
+            this.reset(); 
+            return; 
+        } 
+        document.execCommand('delete'); 
+        this.evaluateLive(); 
+        this.updateCount(); 
+        setTimeout(() => this.setCursorEnd(), 10); 
     }
-
+    
     evaluateLive() {
-        const raw = this.editor.textContent;
+        const raw = this.editor.textContent; 
         if (!raw) { this.result.textContent = '0'; return; }
         try {
             let mathExpr = raw.replace(/×/g, '*').replace(/÷/g, '/').replace(/,/g, '');
             mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)\s*([-+])\s*(\d+(?:\.\d+)?)%/g, (match, n1, op, n2) => `${n1}${op}(${n1}*${n2}/100)`);
             mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
             if (/[+\-*/]$/.test(mathExpr)) return; 
-            const result = new Function('return ' + mathExpr)();
+            const result = new Function('return ' + mathExpr)(); 
             this.result.textContent = isFinite(result) ? this.format(result) : "Error";
         } catch (e) {}
     }
     
-    finalize() {
-        const raw = this.editor.textContent; const res = this.result.textContent;
-        if (!raw || res === 'Error') return;
+    finalize() { 
+        const raw = this.editor.textContent; 
+        const res = this.result.textContent; 
+        if (!raw || res === 'Error') return; 
         this.saveState(); 
-        const count = this.calculateCount(raw);
+        const count = this.calculateCount(raw); 
         this.addToHistory(raw, res, count); 
-        this.result.classList.add('final');
+        this.result.classList.add('final'); 
     }
     
     format(num) { return parseFloat(num).toLocaleString('en-US', {maximumFractionDigits: 8}); }
-    calculateCount(str) { if(!str) return 0; return str.split(/[+\-×÷]/).filter(p => p.trim() !== '').length; }
+    
+    calculateCount(str) { 
+        if(!str) return 0; 
+        return str.split(/[+\-×÷]/).filter(p => p.trim() !== '').length; 
+    }
+    
     updateCount() {
         const count = this.calculateCount(this.editor.textContent);
-        if(this.counter.textContent != count) {
-            this.counter.textContent = count;
-            const badge = document.getElementById('counter-badge');
-            badge.classList.remove('counter-pop');
+        if(this.counter.textContent != count) { 
+            this.counter.textContent = count; 
+            const badge = document.getElementById('counter-badge'); 
+            badge.classList.remove('counter-pop'); 
             void badge.offsetWidth; 
-            badge.classList.add('counter-pop');
-            setTimeout(() => badge.classList.remove('counter-pop'), 200);
+            badge.classList.add('counter-pop'); 
+            setTimeout(() => badge.classList.remove('counter-pop'), 200); 
         }
     }
-
-    toggleHistory() { this.historyDrawer.classList.toggle('open'); }
-    saveHistoryToStorage() { localStorage.setItem('calcHistory', JSON.stringify(this.history)); }
-    loadHistory() { const s = localStorage.getItem('calcHistory'); if (s) { this.history = JSON.parse(s); this.renderHistory(); } }
     
-    addToHistory(eq, res, count, originalEq = null, img = null) {
-        const entry = { id: Date.now(), txt: eq, res: res, valCount: count, oldTxt: originalEq, img: img };
-        this.history.unshift(entry);
-        if (this.history.length > 50) this.history.pop();
-        this.renderHistory();
+    toggleHistory() { this.historyDrawer.classList.toggle('open'); }
+    
+    saveHistoryToStorage() { localStorage.setItem('calcHistory', JSON.stringify(this.history)); }
+    
+    loadHistory() { 
+        const s = localStorage.getItem('calcHistory'); 
+        if (s) { this.history = JSON.parse(s); this.renderHistory(); } 
+    }
+    
+    addToHistory(eq, res, count, originalEq = null, img = null) { 
+        const entry = { id: Date.now(), txt: eq, res: res, valCount: count, oldTxt: originalEq, img: img }; 
+        this.history.unshift(entry); 
+        if (this.history.length > 50) this.history.pop(); 
+        this.renderHistory(); 
         this.saveHistoryToStorage(); 
     }
-
-    // --- NEW: Delete Individual Item ---
-    deleteItem(id) {
-        if(confirm("Delete this entry?")) {
-            this.history = this.history.filter(item => item.id !== id);
-            this.renderHistory();
-            this.saveHistoryToStorage();
-        }
+    
+    deleteItem(id) { 
+        if(confirm("Delete this entry?")) { 
+            this.history = this.history.filter(item => item.id !== id); 
+            this.renderHistory(); 
+            this.saveHistoryToStorage(); 
+        } 
     }
     
+    // Loads expression on click
+    loadExpression(txt) { 
+        this.editor.textContent = txt; 
+        this.toggleHistory(); 
+        this.evaluateLive(); 
+    }
+
     renderHistory() { 
         this.historyList.innerHTML = this.history.map(i => `
             <div class="hist-item" id="hist-${i.id}">
                 <div class="hist-top-row">
-                    ${i.oldTxt ? `<div class="hist-old" style="flex:1">${i.oldTxt}</div>` : '<div style="flex:1"></div>'}
+                    ${i.oldTxt ? `<div class="hist-old" style="flex:1; color:#777;">${i.oldTxt}</div>` : '<div style="flex:1"></div>'}
                     <button class="hist-del-btn" onclick="mathEngine.deleteItem(${i.id})">✕</button>
                 </div>
-                <div class="hist-row-top">
-                    <span class="hist-expression" contenteditable="true" onblur="mathEngine.updateHistoryItem(${i.id}, this.innerText)">${i.txt}</span>
+                <div class="hist-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="hist-expression" onclick="mathEngine.loadExpression('${i.txt}')">${i.txt}</span>
                     <span class="hist-result" onclick="mathEngine.useResult('${i.res}')">= ${i.res}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
@@ -615,257 +557,330 @@ class MathEngine {
                 </div>
             </div>`).join(''); 
     }
-
-    attachPhoto(id) {
-        const input = document.getElementById('file-input');
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    this.compressImage(event.target.result, (compressedData) => {
-                        const idx = this.history.findIndex(x => x.id === id);
-                        if (idx !== -1) { this.history[idx].img = compressedData; this.saveHistoryToStorage(); this.renderHistory(); }
-                    });
-                }; reader.readAsDataURL(file);
-            }
-        }; input.click();
+    
+    attachPhoto(id) { 
+        const input = document.getElementById('file-input'); 
+        input.onchange = (e) => { 
+            const file = e.target.files[0]; 
+            if (file) { 
+                const reader = new FileReader(); 
+                reader.onload = (event) => { 
+                    this.compressImage(event.target.result, (compressedData) => { 
+                        const idx = this.history.findIndex(x => x.id === id); 
+                        if (idx !== -1) { 
+                            this.history[idx].img = compressedData; 
+                            this.saveHistoryToStorage(); 
+                            this.renderHistory(); 
+                        } 
+                    }); 
+                }; 
+                reader.readAsDataURL(file); 
+            } 
+        }; 
+        input.click(); 
     }
     
-    compressImage(base64, cb) { const i = new Image(); i.src = base64; i.onload = () => { const c = document.createElement('canvas'); const x = c.getContext('2d'); const s = 300/i.width; c.width = 300; c.height = i.height*s; x.drawImage(i,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg', 0.7)); }; }
-    showImage(src) { document.getElementById('fullImage').src = src; document.getElementById('imgModal').style.display = 'flex'; }
-    useResult(val) { this.insertText(val.replace(/,/g, '')); this.toggleHistory(); }
-    
-    updateHistoryItem(id, newExpr) {
-        const idx = this.history.findIndex(i => i.id === id); if (idx === -1) return;
-        const oldExpr = this.history[idx].txt; if(oldExpr === newExpr) return;
-        try { const r = new Function('return ' + newExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/,/g, ''))(); const newRes = isFinite(r) ? this.format(r) : "Error"; const newCount = this.calculateCount(newExpr); this.addToHistory(newExpr, newRes, newCount, oldExpr); } catch(e) {}
+    compressImage(base64, cb) { 
+        const i = new Image(); 
+        i.src = base64; 
+        i.onload = () => { 
+            const c = document.createElement('canvas'); 
+            const x = c.getContext('2d'); 
+            const s = 300/i.width; 
+            c.width = 300; 
+            c.height = i.height*s; 
+            x.drawImage(i,0,0,c.width,c.height); 
+            cb(c.toDataURL('image/jpeg', 0.7)); 
+        }; 
     }
     
-    exportAsImage() {
-        if (this.history.length === 0) { alert("No history!"); return; }
-        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-        const width = 600; let height = 100 + (this.history.length * 120); 
-        this.history.forEach(h => { if(h.img) height += 320; });
-        canvas.width = width; canvas.height = height;
-        ctx.fillStyle = "#121212"; ctx.fillRect(0,0,width,height);
-        ctx.fillStyle = "#00f3ff"; ctx.font = "bold 30px monospace"; ctx.fillText("CALCULATION HISTORY", 20, 50);
-        ctx.fillStyle = "#fff"; ctx.font = "16px monospace"; ctx.fillText(new Date().toLocaleString(), 20, 80);
-        let y = 120; ctx.font = "20px monospace";
-        this.history.forEach(item => {
-            ctx.fillStyle = "#333"; ctx.fillRect(10, y-30, width-20, 2);
-            ctx.fillStyle = "#fff"; ctx.fillText(item.txt, 20, y);
-            ctx.fillStyle = "#00f3ff"; 
-            const resWidth = ctx.measureText("= " + item.res).width;
-            ctx.fillText("= " + item.res, width - resWidth - 20, y);
-            y += 35; ctx.fillStyle = "#888"; ctx.font = "italic 14px monospace"; ctx.fillText(`(n=${item.valCount})`, 20, y);
-            ctx.font = "20px monospace"; y += 25;
-            if (item.img) { const img = new Image(); img.src = item.img; try { ctx.drawImage(img, 20, y, 300, (img.height/img.width)*300); y += (img.height/img.width)*300 + 20; } catch(e){} }
-            y += 20;
-        });
-        const link = document.createElement('a'); link.download = `history_export.jpg`; link.href = canvas.toDataURL("image/jpeg"); link.click();
+    showImage(src) { 
+        document.getElementById('fullImage').src = src; 
+        document.getElementById('imgModal').style.display = 'flex'; 
     }
     
-    exportHistory() {
-        if (this.history.length === 0) { alert("No history!"); return; }
-        const c = this.history.map(h => `${h.txt} = ${h.res} (n=${h.valCount})${h.oldTxt ? ' [Edited]' : ''}`).join('\n');
-        const b = new Blob([c], { type: 'text/plain' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `history.txt`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    useResult(val) { 
+        this.insertText(val.replace(/,/g, '')); 
+        this.toggleHistory(); 
     }
     
-    clearHistory() { if(confirm("Clear history?")) { this.history = []; this.renderHistory(); localStorage.removeItem('calcHistory'); } }
-    saveState() { if (this.undoStack.length > 30) this.undoStack.shift(); this.undoStack.push(this.editor.innerHTML); this.redoStack = []; }
-    undo() { if (this.undoStack.length) { this.redoStack.push(this.editor.innerHTML); this.editor.innerHTML = this.undoStack.pop(); this.evaluateLive(); this.updateCount(); } }
-    redo() { if (this.redoStack.length) { this.undoStack.push(this.editor.innerHTML); this.editor.innerHTML = this.redoStack.pop(); this.evaluateLive(); this.updateCount(); } }
+    exportAsImage() { 
+        if (this.history.length === 0) { alert("No history!"); return; } 
+        const canvas = document.createElement('canvas'); 
+        const ctx = canvas.getContext('2d'); 
+        const width = 600; 
+        let height = 100 + (this.history.length * 120); 
+        this.history.forEach(h => { if(h.img) height += 320; }); 
+        canvas.width = width; 
+        canvas.height = height; 
+        ctx.fillStyle = "#fff"; 
+        ctx.fillRect(0,0,width,height); 
+        ctx.fillStyle = "#000"; 
+        ctx.font = "bold 30px monospace"; 
+        ctx.fillText("CALCULATION HISTORY", 20, 50); 
+        ctx.fillStyle = "#555"; 
+        ctx.font = "16px monospace"; 
+        ctx.fillText(new Date().toLocaleString(), 20, 80); 
+        let y = 120; 
+        ctx.font = "20px monospace"; 
+        this.history.forEach(item => { 
+            ctx.fillStyle = "#ddd"; 
+            ctx.fillRect(10, y-30, width-20, 1); 
+            ctx.fillStyle = "#000"; 
+            ctx.fillText(item.txt, 20, y); 
+            ctx.fillStyle = "#007AFF"; 
+            const resWidth = ctx.measureText("= " + item.res).width; 
+            ctx.fillText("= " + item.res, width - resWidth - 20, y); 
+            y += 35; 
+            ctx.fillStyle = "#888"; 
+            ctx.font = "italic 14px monospace"; 
+            ctx.fillText(`(n=${item.valCount})`, 20, y); 
+            ctx.font = "20px monospace"; 
+            y += 25; 
+            if (item.img) { 
+                const img = new Image(); 
+                img.src = item.img; 
+                try { 
+                    ctx.drawImage(img, 20, y, 300, (img.height/img.width)*300); 
+                    y += (img.height/img.width)*300 + 20; 
+                } catch(e){} 
+            } 
+            y += 20; 
+        }); 
+        const link = document.createElement('a'); 
+        link.download = `history_export.jpg`; 
+        link.href = canvas.toDataURL("image/jpeg"); 
+        link.click(); 
+    }
+    
+    exportHistory() { 
+        if (this.history.length === 0) { alert("No history!"); return; } 
+        const c = this.history.map(h => `${h.txt} = ${h.res} (n=${h.valCount})${h.oldTxt ? ' [Edited]' : ''}`).join('\n'); 
+        const b = new Blob([c], { type: 'text/plain' }); 
+        const u = URL.createObjectURL(b); 
+        const a = document.createElement('a'); 
+        a.href = u; 
+        a.download = `history.txt`; 
+        document.body.appendChild(a); 
+        a.click(); 
+        document.body.removeChild(a); 
+    }
+    
+    clearHistory() { 
+        if(confirm("Clear history?")) { 
+            this.history = []; 
+            this.renderHistory(); 
+            localStorage.removeItem('calcHistory'); 
+        } 
+    }
+    
+    saveState() { 
+        if (this.undoStack.length > 30) this.undoStack.shift(); 
+        this.undoStack.push(this.editor.innerHTML); 
+        this.redoStack = []; 
+    }
+    
+    undo() { 
+        if (this.undoStack.length) { 
+            this.redoStack.push(this.editor.innerHTML); 
+            this.editor.innerHTML = this.undoStack.pop(); 
+            this.evaluateLive(); 
+            this.updateCount(); 
+        } 
+    }
+    
+    redo() { 
+        if (this.redoStack.length) { 
+            this.undoStack.push(this.editor.innerHTML); 
+            this.editor.innerHTML = this.redoStack.pop(); 
+            this.evaluateLive(); 
+            this.updateCount(); 
+        } 
+    }
 }
 
-/* --- 3. UTILITY ENGINES --- */
 class BatchEngine {
-    constructor() {
-        this.listContainer = document.getElementById('batch-list');
-        this.inputDisplay = document.getElementById('batch-current-input');
-        this.totalDisplay = document.getElementById('batch-total-display');
-        this.items = [];
-        this.currentStr = "";
+    constructor() { 
+        this.listContainer = document.getElementById('batch-list'); 
+        this.inputDisplay = document.getElementById('batch-current-input'); 
+        this.totalDisplay = document.getElementById('batch-total-display'); 
+        this.items = []; 
+        this.currentStr = ""; 
     }
-
-    input(val) {
-        app.vibrate();
-        this.currentStr += val;
-        this.renderInput();
+    
+    input(val) { 
+        app.vibrate(); 
+        this.currentStr += val; 
+        this.renderInput(); 
     }
-
-    undoEntry() {
-        app.vibrate();
-        this.currentStr = this.currentStr.slice(0, -1);
-        this.renderInput();
+    
+    undoEntry() { 
+        app.vibrate(); 
+        this.currentStr = this.currentStr.slice(0, -1); 
+        this.renderInput(); 
     }
-
-    renderInput() {
-        // Display pretty symbols while typing
-        const display = this.currentStr.replace(/\*/g, '×').replace(/\//g, '÷');
-        this.inputDisplay.textContent = display;
+    
+    renderInput() { 
+        const display = this.currentStr.replace(/\*/g, '×').replace(/\//g, '÷'); 
+        this.inputDisplay.textContent = display; 
     }
-
-    addItem() {
-        app.vibrate();
-        if (!this.currentStr) return;
-        
-        try {
-            const safeStr = this.currentStr.replace(/[^0-9+\-*/.]/g, '');
-            const val = new Function('return ' + safeStr)();
-            if (isFinite(val)) {
-                this.items.push({ txt: this.currentStr, val: val });
-                this.currentStr = "";
-                this.renderInput();
-                this.renderList();
-            }
-        } catch(e) {
-            alert("Invalid number");
-        }
+    
+    addItem() { 
+        app.vibrate(); 
+        if (!this.currentStr) return; 
+        try { 
+            const safeStr = this.currentStr.replace(/[^0-9+\-*/.]/g, ''); 
+            const val = new Function('return ' + safeStr)(); 
+            if (isFinite(val)) { 
+                this.items.push({ txt: this.currentStr, val: val }); 
+                this.currentStr = ""; 
+                this.renderInput(); 
+                this.renderList(); 
+            } 
+        } catch(e) { alert("Invalid number"); } 
     }
-
-    renderList() {
-        if(this.items.length === 0) {
-            this.listContainer.innerHTML = '<div style="color:#666; font-size:14px; margin-top:50px; text-align:center;">Batch list empty...</div>';
-            this.totalDisplay.style.display = 'none';
-            return;
-        }
-        
-        let html = '';
-        let subtotal = 0;
-        this.items.forEach((item, index) => {
-            subtotal += item.val;
-            // FIX: Pretty print symbols for the list view
-            const displayTxt = item.txt.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\+/g, ' + ').replace(/\-/g, ' − ');
-            html += `<div><span>#${index+1}</span> ${displayTxt} <small style="color:#555">(= ${item.val})</small></div>`;
-        });
-        
-        this.listContainer.innerHTML = html;
-        this.listContainer.scrollTop = this.listContainer.scrollHeight;
-        
-        this.totalDisplay.textContent = `Running Total: ${subtotal}`;
-        this.totalDisplay.style.display = 'block';
+    
+    renderList() { 
+        if(this.items.length === 0) { 
+            this.listContainer.innerHTML = '<div style="color:#666; font-size:14px; margin-top:50px; text-align:center;">Batch list empty...</div>'; 
+            this.totalDisplay.style.display = 'none'; 
+            return; 
+        } 
+        let html = ''; 
+        let subtotal = 0; 
+        this.items.forEach((item, index) => { 
+            subtotal += item.val; 
+            const displayTxt = item.txt.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\+/g, ' + ').replace(/\-/g, ' − '); 
+            html += `<div><span>#${index+1}</span> ${displayTxt} <small style="color:#555">(= ${item.val})</small></div>`; 
+        }); 
+        this.listContainer.innerHTML = html; 
+        this.listContainer.scrollTop = this.listContainer.scrollHeight; 
+        this.totalDisplay.textContent = `Running Total: ${subtotal}`; 
+        this.totalDisplay.style.display = 'block'; 
     }
-
-    compute() {
-        app.vibrate();
-        if (this.items.length === 0 && !this.currentStr) return;
-        
-        // Add pending input if exists
-        if(this.currentStr) { this.addItem(); }
-        if(this.items.length === 0) return;
-
-        const total = this.items.reduce((acc, curr) => acc + curr.val, 0);
-        
-        this.totalDisplay.innerHTML = `<span style="color:white">FINAL TOTAL:</span> <span style="font-size:32px; font-weight:bold">${total}</span>`;
-        
-        const historyText = `Batch Sum (${this.items.length} items)`;
-        // Format history details with pretty symbols
-        const historyDetail = this.items.map(i => i.txt.replace(/\*/g, '×').replace(/\//g, '÷')).join(' + ');
-        
-        mathEngine.addToHistory(historyText, total, this.items.length, historyDetail);
+    
+    compute() { 
+        app.vibrate(); 
+        if (this.items.length === 0 && !this.currentStr) return; 
+        if(this.currentStr) { this.addItem(); } 
+        if(this.items.length === 0) return; 
+        const total = this.items.reduce((acc, curr) => acc + curr.val, 0); 
+        this.totalDisplay.innerHTML = `<span style="color:white">FINAL TOTAL:</span> <span style="font-size:32px; font-weight:bold">${total}</span>`; 
+        const historyText = `Batch Sum (${this.items.length} items)`; 
+        const historyDetail = this.items.map(i => i.txt.replace(/\*/g, '×').replace(/\//g, '÷')).join(' + '); 
+        mathEngine.addToHistory(historyText, total, this.items.length, historyDetail); 
     }
-
-    clearAll() {
-        if(confirm("Clear current batch?")) {
-            this.items = [];
-            this.currentStr = "";
-            this.renderInput();
-            this.renderList();
-        }
+    
+    clearAll() { 
+        if(confirm("Clear current batch?")) { 
+            this.items = []; 
+            this.currentStr = ""; 
+            this.renderInput(); 
+            this.renderList(); 
+        } 
     }
 }
-/* --- 2. VOICE ENGINE --- */
+
 class VoiceEngine {
-    constructor() {
-        this.recognition = null;
-        this.isListening = false;
-        this.btn = document.getElementById('btn-voice');
-        
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
-            this.recognition.continuous = false;
-            this.recognition.lang = 'en-US';
-            this.recognition.interimResults = false;
-
-            this.recognition.onstart = () => {
-                this.isListening = true;
-                this.btn.classList.add('listening-mode');
-                app.vibrate();
-            };
-
-            this.recognition.onend = () => {
-                this.isListening = false;
-                this.btn.classList.remove('listening-mode');
-            };
-
-            this.recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.toLowerCase();
-                this.parseCommand(transcript);
-            };
-        } else {
-            this.btn.style.display = 'none';
-        }
+    constructor() { 
+        this.recognition = null; 
+        this.isListening = false; 
+        this.btn = document.getElementById('btn-voice'); 
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) { 
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
+            this.recognition = new SpeechRecognition(); 
+            this.recognition.continuous = false; 
+            this.recognition.lang = 'en-US'; 
+            this.recognition.interimResults = false; 
+            this.recognition.onstart = () => { 
+                this.isListening = true; 
+                this.btn.classList.add('listening-mode'); 
+                app.vibrate(); 
+            }; 
+            this.recognition.onend = () => { 
+                this.isListening = false; 
+                this.btn.classList.remove('listening-mode'); 
+            }; 
+            this.recognition.onresult = (event) => { 
+                const transcript = event.results[0][0].transcript.toLowerCase(); 
+                this.parseCommand(transcript); 
+            }; 
+        } else { 
+            this.btn.style.display = 'none'; 
+        } 
     }
-
-    toggle() {
-        if (!this.recognition) return;
-        if (this.isListening) this.recognition.stop();
-        else this.recognition.start();
-        app.vibrate();
+    
+    toggle() { 
+        if (!this.recognition) return; 
+        if (this.isListening) this.recognition.stop(); 
+        else this.recognition.start(); 
+        app.vibrate(); 
     }
-
-    parseCommand(text) {
-        let mathStr = text
-            .replace(/times|multiplied by|into/g, '*')
-            .replace(/divided by|over/g, '/')
-            .replace(/plus|add/g, '+')
-            .replace(/minus|subtract/g, '-')
-            .replace(/point/g, '.')
-            .replace(/equals/g, '')
-            .replace(/[^0-9+\-*/.]/g, '');
-
-        if (mathStr.length > 0) {
-            mathEngine.reset();
-            mathEngine.insertText(mathStr);
-            mathEngine.finalize();
-        } else {
-            alert("Didn't catch any numbers!");
-        }
+    
+    parseCommand(text) { 
+        let mathStr = text.replace(/times|multiplied by|into/g, '*')
+                          .replace(/divided by|over/g, '/')
+                          .replace(/plus|add/g, '+')
+                          .replace(/minus|subtract/g, '-')
+                          .replace(/point/g, '.')
+                          .replace(/equals/g, '')
+                          .replace(/[^0-9+\-*/.]/g, ''); 
+        if (mathStr.length > 0) { 
+            mathEngine.reset(); 
+            mathEngine.insertText(mathStr); 
+            mathEngine.finalize(); 
+        } else { 
+            alert("Didn't catch any numbers!"); 
+        } 
     }
 }
+
 class DateEngine {
-    constructor() {
-        this.start = document.getElementById('date-start'); this.end = document.getElementById('date-end');
-        this.box = document.getElementById('date-output-box');
-        const today = new Date().toISOString().split('T')[0]; if(this.start) this.start.value = today; if(this.end) this.end.value = today;
+    constructor() { 
+        this.start = document.getElementById('date-start'); 
+        this.end = document.getElementById('date-end'); 
+        this.box = document.getElementById('date-output-box'); 
+        const today = new Date().toISOString().split('T')[0]; 
+        if(this.start) this.start.value = today; 
+        if(this.end) this.end.value = today; 
     }
-    calculate() {
-        const d1 = new Date(this.start.value); const d2 = new Date(this.end.value);
-        const start = d1 < d2 ? d1 : d2; const end = d1 < d2 ? d2 : d1;
-        let years = end.getFullYear() - start.getFullYear(); let months = end.getMonth() - start.getMonth(); let days = end.getDate() - start.getDate();
-        if (days < 0) { months--; days += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); }
-        if (months < 0) { years--; months += 12; }
-        const total = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
-        document.getElementById('date-result-main').textContent = `${years}y ${months}m ${days}d`;
-        document.getElementById('date-result-sub').textContent = `TOTAL: ${total} DAYS`;
-        this.box.style.display = 'block';
+    
+    calculate() { 
+        const d1 = new Date(this.start.value); 
+        const d2 = new Date(this.end.value); 
+        const start = d1 < d2 ? d1 : d2; 
+        const end = d1 < d2 ? d2 : d1; 
+        let years = end.getFullYear() - start.getFullYear(); 
+        let months = end.getMonth() - start.getMonth(); 
+        let days = end.getDate() - start.getDate(); 
+        if (days < 0) { 
+            months--; 
+            days += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); 
+        } 
+        if (months < 0) { 
+            years--; 
+            months += 12; 
+        } 
+        const total = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)); 
+        document.getElementById('date-result-main').textContent = `${years}y ${months}m ${days}d`; 
+        document.getElementById('date-result-sub').textContent = `TOTAL: ${total} DAYS`; 
+        this.box.style.display = 'block'; 
     }
 }
 
 class FinanceEngine {
     constructor() { this.box = document.getElementById('fin-output-box'); }
-    calculate() {
-        const p = parseFloat(document.getElementById('fin-principal').value)||0;
-        const r = parseFloat(document.getElementById('fin-rate').value)||0;
-        const m = parseFloat(document.getElementById('fin-time').value)||0;
-        const i = (p * r * (m/12))/100;
-        document.getElementById('fin-interest').textContent = i.toLocaleString('en-IN', {style:'currency', currency:'INR'});
-        document.getElementById('fin-total').textContent = (p+i).toLocaleString('en-IN', {style:'currency', currency:'INR'});
-        this.box.style.display = 'block';
-            }
+    calculate() { 
+        const p = parseFloat(document.getElementById('fin-principal').value)||0; 
+        const r = parseFloat(document.getElementById('fin-rate').value)||0; 
+        const m = parseFloat(document.getElementById('fin-time').value)||0; 
+        const i = (p * r * (m/12))/100; 
+        document.getElementById('fin-interest').textContent = i.toLocaleString('en-IN', {style:'currency', currency:'INR'}); 
+        document.getElementById('fin-total').textContent = (p+i).toLocaleString('en-IN', {style:'currency', currency:'INR'}); 
+        this.box.style.display = 'block'; 
+    }
 }
+
 class AiEngine {
         constructor() {
             // We split the key to hide it from security bots
@@ -874,216 +889,204 @@ class AiEngine {
             this.apiKey = keyPart1 + keyPart2;
             this.cachedModel = null;
         }
-        
-    importCalcContext() {
-        const mathResult = document.getElementById('result').innerText;
-        const promptBox = document.getElementById('ai-prompt');
+    
+    importCalcContext() { 
+        const mathResult = document.getElementById('result').innerText; 
+        const promptBox = document.getElementById('ai-prompt'); 
         if(mathResult && mathResult !== '0') { 
             const contextLine = `Current Calculation Value: ${mathResult}\n(Task: )`; 
             promptBox.value = contextLine + promptBox.value; 
             promptBox.focus(); 
-        } else { alert("No calculation result to import!"); }
+        } else { 
+            alert("No calculation result to import!"); 
+        } 
     }
-
-    async findWorkingModel() {
-        if(this.cachedModel) return this.cachedModel;
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${this.apiKey}`);
-            const data = await res.json();
-            if(data.models) {
-                const valid = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
-                const chosen = valid.find(m => m.name.includes('flash')) || valid[0];
-                if(chosen) { this.cachedModel = chosen.name.replace("models/", ""); return this.cachedModel; }
-            }
-        } catch(e) {}
-        return "gemini-1.5-flash";
+    
+    async findWorkingModel() { 
+        if(this.cachedModel) return this.cachedModel; 
+        try { 
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${this.apiKey}`); 
+            const data = await res.json(); 
+            if(data.models) { 
+                const valid = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent")); 
+                const chosen = valid.find(m => m.name.includes('flash')) || valid[0]; 
+                if(chosen) { 
+                    this.cachedModel = chosen.name.replace("models/", ""); 
+                    return this.cachedModel; 
+                } 
+            } 
+        } catch(e) {} 
+        return "gemini-1.5-flash"; 
     }
-
-    async explainCurrent() {
-        const expr = mathEngine.editor.textContent; const res = mathEngine.result.textContent;
-        if (!expr || res === '0') return;
-        document.getElementById('ai-overlay').style.height = "60%";
-        document.getElementById('ai-quick-result').textContent = "Scanning...";
-        const model = await this.findWorkingModel();
-        // Ask for LaTeX formatting specifically
-        const response = await this.callApi(`Explain clearly using LaTeX format for math: ${expr} = ${res}`, model);
-        
-        // Render result in the overlay
-        const box = document.getElementById('ai-quick-result');
-        box.innerHTML = response.replace(/\n/g, '<br>');
-        this.renderMath(box);
+    
+    async explainCurrent() { 
+        const expr = mathEngine.editor.textContent; 
+        const res = mathEngine.result.textContent; 
+        if (!expr || res === '0') return; 
+        document.getElementById('ai-overlay').style.height = "60%"; 
+        document.getElementById('ai-quick-result').textContent = "Scanning..."; 
+        const model = await this.findWorkingModel(); 
+        const response = await this.callApi(`Explain clearly using LaTeX format for math: ${expr} = ${res}`, model); 
+        const box = document.getElementById('ai-quick-result'); 
+        box.innerHTML = response.replace(/\n/g, '<br>'); 
+        this.renderMath(box); 
     }
-
+    
     closeOverlay() { document.getElementById('ai-overlay').style.height = "0"; }
-
-    async askGemini() {
-        const query = document.getElementById('ai-prompt').value;
-        if (!query) return;
-        const responseBox = document.getElementById('ai-response-box');
-        const contentBox = document.getElementById('ai-response-content');
-        const actionBox = document.getElementById('ai-action-container');
-        
-        responseBox.style.display = 'block';
-        contentBox.textContent = "Thinking...";
-        actionBox.style.display = 'none';
-        
-        const model = await this.findWorkingModel();
-        // Force LaTeX instruction
-        const fullQuery = query + " (Please format all math equations using LaTeX syntax with $ delimiters)";
-        const response = await this.callApi(fullQuery, model);
-        
-        this.renderFormattedResponse(response);
+    
+    async askGemini() { 
+        const query = document.getElementById('ai-prompt').value; 
+        if (!query) return; 
+        const responseBox = document.getElementById('ai-response-box'); 
+        const contentBox = document.getElementById('ai-response-content'); 
+        const actionBox = document.getElementById('ai-action-container'); 
+        responseBox.style.display = 'block'; 
+        contentBox.textContent = "Thinking..."; 
+        actionBox.style.display = 'none'; 
+        const model = await this.findWorkingModel(); 
+        const fullQuery = query + " (Please format all math equations using LaTeX syntax with $ delimiters)"; 
+        const response = await this.callApi(fullQuery, model); 
+        this.renderFormattedResponse(response); 
     }
-
-    renderFormattedResponse(text) {
-        const contentBox = document.getElementById('ai-response-content');
-        const actionBox = document.getElementById('ai-action-container');
-        
-        // 1. Basic Formatting (Bold, Bullets)
-        let formatted = text
-            .replace(/\*\*(.*?)\*\*/g, '<strong style="color:white">$1</strong>')
-            .replace(/\n\*/g, '<br>• ')
-            .replace(/\n/g, '<br>');
-
-        // 2. Insert text
-        contentBox.innerHTML = formatted;
-
-        // 3. RENDER MATH (The new Magic Part)
-        this.renderMath(contentBox);
-
-        // 4. Extract number for Action Button
-        const numberMatches = text.match(/[-]?\d{1,3}(,\d{3})*(\.\d+)?/g);
-        if (numberMatches && numberMatches.length > 0) {
-            // Find the last number that looks like a result
-            const val = numberMatches[numberMatches.length - 1].replace(/,/g,'');
-            if(!isNaN(parseFloat(val))) {
-                actionBox.innerHTML = `<button class="action-btn" onclick="aiEngine.transferToMath('${val}')" style="font-size:13px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:var(--primary);">USE RESULT (${val}) IN CALC ➔</button>`;
-                actionBox.style.display = 'block';
-            }
-        }
+    
+    renderFormattedResponse(text) { 
+        const contentBox = document.getElementById('ai-response-content'); 
+        const actionBox = document.getElementById('ai-action-container'); 
+        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:white">$1</strong>')
+                            .replace(/\n\*/g, '<br>• ')
+                            .replace(/\n/g, '<br>'); 
+        contentBox.innerHTML = formatted; 
+        this.renderMath(contentBox); 
+        const numberMatches = text.match(/[-]?\d{1,3}(,\d{3})*(\.\d+)?/g); 
+        if (numberMatches && numberMatches.length > 0) { 
+            const val = numberMatches[numberMatches.length - 1].replace(/,/g,''); 
+            if(!isNaN(parseFloat(val))) { 
+                actionBox.innerHTML = `<button class="action-btn" onclick="aiEngine.transferToMath('${val}')" style="font-size:13px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:var(--primary);">USE RESULT (${val}) IN CALC ➔</button>`; 
+                actionBox.style.display = 'block'; 
+            } 
+        } 
     }
-
-    // Helper function to trigger KaTeX
-    renderMath(element) {
-        if (window.renderMathInElement) {
-            renderMathInElement(element, {
+    
+    renderMath(element) { 
+        if (window.renderMathInElement) { 
+            renderMathInElement(element, { 
                 delimiters: [
-                    {left: "$$", right: "$$", display: true},
-                    {left: "$", right: "$", display: false},
-                    {left: "\\(", right: "\\)", display: false},
+                    {left: "$$", right: "$$", display: true}, 
+                    {left: "$", right: "$", display: false}, 
+                    {left: "\\(", right: "\\)", display: false}, 
                     {left: "\\[", right: "\\]", display: true}
-                ],
-                throwOnError: false
-            });
-        }
+                ], 
+                throwOnError: false 
+            }); 
+        } 
     }
-
-    transferToMath(val) { app.switchMode('math'); mathEngine.insertText(val); }
-
-    async callApi(query, model) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
-        try {
-            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: query }] }] }) });
-            const data = await response.json();
-            if (data.error) return "AI Error: " + data.error.message;
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "No Data";
-        } catch (e) { return "Connection Lost"; }
+    
+    transferToMath(val) { 
+        app.switchMode('math'); 
+        mathEngine.insertText(val); 
+    }
+    
+    async callApi(query, model) { 
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`; 
+        try { 
+            const response = await fetch(url, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ contents: [{ parts: [{ text: query }] }] }) 
+            }); 
+            const data = await response.json(); 
+            if (data.error) return "AI Error: " + data.error.message; 
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "No Data"; 
+        } catch (e) { return "Connection Lost"; } 
     }
 }
-/* --- 4. MAIN APP LOGIC --- */
-window.mathEngine = new MathEngine();
-window.batchEngine = new BatchEngine();
-window.dateEngine = new DateEngine();
-window.financeEngine = new FinanceEngine();
-window.aiEngine = new AiEngine();
+
+window.mathEngine = new MathEngine(); 
+window.batchEngine = new BatchEngine(); 
+window.dateEngine = new DateEngine(); 
+window.financeEngine = new FinanceEngine(); 
+window.aiEngine = new AiEngine(); 
 window.voiceEngine = new VoiceEngine();
 
 window.app = {
-    bgIndex: 0,
-    bgs: [
-        'url("https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2000")', 
-        'url("https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=2000")', 
-        'url("https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=2000")'
-    ],
-    init: () => {
-        const savedTheme = localStorage.getItem('calcTheme');
-        if(savedTheme === 'light') document.body.classList.add('light-mode');
-        const savedBg = localStorage.getItem('calcBgIndex');
-        if(savedBg) {
-            app.bgIndex = parseInt(savedBg);
-            document.body.style.backgroundImage = app.bgs[app.bgIndex];
-        }
-        app.initGestures();
+    bgIndex: 0, 
+    bgs: ['url("https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2000")', 'url("https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=2000")', 'url("https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=2000")'],
+    init: () => { 
+        const savedTheme = localStorage.getItem('calcTheme'); 
+        if(savedTheme === 'light') document.body.classList.add('light-mode'); 
+        const savedBg = localStorage.getItem('calcBgIndex'); 
+        if(savedBg) { 
+            app.bgIndex = parseInt(savedBg); 
+            document.body.style.backgroundImage = app.bgs[app.bgIndex]; 
+        } 
+        app.initGestures(); 
     },
     vibrate: () => { if(navigator.vibrate) navigator.vibrate(5); },
-    switchMode: (mode) => {
-        app.vibrate();
-        document.getElementById('app-launcher').classList.remove('active');
-        document.querySelectorAll('.calc-view').forEach(v => v.classList.remove('active-view'));
-        document.getElementById(`view-${mode}`).classList.add('active-view');
-        const label = mode === 'math' ? 'MATH' : mode === 'ai' ? 'AI CORE' : mode.toUpperCase();
-        document.getElementById('mode-label').textContent = label;
+    switchMode: (mode) => { 
+        app.vibrate(); 
+        document.getElementById('app-launcher').classList.remove('active'); 
+        document.querySelectorAll('.calc-view').forEach(v => v.classList.remove('active-view')); 
+        document.getElementById(`view-${mode}`).classList.add('active-view'); 
+        const label = mode === 'math' ? 'MATH' : mode === 'ai' ? 'AI CORE' : mode.toUpperCase(); 
+        document.getElementById('mode-label').textContent = label; 
     },
-    toggleLauncher: () => {
-        app.vibrate();
-        document.getElementById('app-launcher').classList.toggle('active');
+    toggleLauncher: () => { app.vibrate(); document.getElementById('app-launcher').classList.toggle('active'); },
+    toggleTheme: () => { 
+        app.vibrate(); 
+        document.body.classList.toggle('light-mode'); 
+        localStorage.setItem('calcTheme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); 
     },
-    toggleTheme: () => {
-        app.vibrate();
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem('calcTheme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    toggleWallpaper: () => { 
+        app.vibrate(); 
+        app.bgIndex = (app.bgIndex + 1) % app.bgs.length; 
+        document.body.style.backgroundImage = app.bgs[app.bgIndex]; 
+        localStorage.setItem('calcBgIndex', app.bgIndex); 
     },
-    toggleWallpaper: () => {
-        app.vibrate();
-        app.bgIndex = (app.bgIndex + 1) % app.bgs.length;
-        document.body.style.backgroundImage = app.bgs[app.bgIndex];
-        localStorage.setItem('calcBgIndex', app.bgIndex);
-    },
-    initGestures: () => {
-        const touchArea = document.getElementById('gesture-area');
-        let touchStartX = 0;
-        let touchEndX = 0;
-        
-        touchArea.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-        
-        touchArea.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX < touchStartX - 50 || touchEndX > touchStartX + 50) {
-                app.vibrate();
-                mathEngine.backspace();
-                touchArea.style.opacity = '0.5';
-                setTimeout(() => touchArea.style.opacity = '1', 100);
-            }
-        }, {passive: true});
+    initGestures: () => { 
+        const touchArea = document.getElementById('gesture-area'); 
+        let touchStartX = 0; 
+        let touchEndX = 0; 
+        touchArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true}); 
+        touchArea.addEventListener('touchend', e => { 
+            touchEndX = e.changedTouches[0].screenX; 
+            if (touchEndX < touchStartX - 50 || touchEndX > touchStartX + 50) { 
+                app.vibrate(); 
+                mathEngine.backspace(); 
+                touchArea.style.opacity = '0.5'; 
+                setTimeout(() => touchArea.style.opacity = '1', 100); 
+            } 
+        }, {passive: true}); 
     }
 };
 
 app.init();
 
-const keypad = document.getElementById('math-keypad');
-if(keypad) {
-    const press = (e) => {
-        e.preventDefault();
+const keypad = document.getElementById('math-keypad'); 
+if(keypad) { 
+    const press = (e) => { 
+        e.preventDefault(); 
         app.vibrate(); 
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        btn.classList.add('pressed');
-        setTimeout(() => btn.classList.remove('pressed'), 150);
-        const key = btn.dataset.key;
-        if (key === 'C') mathEngine.reset();
-        else if (key === '=') mathEngine.finalize();
-        else if (key === 'neg') mathEngine.insertText('-');
-        else mathEngine.insertText(key);
-    };
-    keypad.addEventListener('mousedown', press);
-    keypad.addEventListener('touchstart', press, {passive: false});
+        const btn = e.target.closest('button'); 
+        if (!btn) return; 
+        btn.classList.add('pressed'); 
+        setTimeout(() => btn.classList.remove('pressed'), 150); 
+        const key = btn.dataset.key; 
+        if (key === 'C') mathEngine.reset(); 
+        else if (key === '=') mathEngine.finalize(); 
+        else if (key === 'neg') mathEngine.insertText('-'); 
+        else mathEngine.insertText(key); 
+    }; 
+    keypad.addEventListener('mousedown', press); 
+    keypad.addEventListener('touchstart', press, {passive: false}); 
 }
-document.getElementById('btn-backspace').addEventListener('click', (e) => { e.preventDefault(); app.vibrate(); mathEngine.backspace(); });
-// NO AUTO FOCUS LISTENER HERE - HANDLED IN CLASS
+
+document.getElementById('btn-backspace').addEventListener('click', (e) => { 
+    e.preventDefault(); 
+    app.vibrate(); 
+    mathEngine.backspace(); 
+});
 
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-            </html>
+    </html>
