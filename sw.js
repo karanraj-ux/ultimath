@@ -4,7 +4,7 @@ const ASSETS = [
   '/index.html',      // The Calculator
   '/jee.html',        // The JEE Dashboard
   '/manifest.json',   // The Icon
-  
+  '/anlyzer.html',    // The jee anlyzer
   // EXTERNAL LIBRARIES (Required for JEE OS to work offline)
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.development.js',
