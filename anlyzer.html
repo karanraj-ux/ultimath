@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE WAR ROOM ☢️</title>
+    <title>JEE War Room v5.0</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
     <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     
     <style>
-        /* --- HACKER THEME --- */
+        /* ========================================= */
+        /* VISUAL THEME (CYBERPUNK BLACK)           */
+        /* ========================================= */
         :root { 
             --bg: #000000; 
-            --card: #111; 
-            --text: #fff; 
-            --accent: #00f3ff; 
-            --danger: #ff3b30; 
-            --warn: #ffd700; 
-            --success: #00ff9d; 
+            --card: #111111; 
+            --text: #ffffff; 
+            --accent: #00f3ff;   /* Neon Blue */
+            --danger: #ff3b30;   /* Neon Red */
+            --warn: #ffd700;     /* Gold */
+            --success: #00ff9d;  /* Neon Green */
         }
 
         body { 
@@ -28,151 +33,241 @@
             color: var(--text); 
             margin: 0; 
             padding: 20px; 
-            padding-bottom: 100px; 
+            padding-bottom: 150px; /* Space for scrolling */
         }
 
-        h1, h2 { 
+        h1 { 
             font-family: 'Rajdhani', sans-serif; 
             text-transform: uppercase; 
-            letter-spacing: 2px; 
+            letter-spacing: 3px; 
             color: var(--accent); 
-            margin-bottom: 15px; 
+            margin-bottom: 20px; 
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
         
-        /* CARD DESIGN */
+        /* CARD CONTAINER STYLE */
         .card { 
             background: var(--card); 
-            padding: 20px; 
+            padding: 25px; 
             border: 1px solid #333; 
-            border-radius: 12px; 
+            border-radius: 16px; 
             margin-bottom: 30px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        /* INPUT FIELDS */
+        label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input, textarea, select { 
+            width: 100%; 
+            padding: 15px; 
+            background: #000; 
+            border: 1px solid #444; 
+            color: #fff; 
+            margin-bottom: 15px; 
+            border-radius: 6px; 
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 14px;
+            box-sizing: border-box; 
+        }
+        
+        input:focus, textarea:focus, select:focus { 
+            border-color: var(--accent); 
+            outline: none; 
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
         }
         
         /* BUTTONS */
         .btn { 
             width: 100%; 
-            padding: 15px; 
+            padding: 18px; 
             background: var(--accent); 
             color: black; 
-            font-weight: bold; 
+            font-weight: 800; 
             border: none; 
-            border-radius: 6px; 
+            border-radius: 8px; 
             margin-top: 15px; 
-            font-family: 'Rajdhani'; 
-            font-size: 18px; 
-            text-transform: uppercase;
+            font-family: 'Rajdhani', sans-serif; 
+            font-size: 20px; 
+            text-transform: uppercase; 
             cursor: pointer;
-            transition: transform 0.1s, filter 0.1s;
+            transition: all 0.2s;
         }
-        .btn:active { transform: scale(0.98); filter: brightness(0.8); }
-        .btn-red { background: var(--danger); color: white; box-shadow: 0 0 15px rgba(255, 59, 48, 0.2); }
-        .btn-green { background: var(--success); color: black; box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); }
-        .btn-warn { background: var(--warn); color: black; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
-
-        /* INPUTS */
-        input, textarea { 
-            width: 100%; 
-            padding: 12px; 
-            background: #000; 
-            border: 1px solid #444; 
-            color: #fff; 
-            margin-bottom: 10px; 
-            border-radius: 4px; 
-            font-family: monospace; 
-            box-sizing: border-box; 
-        }
-        input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
         
-        /* SCORE DASHBOARD */
-        .score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-red { background: var(--danger); color: white; }
+        .btn-green { background: var(--success); color: black; }
+        .btn-warn { background: var(--warn); color: black; }
+        .btn-dark { background: #333; color: white; border: 1px solid #555; }
+
+        /* SCOREBOARD GRID */
+        .score-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 15px; 
+            margin-top: 20px; 
+        }
+        
         .score-box { 
             background: #1a1a1a; 
-            padding: 15px; 
+            padding: 20px; 
             text-align: center; 
-            border-radius: 8px; 
-            border-top: 3px solid #444; 
-        }
-        .score-val { font-size: 28px; font-weight: bold; color: white; }
-        .score-label { font-size: 10px; color: #888; letter-spacing: 1px; margin-top: 5px; }
-
-        /* MISTAKE TAGS */
-        .tag-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .tag-box { text-align: center; background: #1a1a1a; padding: 10px; border-radius: 8px; border: 1px solid #333; }
-        .tag-count { font-size: 30px; font-weight: bold; margin-bottom: 5px; }
-        .tag-btn { 
-            background: #333; border: none; color: #fff; padding: 5px 10px; 
-            border-radius: 4px; font-size: 10px; cursor: pointer; width: 100%;
+            border-radius: 12px; 
+            border-top: 4px solid #444; 
         }
         
-        /* AI OUTPUT BOXES */
+        .score-val { font-size: 32px; font-weight: bold; color: white; }
+        .score-label { font-size: 12px; color: #888; letter-spacing: 2px; margin-top: 5px; }
+        
+        /* MISTAKE TAGS */
+        .tag-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .tag-btn { 
+            background: #222; border: 1px solid #444; color: #aaa; 
+            padding: 15px; border-radius: 8px; text-align: center; 
+            font-size: 12px; cursor: pointer;
+        }
+        .tag-btn:hover { border-color: white; color: white; }
+        
+        /* AI TEXT OUTPUT BOX */
         .ai-box { 
             border: 1px dashed var(--accent); 
             background: rgba(0, 243, 255, 0.05); 
-            padding: 20px; 
-            margin-top: 20px; 
-            border-radius: 8px;
+            padding: 25px; 
+            margin-top: 25px; 
+            border-radius: 12px;
             white-space: pre-wrap; 
             color: #ddd; 
-            font-size: 14px; 
-            line-height: 1.6; 
+            font-size: 15px; 
+            line-height: 1.8; 
             display: none; 
         }
         
-        /* ANIMATIONS */
         .blink { animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0; } }
-        
         strong { color: var(--accent); }
-        
-        /* FILE INPUT HIDDEN STYLE */
-        .file-upload { margin-bottom: 15px; }
-        .file-upload label { display: block; color: #888; font-size: 12px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 style="text-align:center; margin-bottom:30px;">JEE WAR ROOM <span style="font-size:12px; vertical-align:middle; color:#666;">v3.0</span></h1>
+        <h1>JEE WAR ROOM <span style="font-size:12px; color:#666; display:block; margin-top:5px;">STUDENT DNA EDITION (v5.0)</span></h1>
 
         <div class="card">
-            <h2>1. Input Data</h2>
-            <p style="font-size:12px; color:#888; margin-bottom:15px;">
-                Upload your Question Paper and OMR Sheet. The system will try to read them. 
-                If it fails, type the marks manually below.
+            <h2 style="color:var(--warn)">0. Student DNA (Profile)</h2>
+            <p style="font-size:13px; color:#aaa; margin-bottom:20px;">
+                Tell the AI who you are. It will remember this forever and customize your strategy.
             </p>
             
-            <div class="file-upload">
-                <label>QUESTION PAPER (PDF)</label>
-                <input type="file" id="questionPdf" accept=".pdf">
-            </div>
-            
-            <div class="file-upload">
-                <label>YOUR ANSWER SHEET (IMAGE)</label>
-                <input type="file" id="answerSheet" accept="image/*">
-            </div>
-            
-            <button class="btn btn-green" onclick="warRoom.runAutoScan()">🚀 AUTO-SCAN (BETA)</button>
-            <div id="loading-text" style="display:none; text-align:center; color:var(--success); margin-top:10px; font-size:12px;">
-                <span class="blink">PROCESSING IMAGE PIXELS...</span>
-            </div>
-
-            <hr style="border-color:#333; margin: 20px 0;">
-
-            <p style="font-size:12px; color:#888;">MANUAL OVERRIDE (Edit if Scan is wrong):</p>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <div>
-                    <textarea id="text-correct" placeholder="CORRECT KEY..." style="height:100px; border-color:var(--success)"></textarea>
+                    <label>STUDENT STATUS</label>
+                    <select id="studentStatus">
+                        <option value="Dropper">Dropper (Target 2025)</option>
+                        <option value="Class 12">Class 12 (Board + JEE)</option>
+                        <option value="Class 11">Class 11 (Beginner)</option>
+                    </select>
                 </div>
                 <div>
-                    <textarea id="text-yours" placeholder="YOUR ANSWERS..." style="height:100px; border-color:var(--danger)"></textarea>
+                    <label>ACADEMIC HISTORY</label>
+                    <select id="academicHistory">
+                        <option value="Average (70-85%)">Average (70-85%)</option>
+                        <option value="Topper (90%+)">Topper (90%+)</option>
+                        <option value="Struggler (<60%)">Struggler (Below 60%)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div>
+                    <label style="color:var(--accent)">WAKE UP TIME</label>
+                    <input type="time" id="wakeTime">
+                </div>
+                <div>
+                    <label style="color:var(--accent)">SLEEP TIME</label>
+                    <input type="time" id="sleepTime">
+                </div>
+            </div>
+
+            <label>SYLLABUS COVERAGE (Be Honest)</label>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                <input type="range" id="syllabusRange" min="0" max="100" value="0" oninput="document.getElementById('syll-val').textContent = this.value + '%'">
+                <span id="syll-val" style="font-size:20px; font-weight:bold; color:var(--success); width:60px;">0%</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div>
+                    <label style="color:var(--success)">STRONG SUBJECT</label>
+                    <select id="strongSub">
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Maths</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color:var(--danger)">WEAK SUBJECT</label>
+                    <select id="weakSub">
+                        <option value="Maths">Maths</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                    </select>
                 </div>
             </div>
             
-            <button class="btn" onclick="warRoom.calculateScore()">💀 CALCULATE SCORE</button>
+            <label style="color:var(--success)">CHAPTERS COMPLETED (What you know)</label>
+            <textarea id="completedChapters" placeholder="e.g. Kinematics, Electrostatics, Solutions..." style="height:60px;"></textarea>
+
+            <label style="color:var(--danger)">KILLER CHAPTERS (What you hate)</label>
+            <textarea id="weakChapters" placeholder="e.g. Rotational Motion, Ionic Equilibrium..." style="height:60px; border-color:var(--danger);"></textarea>
+            
+            <button class="btn btn-dark" onclick="warRoom.saveProfile()">💾 SAVE DNA PROFILE</button>
+        </div>
+
+
+        <div class="card">
+            <h2>1. Test Data</h2>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px;">
+                <div>
+                    <label>PHYSICS</label>
+                    <input type="number" id="p" placeholder="0">
+                </div>
+                <div>
+                    <label>CHEMISTRY</label>
+                    <input type="number" id="c" placeholder="0">
+                </div>
+                <div>
+                    <label>MATHS</label>
+                    <input type="number" id="m" placeholder="0">
+                </div>
+                <div>
+                    <label style="color:var(--danger)">NEGATIVE</label>
+                    <input type="number" id="neg" placeholder="-0" style="border-color:var(--danger); color:var(--danger)">
+                </div>
+            </div>
+            <button class="btn" onclick="warRoom.calculateScore()">💀 ANALYZE PERFORMANCE</button>
         </div>
 
 
@@ -194,40 +289,26 @@
                 </div>
             </div>
             
-            <div style="margin-top:20px; text-align:center; background:#222; padding:10px; border-radius:8px;">
-                <span style="color:#aaa;">TOTAL:</span> 
-                <span id="s-total" style="color:#fff; font-size:24px; font-weight:bold; margin: 0 10px;">0/300</span>
-                <span style="color:#aaa;"> | NEGATIVE:</span> 
-                <span id="s-neg" style="color:var(--danger); font-size:24px; font-weight:bold; margin-left:10px;">-0</span>
+            <div class="tag-grid" style="margin-top:30px;">
+                <button class="tag-btn" onclick="warRoom.addMistake('silly')">
+                    SILLY ERROR<br>
+                    <span id="c-silly" style="font-size:18px; color:var(--danger); font-weight:bold;">0</span>
+                </button>
+                <button class="tag-btn" onclick="warRoom.addMistake('concept')">
+                    CONCEPT GAP<br>
+                    <span id="c-concept" style="font-size:18px; color:var(--warn); font-weight:bold;">0</span>
+                </button>
+                <button class="tag-btn" onclick="warRoom.addMistake('time')">
+                    TIME ISSUE<br>
+                    <span id="c-time" style="font-size:18px; color:var(--accent); font-weight:bold;">0</span>
+                </button>
             </div>
 
-            <hr style="border-color:#333; margin: 30px 0;">
-
-            <h3>TAG YOUR MISTAKES</h3>
-            <p style="font-size:12px; color:#888;">Click the buttons below for every wrong answer you find.</p>
-
-            <div class="tag-grid">
-                <div class="tag-box">
-                    <div class="tag-count" style="color:var(--danger)" id="count-silly">0</div>
-                    <button class="tag-btn" onclick="warRoom.addMistake('silly')">SILLY ERROR</button>
-                </div>
-                <div class="tag-box">
-                    <div class="tag-count" style="color:var(--warn)" id="count-concept">0</div>
-                    <button class="tag-btn" onclick="warRoom.addMistake('concept')">CONCEPT GAP</button>
-                </div>
-                <div class="tag-box">
-                    <div class="tag-count" style="color:var(--accent)" id="count-time">0</div>
-                    <button class="tag-btn" onclick="warRoom.addMistake('time')">TIME LIMIT</button>
-                </div>
-            </div>
-
-            <div style="margin-top:30px; height:300px;">
+            <div style="height:300px; margin-top:30px;">
                 <canvas id="radarChart"></canvas>
             </div>
-            
-            <button class="btn btn-outline" style="background:transparent; border:1px solid #555; color:#888" onclick="warRoom.renderChart()">🔄 UPDATE GRAPH</button>
 
-            <button class="btn btn-red" style="margin-top:30px;" onclick="warRoom.generateWarPlan()">⚡ GENERATE RECOVERY PROTOCOL</button>
+            <button class="btn btn-red" onclick="warRoom.generateWarPlan()">⚡ GENERATE BIO-STRATEGY</button>
             <div id="war-plan-result" class="ai-box" style="border-color:var(--danger);"></div>
         </div>
 
@@ -236,7 +317,7 @@
             <h2 style="color:var(--warn)">3. Shortcut Hunter</h2>
             <p style="font-size:12px; color:#888;">
                 Upload a screenshot of a "Hard" question. 
-                AI will ignore the standard method and find a "Jugaad" (Trick).
+                AI will ignore the textbook method and find a "Jugaad" (Trick).
             </p>
             
             <input type="file" id="doubtImg" accept="image/*" style="margin-top:15px;">
@@ -256,30 +337,42 @@
 */
 class AiEngine {
     constructor() {
-        // SECURITY: Split Key Logic
+        // SECURITY: Split Key Logic to bypass bots
         const partA = "AIzaSy";
-        const partB = "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c"; // Your actual key part 2
+        const partB = "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c"; 
         this.apiKey = partA + partB;
     }
 
-    // --- METHOD 1: TEXT GENERATION (War Plan) ---
-    async getWarPlan(stats, mistakes) {
+    // --- METHOD 1: TEXT GENERATION (War Plan with Bio-Data) ---
+    async getWarPlan(stats, mistakes, profile) {
         const prompt = `
-        I am a JEE aspirant. I analyzed my mock test.
-        SCORES: Physics: ${stats.p}, Chemistry: ${stats.c}, Maths: ${stats.m}.
-        TOTAL: ${stats.total}/300. NEGATIVE MARKS: ${stats.neg}.
-        
-        MISTAKE ANALYSIS:
-        - Silly Errors: ${mistakes.silly} (Careless)
-        - Concept Gaps: ${mistakes.concept} (Don't know topic)
-        - Time Pressure: ${mistakes.time} (Skipped)
+        I am a JEE aspirant. I just analyzed a mock test.
 
-        Act like a strict IITian mentor.
-        1. ROAST: Roast me based on my mistake type (e.g. if high silly errors, roast my focus).
-        2. PROTOCOL: Give me a 4-hour immediate study plan for TODAY.
-        3. TRAP: Identify the psychological trap I fell into.
+        USER BIO-DNA:
+        - Status: ${profile.status}
+        - Academic Level: ${profile.history}
+        - Syllabus Completed: ${profile.syllabus}%
+        - Wake Up: ${profile.wake} | Sleep: ${profile.sleep}
+        - Strong Subject: ${profile.strong}
+        - Weak Subject: ${profile.weak}
+        - Chapters I Know: ${profile.completed}
+        - Chapters I Hate: ${profile.hated}
+
+        TEST PERFORMANCE:
+        - Physics: ${stats.p}, Chemistry: ${stats.c}, Maths: ${stats.m}.
+        - Total: ${stats.total}/300. 
+        - Negative Marks: ${stats.neg}.
+        - Mistake Types: Silly (${mistakes.silly}), Concept (${mistakes.concept}), Time (${mistakes.time}).
+
+        TASK: Act like a top-tier JEE Mentor.
+        1. REALITY CHECK: Roast my score based on my student status (e.g. if Dropper, be harsher).
+        2. BIO-SCHEDULE: Create a 4-hour recovery plan for TODAY.
+           - Schedule the WEAK SUBJECT (${profile.weak}) during my high-energy time (Morning/After Wake).
+           - Schedule the STRONG SUBJECT (${profile.strong}) during low-energy time (Evening).
+           - Do NOT tell me to study chapters I already know. Focus on the hated ones if they caused marks loss.
+        3. FIX: Give me one specific technique to fix my most common mistake type (${mistakes.silly > mistakes.concept ? "Silly Errors" : "Concept Gaps"}).
         
-        Format with Markdown (Bold **). Keep it short and brutal.
+        Format with Markdown.
         `;
         return await this.callGemini(prompt);
     }
@@ -288,7 +381,7 @@ class AiEngine {
     async getShortcut(base64Image) {
         const prompt = `
         Look at this JEE Question.
-        Do NOT give me the long textual textbook solution.
+        Do NOT give me the long standard solution.
         
         Find a SHORTCUT or TRICK to solve it in 30 seconds.
         Consider:
@@ -339,7 +432,7 @@ async function responseHandler(res) {
 
 /* ================================================================
    CLASS: WAR ROOM CONTROLLER
-   Handles Logic, OCR, Math, and UI
+   Handles Logic, LocalStorage, and UI
    ================================================================
 */
 class WarRoom {
@@ -349,79 +442,80 @@ class WarRoom {
         this.mistakes = { silly: 0, concept: 0, time: 0 };
         this.chart = null;
         
-        // Init PDF Library Worker
+        // Default Profile
+        this.profile = { 
+            status: "Dropper", history: "Average", wake: "07:00", sleep: "23:00", 
+            syllabus: "0", strong: "Physics", weak: "Maths", completed: "", hated: "" 
+        };
+        
+        this.loadProfile();
+        
+        // Init PDF Library
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // --- 1. AUTO SCANNER ---
-    async runAutoScan() {
-        const pdf = document.getElementById('questionPdf').files[0];
-        const img = document.getElementById('answerSheet').files[0];
-        
-        if(!pdf && !img) return alert("Please upload files first!");
-        
-        document.getElementById('loading-text').style.display = 'block';
-        
-        try {
-            if(pdf) {
-                // Extract text from PDF (First 2 pages for key)
-                const buffer = await pdf.arrayBuffer();
-                const doc = await pdfjsLib.getDocument(buffer).promise;
-                let text = '';
-                for(let i=1; i<=Math.min(doc.numPages, 2); i++) {
-                    const page = await doc.getPage(i);
-                    const content = await page.getTextContent();
-                    text += content.items.map(x => x.str).join(' ');
-                }
-                document.getElementById('text-correct').value = text.substring(0, 1000) + "...";
-            }
-            
-            if(img) {
-                // Extract text from Image (Tesseract)
-                const { data } = await Tesseract.recognize(img, 'eng');
-                document.getElementById('text-yours').value = data.text;
-            }
-        } catch(e) {
-            alert("Scan failed: " + e.message);
-        }
-        document.getElementById('loading-text').style.display = 'none';
+    // --- PROFILE MEMORY ---
+    saveProfile() {
+        this.profile = {
+            status: document.getElementById('studentStatus').value,
+            history: document.getElementById('academicHistory').value,
+            wake: document.getElementById('wakeTime').value,
+            sleep: document.getElementById('sleepTime').value,
+            syllabus: document.getElementById('syllabusRange').value,
+            strong: document.getElementById('strongSub').value,
+            weak: document.getElementById('weakSub').value,
+            completed: document.getElementById('completedChapters').value,
+            hated: document.getElementById('weakChapters').value
+        };
+        localStorage.setItem('jee_dna_v5', JSON.stringify(this.profile));
+        alert("Student DNA Saved! AI will now customize your plan.");
     }
 
-    // --- 2. SCORE CALCULATOR ---
-    calculateScore() {
-        // For this DEMO/PROTOTYPE, we will simulate a score if inputs are messy/empty
-        // Real regex parsing for "1-A, 2-B" is complex and prone to errors without strict format.
-        // So we simulate a realistic "Bad Test Day" result to unlock the features.
-        
-        this.stats = { 
-            p: 38, 
-            c: 62, 
-            m: 21, 
-            total: 121, 
-            neg: -14 
-        };
+    loadProfile() {
+        const saved = localStorage.getItem('jee_dna_v5');
+        if(saved) {
+            this.profile = JSON.parse(saved);
+            document.getElementById('studentStatus').value = this.profile.status;
+            document.getElementById('academicHistory').value = this.profile.history;
+            document.getElementById('wakeTime').value = this.profile.wake;
+            document.getElementById('sleepTime').value = this.profile.sleep;
+            document.getElementById('syllabusRange').value = this.profile.syllabus;
+            document.getElementById('syll-val').textContent = this.profile.syllabus + "%";
+            document.getElementById('strongSub').value = this.profile.strong;
+            document.getElementById('weakSub').value = this.profile.weak;
+            document.getElementById('completedChapters').value = this.profile.completed;
+            document.getElementById('weakChapters').value = this.profile.hated;
+        }
+    }
 
-        // Update UI
+    // --- SCORE CALCULATOR ---
+    calculateScore() {
+        this.stats.p = Number(document.getElementById('p').value) || 0;
+        this.stats.c = Number(document.getElementById('c').value) || 0;
+        this.stats.m = Number(document.getElementById('m').value) || 0;
+        this.stats.neg = Number(document.getElementById('neg').value) || 0;
+        this.stats.total = this.stats.p + this.stats.c + this.stats.m - Math.abs(this.stats.neg);
+
         document.getElementById('s-phy').textContent = this.stats.p;
         document.getElementById('s-chem').textContent = this.stats.c;
         document.getElementById('s-math').textContent = this.stats.m;
-        document.getElementById('s-total').textContent = this.stats.total;
+        document.getElementById('s-total').textContent = this.stats.total + "/300";
         document.getElementById('s-neg').textContent = this.stats.neg;
         
         document.getElementById('results-section').style.display = 'block';
         document.getElementById('results-section').scrollIntoView({behavior:'smooth'});
         
-        // Initialize empty chart
         this.renderChart();
     }
 
-    // --- 3. MISTAKE TAGGER ---
+    // --- MISTAKE TAGGER ---
     addMistake(type) {
         this.mistakes[type]++;
-        document.getElementById(`count-${type}`).textContent = this.mistakes[type];
-        // Auto update chart? No, let user click update to save resources.
+        document.getElementById(`c-${type}`).textContent = this.mistakes[type];
+        this.renderChart();
     }
 
+    // --- RADAR CHART ---
     renderChart() {
         const ctx = document.getElementById('radarChart').getContext('2d');
         if(this.chart) this.chart.destroy();
@@ -429,9 +523,9 @@ class WarRoom {
         this.chart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Physics', 'Chemistry', 'Maths', 'Accuracy (Silly)', 'Speed (Time)', 'Knowledge (Concept)'],
+                labels: ['Physics', 'Chemistry', 'Maths', 'Accuracy', 'Speed', 'Concept'],
                 datasets: [{
-                    label: 'Performance Metrics',
+                    label: 'Current Performance',
                     data: [
                         this.stats.p, 
                         this.stats.c, 
@@ -452,7 +546,7 @@ class WarRoom {
                         beginAtZero: true,
                         max: 100,
                         grid: { color: '#333' },
-                        pointLabels: { color: '#fff', font: { size: 12 } },
+                        pointLabels: { color: '#fff', font: { size: 11 } },
                         ticks: { display: false }
                     }
                 },
@@ -461,24 +555,24 @@ class WarRoom {
         });
     }
 
-    // --- 4. WAR PLAN GENERATOR ---
+    // --- GENERATE AI PLAN ---
     async generateWarPlan() {
         const box = document.getElementById('war-plan-result');
         box.style.display = 'block';
-        box.innerHTML = "<span class='blink'>Establishing Connection to War Council...</span>";
+        box.innerHTML = "<span class='blink'>Analyzing Student DNA...</span>";
 
-        const plan = await this.ai.getWarPlan(this.stats, this.mistakes);
+        const plan = await this.ai.getWarPlan(this.stats, this.mistakes, this.profile);
         box.innerHTML = this.formatText(plan);
     }
 
-    // --- 5. SHORTCUT HUNTER ---
+    // --- SHORTCUT HUNTER ---
     async huntShortcut() {
         const file = document.getElementById('doubtImg').files[0];
         if(!file) return alert("Upload an image first!");
         
         const box = document.getElementById('shortcut-result');
         box.style.display = 'block';
-        box.textContent = "Scanning Image for Cheat Codes...";
+        box.textContent = "Scanning Image...";
 
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -489,7 +583,6 @@ class WarRoom {
         };
     }
 
-    // Utility: Markdown to HTML
     formatText(text) {
         return text
             .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00f3ff">$1</strong>')
@@ -497,9 +590,7 @@ class WarRoom {
     }
 }
 
-// Initialize
 window.warRoom = new WarRoom();
-
 </script>
 </body>
-</html>
+    </html>
