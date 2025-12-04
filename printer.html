@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRINT MASTER PRO</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <style>
+        /* --- APP THEME --- */
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --primary: #2563eb;
+            --accent: #22c55e;
+            --danger: #ef4444;
+            --text: #ffffff;
+            --border: #333;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; height: 100dvh;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- VIEWS --- */
+        .view-section { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .view-section.active { display: flex; }
+
+        /* --- HEADER --- */
+        .app-bar {
+            height: 60px; background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; z-index: 50;
+        }
+        .logo { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .badge { background: var(--primary); font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; display: inline-block; margin-right: 5px;}
+        .status-dot.online { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+
+        /* --- WORKSPACE --- */
+        .workspace {
+            flex: 1; position: relative;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; 
+        }
+
+        /* VIRTUAL PAPER (Correct A4 Ratio) */
+        #virtual-paper {
+            width: 210mm; 
+            height: 297mm;
+            background: white;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform-origin: center;
+            transition: filter 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .paper-content { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* LAYOUT GRIDS */
+        .passport-grid {
+            display: flex; flex-wrap: wrap; align-content: flex-start;
+            padding: 10mm; gap: 5mm; width: 100%; height: 100%;
+        }
+        .passport-photo { width: 40mm; height: 50mm; object-fit: cover; border: 1px solid #ddd; }
+
+        .card-layout {
+            display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
+        }
+        .photo-4x6 { width: 101mm; height: 152mm; object-fit: cover; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+        /* --- CONTROLS --- */
+        .control-panel {
+            background: var(--surface);
+            padding: (12px+env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .toggle-row {
+            display: flex; background: #000;
+            padding: 3px; border-radius: 8px; border: 1px solid var(--border);
+        }
+        .toggle-btn {
+            flex: 1; padding: 10px; border: none; background: none;
+            color: #666; font-weight: bold; font-size: 11px;
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .toggle-btn.active { background: #333; color: white; }
+        .toggle-btn.color-active { background: var(--primary); color: white; }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 8px; }
+        
+        .btn {
+            padding: 12px; border: none; border-radius: 8px;
+            font-weight: bold; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            color: white;
+        }
+        .btn-dark { background: #333; }
+        .btn-blue { background: var(--primary); }
+        .btn-print { background: var(--accent); color: black; }
+
+        /* --- CUSTOMER UPLOAD VIEW --- */
+        .customer-container {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px; text-align: center; background: #111;
+        }
+        .upload-zone {
+            width: 100%; max-width: 300px; height: 300px;
+            border: 2px dashed #444; border-radius: 20px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin-bottom: 20px; background: #222;
+        }
+        .upload-spinner {
+            width: 40px; height: 40px; border: 4px solid #333;
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- QR MODAL --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+        }
+        .modal-card {
+            background: white; padding: 30px; border-radius: 20px;
+            text-align: center; width: 90%; max-width: 350px;
+        }
+        #qrcode { margin: 20px auto; }
+
+        /* --- FILTERS --- */
+        .grayscale-mode { filter: grayscale(100%) contrast(120%); }
+
+        /* --- PRINT FIX --- */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body, html { margin: 0; padding: 0; background: white !important; height: 297mm; width: 210mm; overflow: hidden; }
+            body * { visibility: hidden; }
+            #virtual-paper, #virtual-paper * { visibility: visible; }
+            #virtual-paper {
+                position: fixed !important; left: 0 !important; top: 0 !important;
+                width: 210mm !important; height: 297mm !important;
+                margin: 0 !important; padding: 0 !important; transform: none !important;
+                box-shadow: none !important; border: none !important; overflow: hidden !important;
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+            .app-bar, .control-panel, .modal-overlay { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="view-owner" class="view-section active">
+        <div class="app-bar">
+            <div class="logo">
+                <i data-lucide="printer"></i> PRINT MASTER
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="connection-status" style="font-size:10px; color:#666;">
+                    <span class="status-dot" id="status-dot"></span> <span id="status-text">OFFLINE</span>
+                </div>
+                <div class="badge">PRO</div>
+            </div>
+        </div>
+
+        <div class="workspace" id="workspace">
+            <div id="virtual-paper">
+                <div id="empty-state" style="text-align:center; color:#444;">
+                    <i data-lucide="scan-line" size="48" style="opacity:0.3; margin-bottom:10px;"></i><br>
+                    <span style="font-size:12px; opacity:0.5;">READY TO SCAN OR RECEIVE</span>
+                </div>
+                <div id="paper-body" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="toggle-row">
+                <button class="toggle-btn active" onclick="setLayout('fit')" id="btn-fit">FULL (A4)</button>
+                <button class="toggle-btn" onclick="setLayout('passport')" id="btn-pass">PASSPORT</button>
+                <button class="toggle-btn" onclick="setLayout('4x6')" id="btn-4x6">4x6</button>
+            </div>
+            
+            <div class="toggle-row">
+                <button class="toggle-btn color-active" onclick="setColor(true)" id="btn-col">COLOR</button>
+                <button class="toggle-btn" onclick="setColor(false)" id="btn-bw">B&W DOC</button>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-dark" onclick="startCamera()">
+                    <i data-lucide="camera"></i> 
+                </button>
+                <button class="btn btn-blue" onclick="showShareModal()">
+                    <i data-lucide="qr-code"></i> GET
+                </button>
+                <button class="btn btn-print" onclick="safePrint()">
+                    <i data-lucide="printer"></i> PRINT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-customer" class="view-section" style="background: black;">
+        <div class="customer-container">
+            <h2 style="margin-bottom: 5px;">Send to Printer</h2>
+            <p style="color:#666; font-size: 12px; margin-bottom: 30px;">Select a file to send instantly.</p>
+            
+            <label class="upload-zone" id="drop-zone">
+                <div id="upload-idle">
+                    <i data-lucide="upload-cloud" size="64" style="color:var(--primary); margin-bottom:15px;"></i><br>
+                    <span style="color:#888; font-weight:bold;">Tap to Select File</span>
+                </div>
+                <div id="upload-loading" class="upload-spinner"></div>
+                <div id="upload-success" style="display:none; color:var(--accent);">
+                    <i data-lucide="check-circle" size="64" style="margin-bottom:15px;"></i><br>
+                    <b>SENT!</b>
+                </div>
+                <input type="file" id="customer-file" accept="image/*" hidden onchange="processP2PUpload(event)">
+            </label>
+            <div id="conn-msg" style="color:#444; font-size:10px; margin-top:10px;">Connecting to printer...</div>
+        </div>
+    </div>
+
+    <input type="file" id="local-file" accept="image/*,application/pdf" hidden onchange="handleFile(event)" capture="environment">
+    
+    <div id="modal-qr" class="modal-overlay" onclick="this.style.display='none'">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <h3 style="color:black; margin:0 0 10px 0;">Scan to Send</h3>
+            <p style="color:#666; font-size:12px; margin-bottom:20px;">Scan this with your phone to upload photos directly here.</p>
+            <div id="qrcode"></div>
+            <p id="peer-status-modal" style="font-size:10px; color:blue; margin-top:10px;">Generating Link...</p>
+            <button onclick="document.getElementById('modal-qr').style.display='none'" class="btn btn-dark" style="width:100%; margin-top:20px;">Close</button>
+        </div>
+    </div>
+
+<script>
+    // --- GLOBAL STATE ---
+    let currentFile = null;
+    let currentLayout = 'fit';
+    let myPeerId = null;
+    let peer = null;
+    let conn = null; // Connection object
+
+    // --- INIT ---
+    window.addEventListener('load', async () => {
+        try {
+            // Fix PDF Worker
+            if (window.pdfjsLib) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+
+            // Init Icons
+            if (window.lucide) window.lucide.createIcons();
+            
+            // Init Screen Fit
+            fitPaperToScreen();
+            window.addEventListener('resize', fitPaperToScreen);
+
+            // Check Mode (Owner or Customer)
+            const urlParams = new URLSearchParams(window.location.search);
+            const remoteId = urlParams.get('remote');
+
+            if (remoteId) {
+                initCustomerMode(remoteId);
+            } else {
+                initOwnerMode();
+            }
+        } catch(e) {
+            console.error("Initialization error:", e);
+        }
+    });
+
+    // ==========================================
+    // OWNER LOGIC (RECEIVER)
+    // ==========================================
+    function initOwnerMode() {
+        document.getElementById('view-owner').classList.add('active');
+        
+        // Initialize PeerJS (No API Key needed for default cloud)
+        peer = new Peer();
+
+        peer.on('open', (id) => {
+            myPeerId = id;
+            updateStatus('READY', true);
+        });
+
+        peer.on('connection', (connection) => {
+            conn = connection;
+            // Handle incoming data
+            conn.on('data', (data) => {
+                if (data.image) {
+                    currentFile = data.image;
+                    renderContent();
+                    // Close modal if open
+                    document.getElementById('modal-qr').style.display = 'none';
+                    // Confirm receipt
+                    conn.send({status: 'received'});
+                }
+            });
+        });
+
+        peer.on('error', (err) => {
+            console.error(err);
+            updateStatus('ERROR', false);
+        });
+    }
+
+    function updateStatus(text, isOnline) {
+        const dot = document.getElementById('status-dot');
+        const txt = document.getElementById('status-text');
+        if(dot && txt) {
+            txt.innerText = text;
+            if(isOnline) dot.classList.add('online');
+            else dot.classList.remove('online');
+        }
+    }
+
+    // 1. Camera / Local File
+    window.startCamera = () => {
+        document.getElementById('local-file').click();
+    }
+
+    window.handleFile = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        loadFile(file);
+    }
+
+    // 2. PeerJS Share Logic
+    window.showShareModal = () => {
+        const modal = document.getElementById('modal-qr');
+        const qrContainer = document.getElementById('qrcode');
+        const statusMsg = document.getElementById('peer-status-modal');
+        
+        modal.style.display = 'flex';
+        qrContainer.innerHTML = ''; // Clear old QR
+
+        if (!myPeerId) {
+            statusMsg.innerText = "Network initializing... please wait.";
+            // Retry in a moment if peer isn't ready
+            setTimeout(window.showShareModal, 1000);
+            return;
+        }
+
+        statusMsg.innerText = "Waiting for scan...";
+
+        // Generate URL: Current Page + ?remote=PEER_ID
+        const shareUrl = `${window.location.href.split('?')[0]}?remote=${myPeerId}`;
+        
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+                text: shareUrl,
+                width: 200,
+                height: 200
+            });
+        }
+    }
+
+    // ==========================================
+    // CUSTOMER LOGIC (SENDER)
+    // ==========================================
+    function initCustomerMode(remoteId) {
+        document.getElementById('view-owner').classList.remove('active');
+        document.getElementById('view-customer').classList.add('active');
+        
+        const statusDiv = document.getElementById('conn-msg');
+        statusDiv.innerText = "Connecting to Printer...";
+
+        // Init Sender Peer
+        peer = new Peer();
+
+        peer.on('open', (id) => {
+            // Connect to the Owner ID from URL
+            conn = peer.connect(remoteId);
+
+            conn.on('open', () => {
+                statusDiv.innerText = "Connected! Ready to send.";
+                statusDiv.style.color = "#22c55e";
+            });
+
+            conn.on('data', (data) => {
+                if(data.status === 'received') {
+                    document.getElementById('upload-loading').style.display = 'none';
+                    document.getElementById('upload-success').style.display = 'block';
+                }
+            });
+
+            conn.on('error', (err) => {
+                statusDiv.innerText = "Connection Failed. Try Rescanning.";
+                statusDiv.style.color = "red";
+            });
+        });
+    }
+
+    window.processP2PUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!conn || !conn.open) {
+            alert("Not connected to printer. Please refresh or rescan.");
+            return;
+        }
+
+        // UI Updates
+        document.getElementById('upload-idle').style.display = 'none';
+        document.getElementById('upload-loading').style.display = 'block';
+
+        // Compress and Send
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                // Compress Logic (Max 1000px width)
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxDim = 1200; // Slightly larger for better quality
+
+                if (width > height && width > maxDim) {
+                    height *= maxDim / width;
+                    width = maxDim;
+                } else if (height > maxDim) {
+                    width *= maxDim / height;
+                    height = maxDim;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Get Base64
+                const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // SEND VIA P2P
+                conn.send({ image: base64 });
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ==========================================
+    // SHARED PRINT LOGIC
+    // ==========================================
+    
+    function loadFile(file) {
+        document.getElementById('empty-state').style.display = 'none';
+        
+        if (file.type === 'application/pdf') {
+            const reader = new FileReader();
+            reader.onload = async function(ev) { 
+                if (window.pdfjsLib) {
+                    try {
+                        const loadingTask = pdfjsLib.getDocument(ev.target.result);
+                        const pdf = await loadingTask.promise;
+                        const page = await pdf.getPage(1);
+                        const viewport = page.getViewport({scale: 2});
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        await page.render({canvasContext: ctx, viewport: viewport}).promise;
+                        currentFile = canvas.toDataURL('image/jpeg');
+                        renderContent();
+                    } catch (err) {
+                        alert("Error reading PDF. Try an image.");
+                    }
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            const reader = new FileReader();
+            reader.onload = function(ev) { 
+                currentFile = ev.target.result;
+                renderContent();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function renderContent() {
+        const container = document.getElementById('paper-body');
+        document.getElementById('empty-state').style.display = 'none';
+        container.innerHTML = '';
+        
+        if (currentLayout === 'passport') {
+            container.className = 'passport-grid';
+            container.classList.remove('card-layout');
+            for(let i=0; i<8; i++) {
+                const img = document.createElement('img');
+                img.src = currentFile;
+                img.className = 'passport-photo';
+                container.appendChild(img);
+            }
+        } else if (currentLayout === '4x6') {
+            container.className = 'card-layout';
+            container.classList.remove('passport-grid');
+            const img = document.createElement('img');
+            img.src = currentFile;
+            img.className = 'photo-4x6';
+            container.appendChild(img);
+        } else {
+            container.className = '';
+            container.classList.remove('passport-grid', 'card-layout');
+            const img = document.createElement('img');
+            img.src = currentFile;
+            img.className = 'paper-content';
+            container.appendChild(img);
+        }
+    }
+
+    // UI HELPER
+    function fitPaperToScreen() {
+        const workspace = document.getElementById('workspace');
+        if(!workspace) return;
+        const paper = document.getElementById('virtual-paper');
+        const padding = 20; 
+        const availableW = workspace.offsetWidth - (padding * 2);
+        const availableH = workspace.offsetHeight - (padding * 2);
+        const paperW = 210 * 3.78; 
+        const paperH = 297 * 3.78; 
+        const scale = Math.min(availableW / paperW, availableH / paperH);
+        paper.style.transform = `scale(${scale})`;
+    }
+
+    // CONTROLS EXPORT
+    window.setLayout = (mode) => {
+        currentLayout = mode;
+        ['btn-fit', 'btn-pass', 'btn-4x6'].forEach(id => document.getElementById(id).classList.remove('active'));
+        document.getElementById(mode === 'fit' ? 'btn-fit' : mode === 'passport' ? 'btn-pass' : 'btn-4x6').classList.add('active');
+        if(currentFile) renderContent();
+    }
+
+    window.setColor = (isColor) => {
+        const paper = document.getElementById('virtual-paper');
+        document.getElementById('btn-col').className = isColor ? 'toggle-btn color-active' : 'toggle-btn';
+        document.getElementById('btn-bw').className = !isColor ? 'toggle-btn active' : 'toggle-btn';
+        if (isColor) paper.classList.remove('grayscale-mode');
+        else paper.classList.add('grayscale-mode');
+    }
+
+    window.safePrint = () => {
+        if(!currentFile) { alert("Please select a file first"); return; }
+        setTimeout(() => { window.print(); }, 800);
+    }
+</script>
+</body>
+</html>
