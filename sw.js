@@ -6,6 +6,10 @@ const ASSETS = [
   '/manifest.json',   // The Icon
   '/anlyzer.html',    // The jee anlyzer
   '/Jee+board.html',      // The jee+board
+  '/Focus.html',      // The focus
+  '/printer.html',      // The printer
+  '/security.html',      // The security
+  '/Neuro.html',      // The Neuro
   // EXTERNAL LIBRARIES (Required for JEE OS to work offline)
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.development.js',
