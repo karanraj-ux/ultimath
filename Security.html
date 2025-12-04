@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <title>TITAN v6</title>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* --- MILITARY INDUSTRIAL DESIGN --- */
+        :root {
+            --bg: #000000;
+            --panel: #111111;
+            --accent: #ff5500; /* Titan Orange */
+            --text-main: #eeeeee;
+            --text-dim: #666666;
+            --border: #222222;
+            --success: #00ff88;
+            --danger: #ff0044;
+            --blue: #00ccff;
+            --purple: #d500f9;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            margin: 0; height: 100dvh;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-bar {
+            display: flex; height: 70px; background: var(--panel);
+            border-top: 1px solid var(--border); overflow-x: auto;
+        }
+        .nav-btn {
+            flex: 1; min-width: 60px; border: none; background: none; color: var(--text-dim);
+            font-size: 9px; font-weight: bold; letter-spacing: 1px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+        }
+        .nav-btn.active { color: var(--accent); background: rgba(255, 85, 0, 0.05); border-top: 2px solid var(--accent); }
+
+        /* --- SCREENS --- */
+        .screen { flex: 1; display: none; flex-direction: column; padding: 15px; overflow-y: auto; position: relative; }
+        .screen.active { display: flex; }
+
+        /* --- CARDS & UI --- */
+        .card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 12px; padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .header {
+            font-size: 11px; font-weight: 900; color: var(--text-dim); letter-spacing: 2px;
+            margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* BUTTONS */
+        .btn {
+            width: 100%; padding: 15px; border-radius: 8px; border: none;
+            font-weight: bold; font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-orange { background: var(--accent); color: white; }
+        .btn-dark { background: #222; color: #ccc; border: 1px solid #444; }
+        .btn-green { background: var(--success); color: black; }
+        .btn-blue { background: var(--blue); color: black; }
+        .btn-red { background: var(--danger); color: white; }
+        .btn-purple { background: var(--purple); color: white; }
+
+        /* INPUTS */
+        input {
+            width: 100%; background: #000; border: 1px solid #333; color: white;
+            padding: 15px; border-radius: 8px; font-size: 16px; margin-bottom: 10px;
+        }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        /* --- SENTRY SPECIFIC --- */
+        .arm-ring {
+            width: 180px; height: 180px; border-radius: 50%;
+            border: 4px solid #333; margin: 20px auto;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .arm-ring.armed { border-color: var(--accent); box-shadow: 0 0 50px rgba(255, 85, 0, 0.3); animation: breathe 2s infinite; }
+        
+        #blackout {
+            position: fixed; inset: 0; background: black; z-index: 9999;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+        }
+        #blackout.flash { animation: strobe 0.2s infinite; }
+
+        /* --- LABOUR SPECIFIC --- */
+        .worker-item {
+            background: #181818; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+            border-left: 4px solid #444;
+        }
+        .w-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .w-name { font-weight: bold; font-size: 16px; color: white; }
+        .w-rate { font-family: monospace; color: var(--text-dim); font-size: 12px; }
+        
+        .w-controls { display: flex; gap: 10px; align-items: center; background: #000; padding: 5px; border-radius: 8px; }
+        .ctrl-btn { width: 40px; height: 40px; border-radius: 6px; border: none; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .add-day { background: var(--success); color: black; }
+        .sub-day { background: #333; color: white; }
+        .day-count { flex: 1; text-align: center; font-weight: bold; font-family: monospace; font-size: 18px; }
+        
+        .w-total { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #333; display: flex; justify-content: space-between; align-items: center; }
+        .pay-val { font-size: 20px; font-weight: bold; color: var(--accent); }
+
+        /* --- MEMORY (REMINDER) SPECIFIC --- */
+        .task-item {
+            background: #181818; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+            border-left: 4px solid #444; display: flex; justify-content: space-between; align-items: center;
+        }
+        .task-item.udhaar { border-left-color: var(--danger); }
+        .task-item.done { opacity: 0.5; text-decoration: line-through; border-left-color: var(--success); }
+        
+        .task-info { flex: 1; }
+        .task-title { font-weight: bold; font-size: 16px; color: white; }
+        .task-meta { font-size: 12px; color: #888; margin-top: 4px; display: flex; gap: 10px; }
+        .task-amt { color: var(--danger); font-weight: bold; font-family: monospace; }
+        .total-badge { background: var(--panel); padding: 10px; border-radius: 8px; border: 1px solid var(--danger); color: var(--danger); font-weight: bold; text-align: center; margin-bottom: 10px; }
+
+        /* --- SLATE SPECIFIC --- */
+        #slate-canvas {
+            width: 100%; height: 100%; touch-action: none;
+            background: #000; cursor: crosshair;
+        }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #333; margin-top: 10px; cursor: pointer; }
+        .color-dot.active { border-color: white; transform: scale(1.2); }
+
+        /* --- LENS SPECIFIC --- */
+        .lens-view {
+            width: 100%; height: 100%; object-fit: cover; transform-origin: center;
+        }
+        .lens-overlay {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 12px; border: 1px solid #333;
+        }
+        .range-slider {
+            width: 100%; margin-bottom: 15px; accent-color: var(--blue);
+        }
+
+        /* --- BILL PREVIEW OVERLAY --- */
+        #bill-preview {
+            position: fixed; inset: 0; background: #fff; color: black; z-index: 9000;
+            display: none; flex-direction: column; overflow-y: auto; padding: 20px;
+        }
+        .bill-paper {
+            background: white; width: 100%; max-width: 400px; margin: 0 auto;
+            border: 1px dashed #ccc; padding: 20px; font-family: 'Courier New', monospace;
+        }
+        .bill-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #ccc; padding: 5px 0; }
+        .bill-total { font-weight: bold; border-top: 2px solid black; padding-top: 10px; margin-top: 10px; text-align: right; font-size: 18px; }
+        
+        /* STROBE OVERLAY */
+        #strobe-layer { position: fixed; inset: 0; background: white; z-index: 9000; display: none; }
+
+        @keyframes breathe { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        @keyframes strobe { 0% { background: var(--accent); } 50% { background: black; } }
+
+        /* PRINT STYLES */
+        @media print {
+            body * { visibility: hidden; }
+            #bill-preview, #bill-preview * { visibility: visible; }
+            #bill-preview { position: absolute; left: 0; top: 0; display: block !important; background: white; color: black; }
+            .no-print { display: none; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. SENTRY (SECURITY) -->
+    <div id="screen-sentry" class="screen active">
+        <div class="card" style="text-align: center;">
+            <div class="header">SHOP SENTRY STATUS</div>
+            <div id="status-ring" class="arm-ring" onclick="startArming()">
+                <i data-lucide="shield" size="48" id="lock-icon" style="color: #555;"></i>
+                <div id="status-text" style="margin-top: 15px; font-weight: bold; color: #555;">TAP TO ARM</div>
+            </div>
+            <div style="font-size: 11px; color: #666; margin-top: 15px;">
+                BLACKOUT MODE � 10s AUTO-CUTOFF � LOGGING
+            </div>
+        </div>
+
+        <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="header">
+                <span>INCIDENT LOGS</span>
+                <span onclick="clearLogs()" style="cursor:pointer; color: #888;">CLEAR</span>
+            </div>
+            <div id="log-list" style="overflow-y: auto; flex: 1;">
+                <div style="text-align: center; color: #444; padding: 20px;">System Secure.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. LABOUR (ROSTER) -->
+    <div id="screen-labour" class="screen">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="btn btn-dark" style="flex:1; font-size:12px; padding:10px;" onclick="showLabourTab('active')">ACTIVE WORKERS</button>
+            <button class="btn btn-dark" style="flex:1; font-size:12px; padding:10px; border-color:#444;" onclick="showLabourTab('history')">HISTORY</button>
+        </div>
+
+        <div id="view-active-workers">
+            <div class="card">
+                <div class="header">ADD NEW WORKER</div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="w-name" placeholder="Name" style="flex: 2;">
+                    <input type="number" id="w-rate" placeholder="Rate" style="flex: 1;">
+                </div>
+                <button class="btn btn-green" onclick="addWorker()" style="padding: 10px; font-size: 14px;">
+                    <i data-lucide="plus"></i> ADD TO LIST
+                </button>
+            </div>
+            
+            <button class="btn btn-blue" onclick="generateMasterBill()" style="margin-bottom: 20px;">
+                <i data-lucide="printer"></i> GENERATE MASTER BILL (PDF)
+            </button>
+
+            <div id="worker-list" style="padding-bottom: 80px;">
+                <!-- Workers injected here -->
+            </div>
+        </div>
+
+        <div id="view-history-workers" style="display:none;">
+            <div class="card">
+                <div class="header">PAST SETTLEMENTS</div>
+                <div id="history-list" style="max-height:400px; overflow-y:auto;"></div>
+                <button class="btn btn-dark" onclick="clearHistory()" style="margin-top:10px; padding:10px; font-size:12px;">CLEAR HISTORY</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CONNECT (TOOLS) -->
+    <div id="screen-connect" class="screen">
+        <div class="card">
+            <div class="header">WHATSAPP DIRECT</div>
+            <input type="number" id="wa-input" placeholder="Enter Mobile Number">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-green" onclick="openWA()">
+                    <i data-lucide="message-circle"></i> CHAT
+                </button>
+                <button class="btn btn-dark" onclick="pasteNumber()">
+                    <i data-lucide="clipboard"></i> PASTE
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="header">EMERGENCY SIGNAL</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-orange" onclick="toggleTorch()">
+                    <i data-lucide="flashlight"></i> SCREEN
+                </button>
+                <button class="btn btn-dark" style="color: var(--accent); border-color: var(--accent);" onclick="toggleStrobe()">
+                    <i data-lucide="zap"></i> STROBE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MEMORY PRO (REMINDERS) -->
+    <div id="screen-memory" class="screen">
+        <div id="total-udhaar" class="total-badge">
+            TOTAL PENDING: 0
+        </div>
+
+        <div class="card">
+            <div class="header">NEW REMINDER / UDHAAR</div>
+            <input type="text" id="mem-text" placeholder="Description (e.g. Raju Udhaar)">
+            <input type="number" id="mem-amt" placeholder="Amount (Optional)">
+            <button class="btn btn-purple" onclick="addMemory()" style="padding: 10px; font-size: 14px;">
+                <i data-lucide="bell-plus"></i> SAVE MEMORY
+            </button>
+        </div>
+
+        <div id="memory-list" style="padding-bottom: 80px;">
+            <!-- Memories injected here -->
+        </div>
+    </div>
+
+    <!-- 5. SLATE (DRAWING) -->
+    <div id="screen-slate" class="screen" style="padding: 0;">
+        <div style="position: absolute; top: 10px; left: 10px; z-index: 50; background: #111; padding: 5px; border-radius: 8px; border: 1px solid #333;">
+            <div class="color-dot active" style="background: white;" onclick="setPen('white')"></div>
+            <div class="color-dot" style="background: #ff5500;" onclick="setPen('#ff5500')"></div>
+            <div class="color-dot" style="background: #00ff88;" onclick="setPen('#00ff88')"></div>
+        </div>
+        
+        <button onclick="clearCanvas()" style="position: absolute; top: 10px; right: 10px; z-index: 50; background: #333; color: white; border: none; padding: 10px; border-radius: 8px;">
+            <i data-lucide="trash-2"></i>
+        </button>
+
+        <canvas id="slate-canvas"></canvas>
+    </div>
+
+    <!-- 6. LENS (MAGNIFIER) -->
+    <div id="screen-lens" class="screen" style="padding:0; background:black;">
+        <video id="lens-video" class="lens-view" autoplay playsinline></video>
+        <canvas id="lens-canvas" class="lens-view" style="display:none;"></canvas>
+        
+        <div class="lens-overlay">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:#aaa;">
+                <span>ZOOM LEVEL</span>
+                <span id="zoom-val">1x</span>
+            </div>
+            <input type="range" min="1" max="5" step="0.1" value="1" class="range-slider" oninput="setZoom(this.value)">
+            
+            <div style="display:flex; gap:10px;">
+                <button id="btn-freeze" class="btn btn-blue" onclick="toggleFreeze()">
+                    <i data-lucide="snowflake"></i> FREEZE
+                </button>
+                <button class="btn btn-dark" onclick="startCamera()">
+                    <i data-lucide="refresh-ccw"></i> RESET
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchTab('sentry')" id="nav-sentry">
+            <i data-lucide="shield-check"></i> SENTRY
+        </button>
+        <button class="nav-btn" onclick="switchTab('labour')" id="nav-labour">
+            <i data-lucide="hard-hat"></i> LABOUR
+        </button>
+        <button class="nav-btn" onclick="switchTab('connect')" id="nav-connect">
+            <i data-lucide="smartphone"></i> CONNECT
+        </button>
+        <button class="nav-btn" onclick="switchTab('memory')" id="nav-memory">
+            <i data-lucide="bell"></i> MEMORY
+        </button>
+        <button class="nav-btn" onclick="switchTab('slate')" id="nav-slate">
+            <i data-lucide="pen-tool"></i> SLATE
+        </button>
+        <button class="nav-btn" onclick="switchTab('lens')" id="nav-lens">
+            <i data-lucide="scan-eye"></i> LENS
+        </button>
+    </div>
+
+    <!-- OVERLAYS -->
+    <div id="blackout" onclick="handleTap()">
+        <div style="color: #333; font-size: 10px; margin-top: 50px;">SYSTEM ACTIVE<br>DOUBLE TAP TO WAKE</div>
+    </div>
+    
+    <div id="strobe-layer" onclick="toggleStrobe()"></div>
+
+    <!-- BILL PREVIEW OVERLAY -->
+    <div id="bill-preview">
+        <div class="bill-paper" id="bill-content">
+            <!-- Injected -->
+        </div>
+        <div class="no-print" style="position:fixed; bottom:20px; left:0; width:100%; padding:20px; background:white; border-top:1px solid #ccc; display:flex; gap:10px;">
+            <button class="btn btn-dark" onclick="document.getElementById('bill-preview').style.display='none'">CLOSE</button>
+            <button class="btn btn-green" onclick="window.print()">PRINT / PDF</button>
+        </div>
+    </div>
+
+    <!-- CALC MODAL -->
+    <div id="calc-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:5000; display:none; align-items:center; justify-content:center;">
+        <div class="card" style="width: 80%;">
+            <div class="header">SETTLE PAYMENT</div>
+            <div id="modal-name" style="font-size: 18px; color: var(--accent); margin-bottom: 5px;"></div>
+            <div id="modal-rate" style="font-size: 12px; color: #888; margin-bottom: 15px;"></div>
+            
+            <div style="text-align: center; font-size: 24px; font-weight: bold; color: var(--success); margin: 20px 0;">
+                PAY:  <span id="calc-total">0</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-green" onclick="confirmSettle()">PAID & SAVE</button>
+                <button class="btn btn-dark" onclick="closeCalc()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    lucide.createIcons();
+
+    // --- NAVIGATION ---
+    function switchTab(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('screen-' + id).classList.add('active');
+        document.getElementById('nav-' + id).classList.add('active');
+        
+        if(id === 'slate') resizeCanvas();
+        if(id === 'lens') startCamera(); else stopCamera();
+    }
+
+    // --- SENTRY LOGIC ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let armed = false;
+    let alarmActive = false;
+    let tapCount = 0;
+    let alarmTimer = null;
+    let lastAcc = {x:0, y:0, z:0};
+    
+    let logs = JSON.parse(localStorage.getItem('titan_logs') || "[]");
+    renderLogs();
+
+    function playAlarm() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(1, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    }
+
+    function startArming() {
+        if (armed) return;
+        const text = document.getElementById('status-text');
+        let count = 3;
+        text.innerText = `ARMING IN ${count}...`;
+        text.style.color = "var(--accent)";
+        const timer = setInterval(() => {
+            count--;
+            if(count > 0) text.innerText = `ARMING IN ${count}...`;
+            else { clearInterval(timer); armSystem(); }
+        }, 1000);
+    }
+
+    function armSystem() {
+        armed = true;
+        lastAcc = null;
+        document.getElementById('blackout').style.display = 'flex';
+        if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e=>{});
+        const ring = document.getElementById('status-ring');
+        ring.classList.add('armed');
+        document.getElementById('lock-icon').style.color = "var(--accent)";
+        document.getElementById('status-text').innerText = "SYSTEM ARMED";
+        addLog("System Armed", false);
+        window.addEventListener('devicemotion', handleMotion);
+    }
+
+    function disarm() {
+        armed = false;
+        alarmActive = false;
+        if(alarmTimer) clearInterval(alarmTimer);
+        window.removeEventListener('devicemotion', handleMotion);
+        document.getElementById('blackout').style.display = 'none';
+        document.getElementById('blackout').classList.remove('flash');
+        const ring = document.getElementById('status-ring');
+        ring.classList.remove('armed');
+        document.getElementById('lock-icon').style.color = "#555";
+        document.getElementById('status-text').innerText = "TAP TO ARM";
+        document.getElementById('status-text').style.color = "#555";
+        if(document.exitFullscreen) document.exitFullscreen().catch(e=>{});
+    }
+
+    function handleMotion(e) {
+        if(!armed) return;
+        const acc = e.accelerationIncludingGravity;
+        if(!acc) return;
+        if(!lastAcc) { lastAcc = {x: acc.x, y: acc.y, z: acc.z}; return; }
+        const delta = Math.abs(acc.x - lastAcc.x) + Math.abs(acc.y - lastAcc.y) + Math.abs(acc.z - lastAcc.z);
+        if(delta > 5 && !alarmActive) triggerAlarm();
+        lastAcc = {x: acc.x, y: acc.y, z: acc.z};
+    }
+
+    function triggerAlarm() {
+        alarmActive = true;
+        addLog(" THEFT ATTEMPT", true);
+        document.getElementById('blackout').classList.add('flash');
+        let loops = 0;
+        alarmTimer = setInterval(() => {
+            playAlarm();
+            if(navigator.vibrate) navigator.vibrate([500, 200]);
+            loops++;
+            if(loops > 12) { 
+                clearInterval(alarmTimer);
+                alarmActive = false;
+                document.getElementById('blackout').classList.remove('flash');
+            }
+        }, 800);
+    }
+
+    function handleTap() {
+        tapCount++;
+        if(tapCount === 1) setTimeout(() => tapCount = 0, 400);
+        else if (tapCount === 2) { disarm(); tapCount = 0; }
+    }
+
+    function addLog(msg, isAlert) {
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        logs.unshift({msg, time, isAlert});
+        localStorage.setItem('titan_logs', JSON.stringify(logs.slice(0, 50)));
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const list = document.getElementById('log-list');
+        if(logs.length === 0) { list.innerHTML = '<div style="text-align: center; color: #444; padding: 20px;">Secure. No events.</div>'; return; }
+        list.innerHTML = logs.map(l => `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #222; font-size:13px; color:${l.isAlert?'#ff5500':'#888'}"><span>${l.msg}</span><span>${l.time}</span></div>`).join('');
+    }
+    
+    function clearLogs() {
+        logs = []; localStorage.removeItem('titan_logs'); renderLogs();
+    }
+
+    // --- LABOUR LOGIC (WITH BILLING) ---
+    let workers = JSON.parse(localStorage.getItem('titan_labour_v3') || "[]");
+    let labourHistory = JSON.parse(localStorage.getItem('titan_labour_hist') || "[]");
+    let settleIdx = -1;
+    renderWorkers();
+    renderHistory();
+
+    function showLabourTab(tab) {
+        document.getElementById('view-active-workers').style.display = tab === 'active' ? 'block' : 'none';
+        document.getElementById('view-history-workers').style.display = tab === 'history' ? 'block' : 'none';
+    }
+
+    function addWorker() {
+        const name = document.getElementById('w-name').value;
+        const rate = document.getElementById('w-rate').value;
+        if(name && rate) {
+            workers.push({name, rate: parseInt(rate), days: 0});
+            saveWorkers();
+            document.getElementById('w-name').value = "";
+            document.getElementById('w-rate').value = "";
+        }
+    }
+
+    function updateDays(idx, change) {
+        if(workers[idx].days + change >= 0) {
+            workers[idx].days += change;
+            saveWorkers();
+        }
+    }
+
+    function deleteWorker(idx) {
+        if(confirm("Delete this worker permanently?")) {
+            workers.splice(idx, 1);
+            saveWorkers();
+        }
+    }
+
+    function saveWorkers() {
+        localStorage.setItem('titan_labour_v3', JSON.stringify(workers));
+        renderWorkers();
+    }
+
+    function renderWorkers() {
+        const list = document.getElementById('worker-list');
+        if(workers.length === 0) { list.innerHTML = '<div style="text-align:center; color:#444; margin-top:20px;">No workers added.</div>'; return; }
+        list.innerHTML = workers.map((w, i) => `
+            <div class="worker-item">
+                <div class="w-top">
+                    <div>
+                        <div class="w-name">${w.name}</div>
+                        <div class="w-rate">Daily Rate: ${w.rate}</div>
+                    </div>
+                    <button onclick="deleteWorker(${i})" style="background:none; border:none; color:#444;"><i data-lucide="trash-2" size="16"></i></button>
+                </div>
+                
+                <div class="w-controls">
+                    <button class="ctrl-btn sub-day" onclick="updateDays(${i}, -1)">-</button>
+                    <div class="day-count">${w.days} Days</div>
+                    <button class="ctrl-btn add-day" onclick="updateDays(${i}, 1)">+1</button>
+                </div>
+
+                <div class="w-total">
+                    <span style="font-size:12px; color:#666;">PAYABLE:</span>
+                    <span class="pay-val"> ${(w.days * w.rate).toLocaleString()}</span>
+                    <button class="btn btn-dark" style="width:auto; padding:5px 10px; font-size:10px;" onclick="openSettle(${i})">SETTLE</button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function openSettle(i) {
+        settleIdx = i;
+        const w = workers[i];
+        document.getElementById('calc-modal').style.display = 'flex';
+        document.getElementById('modal-name').innerText = w.name;
+        document.getElementById('modal-rate').innerText = `Rate: ${w.rate} | Days: ${w.days}`;
+        document.getElementById('calc-total').innerText = (w.days * w.rate).toLocaleString();
+    }
+
+    function confirmSettle() {
+        if(settleIdx === -1) return;
+        const w = workers[settleIdx];
+        const amt = w.days * w.rate;
+        if(amt > 0) {
+            labourHistory.unshift({
+                name: w.name,
+                amount: amt,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            localStorage.setItem('titan_labour_hist', JSON.stringify(labourHistory.slice(0,50)));
+            renderHistory();
+        }
+        workers[settleIdx].days = 0;
+        saveWorkers();
+        closeCalc();
+    }
+
+    function closeCalc() {
+        document.getElementById('calc-modal').style.display = 'none';
+        settleIdx = -1;
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        if(labourHistory.length === 0) { list.innerHTML = '<div style="text-align:center; color:#444; padding:20px;">No history.</div>'; return; }
+        list.innerHTML = labourHistory.map(h => `
+            <div style="background:#111; padding:10px; margin-bottom:5px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
+                <div>
+                    <div style="color:white; font-weight:bold;">${h.name}</div>
+                    <div style="font-size:10px; color:#666;">${h.date} � ${h.time}</div>
+                </div>
+                <div style="color:var(--success); font-weight:bold;">${h.amount}</div>
+            </div>
+        `).join('');
+    }
+
+    function clearHistory() {
+        if(confirm("Clear payment records?")) {
+            labourHistory = [];
+            localStorage.setItem('titan_labour_hist', JSON.stringify([]));
+            renderHistory();
+        }
+    }
+
+    // --- BILL GENERATION (NEW) ---
+    function generateMasterBill() {
+        let total = 0;
+        const date = new Date().toLocaleDateString();
+        
+        let html = `
+            <div style="text-align:center; border-bottom:2px solid black; padding-bottom:10px; margin-bottom:10px;">
+                <h2 style="margin:0;">LABOUR PAYMENT SHEET</h2>
+                <div style="font-size:12px;">Date: ${date}</div>
+            </div>
+            <div style="margin-bottom:10px;">
+        `;
+
+        workers.forEach(w => {
+            const pay = w.days * w.rate;
+            total += pay;
+            html += `
+                <div class="bill-row">
+                    <div>
+                        <strong>${w.name}</strong><br>
+                        <span style="font-size:10px;">${w.days} days @ ${w.rate}</span>
+                    </div>
+                    <div>${pay}</div>
+                </div>
+            `;
+        });
+
+        html += `
+            </div>
+            <div class="bill-total">TOTAL PAYABLE: ${total}</div>
+            <div style="text-align:center; margin-top:30px; font-size:10px;">Generated via Titan OS</div>
+        `;
+
+        document.getElementById('bill-content').innerHTML = html;
+        document.getElementById('bill-preview').style.display = 'flex';
+    }
+
+    // --- MEMORY PRO (ENHANCED) ---
+    let memories = JSON.parse(localStorage.getItem('titan_memories') || "[]");
+    renderMemories();
+
+    function addMemory() {
+        const text = document.getElementById('mem-text').value;
+        const amt = document.getElementById('mem-amt').value;
+        if(text) {
+            memories.unshift({
+                text, 
+                amt: amt ? parseInt(amt) : null, 
+                date: new Date().toLocaleDateString(),
+                done: false
+            });
+            saveMemories();
+            document.getElementById('mem-text').value = "";
+            document.getElementById('mem-amt').value = "";
+        }
+    }
+
+    function toggleMemoryDone(i) {
+        memories[i].done = !memories[i].done;
+        saveMemories();
+    }
+
+    function deleteMemory(i) {
+        if(confirm("Delete this reminder?")) {
+            memories.splice(i, 1);
+            saveMemories();
+        }
+    }
+
+    function saveMemories() {
+        localStorage.setItem('titan_memories', JSON.stringify(memories));
+        renderMemories();
+    }
+
+    function sendWaReminder(i) {
+        const m = memories[i];
+        const msg = `Hello, a payment of ${m.amt} is pending for ${m.text}. Please pay at the earliest.`;
+        const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    }
+
+    function renderMemories() {
+        const list = document.getElementById('memory-list');
+        const total = memories.reduce((acc, m) => acc + (m.amt && !m.done ? m.amt : 0), 0);
+        document.getElementById('total-udhaar').innerText = `TOTAL PENDING: ${total.toLocaleString()}`;
+
+        if(memories.length === 0) { list.innerHTML = '<div style="text-align:center; color:#444; margin-top:20px;">No reminders active.</div>'; return; }
+        
+        list.innerHTML = memories.map((m, i) => `
+            <div class="task-item ${m.amt ? 'udhaar' : ''} ${m.done ? 'done' : ''}">
+                <div class="task-info" onclick="toggleMemoryDone(${i})">
+                    <div class="task-title">${m.text}</div>
+                    <div class="task-meta">
+                        <span>${m.date}</span>
+                        ${m.amt ? `<span class="task-amt">${m.amt}</span>` : ''}
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    ${m.amt && !m.done ? `<button onclick="sendWaReminder(${i})" style="background:var(--success); border:none; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center;"><i data-lucide="message-circle" size="16"></i></button>` : ''}
+                    <button onclick="deleteMemory(${i})" style="background:#333; border:none; border-radius:50%; width:30px; height:30px; color:#aaa; display:flex; align-items:center; justify-content:center;"><i data-lucide="trash-2" size="16"></i></button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    // --- CONNECT LOGIC ---
+    function openWA() {
+        let num = document.getElementById('wa-input').value;
+        if(num.length >= 10) window.open(`https://wa.me/91${num.slice(-10)}`, '_blank');
+        else alert("Enter valid mobile number");
+    }
+
+    async function pasteNumber() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('wa-input').value = text.replace(/\D/g,'');
+        } catch(e) { alert("Clipboard empty or not allowed"); }
+    }
+
+    let strobeInt = null;
+    function toggleStrobe() {
+        const layer = document.getElementById('strobe-layer');
+        if(strobeInt) {
+            clearInterval(strobeInt); strobeInt = null; layer.style.display = 'none';
+        } else {
+            let on = false;
+            strobeInt = setInterval(() => { layer.style.display = on ? 'none' : 'block'; on = !on; }, 100);
+        }
+    }
+    
+    function toggleTorch() {
+        const layer = document.getElementById('strobe-layer');
+        if(layer.style.display === 'block' && !strobeInt) layer.style.display = 'none';
+        else {
+            if(strobeInt) { clearInterval(strobeInt); strobeInt = null; }
+            layer.style.display = 'block';
+        }
+    }
+
+    // --- SLATE LOGIC ---
+    const canvas = document.getElementById('slate-canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let penColor = "white";
+
+    function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 3;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function startPosition(e) { painting = true; draw(e); }
+    function endPosition() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        ctx.strokeStyle = penColor;
+        let clientX = e.clientX; let clientY = e.clientY;
+        if(e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(clientX - rect.left, clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    }
+
+    canvas.addEventListener("mousedown", startPosition);
+    canvas.addEventListener("mouseup", endPosition);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("touchstart", (e) => { e.preventDefault(); startPosition(e); });
+    canvas.addEventListener("touchend", (e) => { e.preventDefault(); endPosition(); });
+    canvas.addEventListener("touchmove", (e) => { e.preventDefault(); draw(e); });
+
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    function setPen(color) { penColor = color; }
+
+    // --- LENS LOGIC ---
+    let stream = null;
+    function startCamera() {
+        const video = document.getElementById('lens-video');
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: {ideal: 1920}, height: {ideal: 1080} } 
+            }).then(s => {
+                stream = s;
+                video.srcObject = stream;
+                document.getElementById('lens-canvas').style.display = 'none';
+                video.style.display = 'block';
+            }).catch(err => alert("Camera permission denied"));
+        }
+    }
+
+    function stopCamera() {
+        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+    }
+
+    function setZoom(val) {
+        document.getElementById('lens-video').style.transform = `scale(${val})`;
+        document.getElementById('lens-canvas').style.transform = `scale(${val})`;
+        document.getElementById('zoom-val').innerText = val + 'x';
+    }
+
+    function toggleFreeze() {
+        const video = document.getElementById('lens-video');
+        const canvas = document.getElementById('lens-canvas');
+        const btn = document.getElementById('btn-freeze');
+        
+        if (video.style.display !== 'none') {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            btn.innerHTML = '<i data-lucide="play"></i> LIVE';
+            btn.classList.remove('btn-blue'); btn.classList.add('btn-green');
+        } else {
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+            btn.innerHTML = '<i data-lucide="snowflake"></i> FREEZE';
+            btn.classList.add('btn-blue'); btn.classList.remove('btn-green');
+        }
+        lucide.createIcons();
+    }
+
+</script>
+</body>
+</html>

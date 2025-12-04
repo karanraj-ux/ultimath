@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURO-LOCKDOWN // GAMMA PROTOCOL</title>
+    <style>
+        :root {
+            --bg: #000;
+            --primary: #ff003c; /* Aggressive Red */
+            --dim: #333;
+            --text: #fff;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* --- LAYOUTS --- */
+        #setup-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        #active-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #failure-screen {
+            display: none;
+            background: var(--primary);
+            position: fixed;
+            inset: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: flash-fail 0.2s infinite;
+        }
+
+        /* --- VISUALS --- */
+        .hertz-display {
+            font-size: 120px;
+            font-weight: bold;
+            color: var(--dim);
+            transition: color 0.1s;
+        }
+        
+        .pulse-active {
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .subliminal {
+            position: absolute;
+            font-size: 80px;
+            opacity: 0;
+            font-weight: bold;
+            color: #222;
+            pointer-events: none;
+        }
+
+        /* --- INTERLOCK MODAL --- */
+        #interlock-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #111;
+            border: 2px solid var(--primary);
+            padding: 30px;
+            text-align: center;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 0 50px rgba(255, 0, 60, 0.5);
+        }
+
+        .math-problem {
+            font-size: 40px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            background: #000;
+            border: 1px solid #555;
+            color: white;
+            font-size: 24px;
+            padding: 10px;
+            width: 100px;
+            text-align: center;
+            outline: none;
+        }
+
+        /* --- BUTTONS --- */
+        .btn-lock {
+            background: var(--primary);
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-lock:hover {
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .timer-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: var(--primary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        @keyframes flash-fail {
+            0% { background: var(--primary); }
+            50% { background: black; }
+            100% { background: var(--primary); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: SETUP -->
+    <div id="setup-screen">
+        <h1 style="letter-spacing: 5px;">NEURO-LOCKDOWN</h1>
+        <div style="font-size: 12px; color: #666; max-width: 300px; text-align: center;">
+            WARNING: GAMMA PROTOCOL (40Hz).<br>
+            FULLSCREEN MANDATORY.<br>
+            RANDOM MATH CHECKS ENABLED.<br>
+            FAILURE TO RESPOND = ALARM.
+        </div>
+        <button class="btn-lock" onclick="sys.init()">INITIATE LOCKDOWN</button>
+    </div>
+
+    <!-- SCREEN 2: ACTIVE -->
+    <div id="active-screen">
+        <div class="hertz-display" id="pulse-viz">40Hz</div>
+        <div style="margin-top: 20px; font-size: 14px; color: #555;">STATUS: ENTRAINMENT ACTIVE</div>
+        <div class="timer-bar" id="progress-bar"></div>
+        <div id="subliminal-text" class="subliminal">FOCUS</div>
+    </div>
+
+    <!-- SCREEN 3: INTERLOCK CHECK -->
+    <div id="interlock-modal">
+        <div style="color: var(--primary); font-weight: bold;">COGNITIVE INTERLOCK DETECTED</div>
+        <div style="font-size: 12px; margin-top: 5px;">SOLVE TO ABORT ALARM</div>
+        <div class="math-problem" id="math-q">12 x 4</div>
+        <input type="number" id="math-a" autofocus>
+        <div id="countdown" style="font-size: 10px; margin-top: 10px; color: #ff003c;">10s REMAINING</div>
+    </div>
+
+    <!-- SCREEN 4: FAILURE -->
+    <div id="failure-screen" onclick="sys.stopAlarm()">
+        <h1 style="color: black; font-size: 40px;">FAILURE</h1>
+        <div style="color: black;">FOCUS BROKEN // TAP TO RESET</div>
+    </div>
+
+<script>
+const audio = {
+    ctx: null,
+    osc: null,
+    lfo: null,
+    alarmOsc: null,
+    
+    startGamma: function() {
+        if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if(this.ctx.state === 'suspended') this.ctx.resume();
+
+        // 40Hz Gamma Isochronic Tone
+        // Carrier: 200Hz (Focus tone)
+        // Pulse: 40Hz (Gamma speed)
+        
+        this.osc = this.ctx.createOscillator();
+        this.osc.type = 'sine';
+        this.osc.frequency.value = 200; 
+
+        this.lfo = this.ctx.createOscillator();
+        this.lfo.type = 'square'; // Harsh pulse
+        this.lfo.frequency.value = 40;
+
+        const gain = this.ctx.createGain();
+        const lfoGain = this.ctx.createGain();
+        
+        gain.gain.value = 0;
+        lfoGain.gain.value = 0.5; // Depth of pulse
+
+        this.osc.connect(gain);
+        this.lfo.connect(lfoGain);
+        lfoGain.connect(gain.gain);
+        gain.connect(this.ctx.destination);
+
+        this.osc.start();
+        this.lfo.start();
+    },
+
+    stopGamma: function() {
+        if(this.osc) { this.osc.stop(); this.osc.disconnect(); }
+        if(this.lfo) { this.lfo.stop(); this.lfo.disconnect(); }
+    },
+
+    playAlarm: function() {
+        // Annoying high-pitched siren
+        this.alarmOsc = this.ctx.createOscillator();
+        this.alarmOsc.type = 'sawtooth';
+        this.alarmOsc.frequency.value = 800;
+        
+        const g = this.ctx.createGain();
+        g.gain.value = 0.8;
+        
+        this.alarmOsc.connect(g);
+        g.connect(this.ctx.destination);
+        this.alarmOsc.start();
+
+        // Modulate pitch
+        let up = true;
+        this.alarmInterval = setInterval(() => {
+            if(this.alarmOsc) {
+                this.alarmOsc.frequency.value = up ? 1200 : 800;
+                up = !up;
+            }
+        }, 300);
+    },
+
+    stopAlarm: function() {
+        if(this.alarmOsc) {
+            this.alarmOsc.stop();
+            this.alarmOsc.disconnect();
+            this.alarmOsc = null;
+        }
+        clearInterval(this.alarmInterval);
+    }
+};
+
+const sys = {
+    checkInterval: null,
+    subliminalInterval: null,
+    interlockTimer: null,
+    correctAnswer: 0,
+    words: ["FOCUS", "SPEED", "ACCURACY", "IIT", "RANK 1", "POWER", "NO MERCY"],
+    
+    init: function() {
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('active-screen').style.display = 'flex';
+        
+        // Request Fullscreen
+        document.documentElement.requestFullscreen().catch(e => {
+            alert("FULLSCREEN IS REQUIRED FOR LOCKDOWN.");
+            location.reload();
+        });
+
+        // Listen for Esc key
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                this.triggerFailure(); // PUNISHMENT FOR LEAVING
+            }
+        });
+
+        audio.startGamma();
+        this.startPulseVisuals();
+        this.scheduleCheck();
+        this.startSubliminal();
+    },
+
+    startPulseVisuals: function() {
+        const viz = document.getElementById('pulse-viz');
+        let on = false;
+        // 40Hz is too fast for CSS animation to look clean, so we strobe at 10Hz visually
+        // but tell the user it represents the 40Hz audio.
+        setInterval(() => {
+            on = !on;
+            viz.className = on ? 'hertz-display pulse-active' : 'hertz-display';
+        }, 100); 
+    },
+
+    startSubliminal: function() {
+        const el = document.getElementById('subliminal-text');
+        this.subliminalInterval = setInterval(() => {
+            el.innerText = this.words[Math.floor(Math.random() * this.words.length)];
+            el.style.opacity = 0.05; // Barely visible
+            setTimeout(() => { el.style.opacity = 0; }, 200);
+        }, 10000); // Every 10 seconds
+    },
+
+    scheduleCheck: function() {
+        // Random check between 3 and 7 minutes
+        const time = (Math.random() * (7 - 3) + 3) * 60 * 1000;
+        // const time = 10000; // Debug mode (10s)
+        
+        setTimeout(() => {
+            this.triggerInterlock();
+        }, time);
+    },
+
+    triggerInterlock: function() {
+        const n1 = Math.floor(Math.random() * 12) + 2;
+        const n2 = Math.floor(Math.random() * 9) + 2;
+        this.correctAnswer = n1 * n2;
+
+        document.getElementById('math-q').innerText = `${n1} x ${n2}`;
+        document.getElementById('math-a').value = '';
+        document.getElementById('interlock-modal').style.display = 'block';
+        document.getElementById('math-a').focus();
+
+        let timeLeft = 10;
+        document.getElementById('countdown').innerText = `${timeLeft}s REMAINING`;
+
+        this.interlockTimer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('countdown').innerText = `${timeLeft}s REMAINING`;
+            if (timeLeft <= 0) {
+                this.triggerFailure();
+            }
+        }, 1000);
+    },
+
+    checkAnswer: function() {
+        const userAns = parseInt(document.getElementById('math-a').value);
+        if (userAns === this.correctAnswer) {
+            clearInterval(this.interlockTimer);
+            document.getElementById('interlock-modal').style.display = 'none';
+            this.scheduleCheck(); // Schedule next check
+        }
+    },
+
+    triggerFailure: function() {
+        clearInterval(this.interlockTimer);
+        document.getElementById('interlock-modal').style.display = 'none';
+        document.getElementById('active-screen').style.display = 'none';
+        document.getElementById('failure-screen').style.display = 'flex';
+        audio.stopGamma();
+        audio.playAlarm();
+    },
+
+    stopAlarm: function() {
+        // Reset to setup
+        audio.stopAlarm();
+        document.exitFullscreen();
+        location.reload();
+    }
+};
+
+// Math Input Listener
+document.getElementById('math-a').addEventListener('input', () => {
+    sys.checkAnswer();
+});
+
+</script>
+</body>
+</html>

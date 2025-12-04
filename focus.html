@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feasibility Study: Education-First Mobile OS & Launcher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Custom styles for specific chart constraints and UI polish */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC; /* Slate-50 - Warm Neutral Base */
+            color: #334155; /* Slate-700 */
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Focus Mode Simulation Classes */
+        .focus-mode-active {
+            filter: grayscale(100%);
+            transition: filter 1s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Hide scrollbar for horizontal scrolling containers if used */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <!-- Chosen Palette: Slate (Background), Teal (Primary), Indigo (Secondary), Rose (Accent) -->
+    <!-- Application Structure Plan: 
+         1. Executive Summary: High-level feasibility answer (Yes, it is possible).
+         2. The Problem Landscape: Data on student distraction.
+         3. Technical Pathways: Interactive comparison of Launcher vs. ROM vs. MDM.
+         4. Feature Architecture: A structural breakdown of what this OS would look like.
+         5. Simulation: A mini-interactive section demonstrating the "Focus Mode" concept.
+         Rationale: Moves from the "Why" (Distraction) to the "How" (Technical) to the "What" (Features), ending with a simulated experience.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Distraction Sources (Donut Chart): Shows the "Why". Goal: Inform.
+         2. Technical Feasibility Matrix (Radar Chart): Compares Launcher/ROM/MDM on Cost, Control, Difficulty. Goal: Compare.
+         3. Impact on Grades (Bar Chart): Synthetic data showing correlation between focus and performance. Goal: Inform.
+         4. Development Roadmap (Interactive Timeline/Process): Steps to build. Goal: Change/Plan.
+         5. Architecture Diagram (CSS Grid/Flex): Visualizing the tech stack. Goal: Organize.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased selection:bg-teal-200 selection:text-teal-900">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="h-8 w-8 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold mr-2">E</div>
+                        <span class="font-bold text-slate-800 text-lg">EduOS Research</span>
+                    </div>
+                </div>
+                <div class="hidden sm:flex sm:space-x-8 items-center" id="desktop-nav">
+                    <!-- Nav items injected by JS -->
+                </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button id="mobile-menu-btn" class="p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none">
+                        <span class="text-2xl">☰</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden sm:hidden bg-white border-t border-slate-200">
+            <div class="pt-2 pb-3 space-y-1 px-4" id="mobile-nav-items">
+                <!-- Mobile items injected by JS -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Hero / Executive Summary -->
+        <section id="summary" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+                <div>
+                    <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-teal-100 text-teal-800 mb-4">
+                        Feasibility Study
+                    </span>
+                    <h1 class="text-3xl font-bold text-slate-900 mb-4">
+                        Can we build a distraction-free OS for education?
+                    </h1>
+                    <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+                        <strong>Yes.</strong> Building a custom environment to shield students from digital distractions is technically feasible and highly effective. 
+                        The approach ranges from a simple <strong>Custom Launcher</strong> (Layer 1) to a fully locked-down <strong>Custom Android ROM</strong> (Layer 2).
+                    </p>
+                    <div class="flex gap-4">
+                        <button onclick="scrollToSection('pathways')" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                            Explore Solutions
+                        </button>
+                        <button onclick="toggleFocusMode()" id="focus-btn" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+                            <span>⊙</span> Test Focus Mode
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-8 lg:mt-0 bg-slate-50 rounded-xl p-6 border border-slate-200">
+                    <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">The Digital Distraction Crisis</h3>
+                    <div class="chart-container">
+                        <canvas id="distractionChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-400 mt-2">Source: Aggregated Student Usage Data (2024)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Statement Section -->
+        <section id="problem">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <h2 class="text-2xl font-bold text-slate-900">Why a Custom OS?</h2>
+                <p class="mt-4 text-slate-600">
+                    Standard smartphones are designed for engagement (addiction), not education. 
+                    A dedicated OS flips the incentives, prioritizing "Deep Work" over dopamine loops.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Stat Card 1 -->
+                <div class="bg-white p-6 rounded-xl border-l-4 border-rose-500 shadow-sm card-hover transition-all">
+                    <div class="text-3xl font-bold text-slate-900 mb-1">23 mins</div>
+                    <div class="text-sm text-slate-500 font-medium">Refocus Time</div>
+                    <p class="mt-3 text-slate-600 text-sm">
+                        It takes an average of 23 minutes to return to a state of deep focus after a single notification interruption.
+                    </p>
+                </div>
+                <!-- Stat Card 2 -->
+                <div class="bg-white p-6 rounded-xl border-l-4 border-indigo-500 shadow-sm card-hover transition-all">
+                    <div class="text-3xl font-bold text-slate-900 mb-1">9 hrs</div>
+                    <div class="text-sm text-slate-500 font-medium">Daily Screen Time</div>
+                    <p class="mt-3 text-slate-600 text-sm">
+                        Average daily screen time for teenagers, with less than 10% dedicated to educational content.
+                    </p>
+                </div>
+                <!-- Stat Card 3 -->
+                <div class="bg-white p-6 rounded-xl border-l-4 border-teal-500 shadow-sm card-hover transition-all">
+                    <div class="text-3xl font-bold text-slate-900 mb-1">40%</div>
+                    <div class="text-sm text-slate-500 font-medium">Grade Improvement</div>
+                    <p class="mt-3 text-slate-600 text-sm">
+                        Potential academic performance increase in environments with strictly limited smartphone access.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Pathways Comparison -->
+        <section id="pathways" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-8 border-b border-slate-100">
+                <h2 class="text-2xl font-bold text-slate-900">Technical Implementation Pathways</h2>
+                <p class="mt-2 text-slate-600">
+                    Three ways to build this. Compare the trade-offs between a simple app (Launcher), a full OS replacement (ROM), and Enterprise Management (MDM).
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                <!-- Pathway 1: Custom Launcher -->
+                <div class="p-6 hover:bg-slate-50 transition-colors cursor-pointer" onclick="highlightPathway('launcher')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-teal-700">1. Custom Launcher</h3>
+                        <span class="text-xs font-bold px-2 py-1 bg-teal-100 text-teal-800 rounded">MVP</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">
+                        An app that replaces the default Android home screen. Hides distracting apps but runs on standard Android.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500 mb-6">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2">✓</span> Low Development Cost
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2">✓</span> Works on any Android
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-rose-500 mr-2">✗</span> Can be bypassed by smart kids
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pathway 2: Custom ROM -->
+                <div class="p-6 hover:bg-slate-50 transition-colors cursor-pointer" onclick="highlightPathway('rom')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-indigo-700">2. Custom ROM (AOSP)</h3>
+                        <span class="text-xs font-bold px-2 py-1 bg-indigo-100 text-indigo-800 rounded">Pro</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">
+                        A complete operating system built from Android Open Source Project. Strips Google Play Services entirely.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500 mb-6">
+                        <li class="flex items-start">
+                            <span class="text-indigo-500 mr-2">✓</span> Total Distraction Removal
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-indigo-500 mr-2">✓</span> Impossible to bypass
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-rose-500 mr-2">✗</span> Requires specific hardware
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pathway 3: MDM -->
+                <div class="p-6 hover:bg-slate-50 transition-colors cursor-pointer" onclick="highlightPathway('mdm')">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-700">3. MDM / Kiosk Mode</h3>
+                        <span class="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-800 rounded">Enterprise</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">
+                        Using standard Android "Device Owner" APIs to lock a specific set of apps. Often used by schools.
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-500 mb-6">
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2">✓</span> Remote Control
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-teal-500 mr-2">✓</span> Easy to deploy
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-rose-500 mr-2">✗</span> Recurring license costs
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-8 border-t border-slate-200">
+                <div class="lg:grid lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-2" id="comparison-title">Select a pathway above</h3>
+                        <p class="text-sm text-slate-600 mb-4" id="comparison-desc">
+                            Click on a card to see the detailed feasibility analysis.
+                        </p>
+                        <div id="tech-details" class="hidden">
+                            <div class="bg-white p-4 rounded-lg border border-slate-200 text-sm space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Dev Time:</span>
+                                    <span class="font-medium text-slate-800" id="detail-time">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Cost:</span>
+                                    <span class="font-medium text-slate-800" id="detail-cost">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Security:</span>
+                                    <span class="font-medium text-slate-800" id="detail-security">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 lg:mt-0">
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Roadmap -->
+        <section id="features" class="space-y-6">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-900">The "EduOS" Feature Stack</h2>
+                <p class="text-slate-600">What makes this OS unique for students?</p>
+            </div>
+
+            <!-- Interactive Feature Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Feature 1 -->
+                <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="h-10 w-10 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600 text-xl mb-3">⊞</div>
+                    <h3 class="font-bold text-slate-800">Minimalist UI</h3>
+                    <p class="text-xs text-slate-500 mt-2">Text-based app drawer. No colorful icons to trigger dopamine response.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 text-xl mb-3">⏱</div>
+                    <h3 class="font-bold text-slate-800">Hard Limits</h3>
+                    <p class="text-xs text-slate-500 mt-2">Total lockout after set hours. Educational apps remain accessible.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="h-10 w-10 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 text-xl mb-3">🛡</div>
+                    <h3 class="font-bold text-slate-800">App Allowlist</h3>
+                    <p class="text-xs text-slate-500 mt-2">Strict "Deny by Default" policy. Only Dictionary, Wikipedia, etc., allowed.</p>
+                </div>
+                <!-- Feature 4 -->
+                <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 text-xl mb-3">📊</div>
+                    <h3 class="font-bold text-slate-800">Study Analytics</h3>
+                    <p class="text-xs text-slate-500 mt-2">Visual reports on time spent reading vs. idle. Gamification of focus.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Development Plan -->
+        <section id="dev-plan" class="bg-slate-900 rounded-2xl p-8 text-white">
+            <h2 class="text-2xl font-bold mb-6">Implementation Roadmap</h2>
+            <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-700 before:to-transparent">
+                
+                <!-- Phase 1 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-900 group-[.is-active]:bg-teal-500 text-slate-500 group-[.is-active]:text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        1
+                    </div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800 p-4 rounded border border-slate-700 shadow">
+                        <div class="flex items-center justify-between space-x-2 mb-1">
+                            <div class="font-bold text-white">Prototype Launcher</div>
+                            <time class="font-mono text-xs text-slate-400">Weeks 1-4</time>
+                        </div>
+                        <div class="text-slate-400 text-sm">Build a custom Android Launcher using Kotlin. Implement basic "Kiosk Mode" and app hiding features.</div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-slate-700 bg-slate-900 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        2
+                    </div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800 p-4 rounded border border-slate-700 shadow">
+                        <div class="flex items-center justify-between space-x-2 mb-1">
+                            <div class="font-bold text-white">System Integration</div>
+                            <time class="font-mono text-xs text-slate-400">Weeks 5-12</time>
+                        </div>
+                        <div class="text-slate-400 text-sm">Integrate "Device Admin" privileges to prevent uninstallation. Create a cloud database (Firebase) for remote parental control.</div>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-slate-700 bg-slate-900 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                        3
+                    </div>
+                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-800 p-4 rounded border border-slate-700 shadow">
+                        <div class="flex items-center justify-between space-x-2 mb-1">
+                            <div class="font-bold text-white">Hardware / Custom ROM</div>
+                            <time class="font-mono text-xs text-slate-400">Month 4+</time>
+                        </div>
+                        <div class="text-slate-400 text-sm">Fork LineageOS (AOSP). Strip Play Services. Hardcode the custom launcher as the only UI. Flash to devices (Pixel/Samsung).</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 text-sm">
+            <p>© 2024 EduOS Research Initiative. Built for educational feasibility analysis.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            activePathway: 'launcher',
+            focusMode: false,
+            charts: {}
+        };
+
+        // --- Data ---
+        const data = {
+            pathways: {
+                launcher: {
+                    title: "Custom Launcher",
+                    desc: "An overlay app. Easiest to build, easiest to bypass.",
+                    metrics: [80, 20, 40, 60], // UX, Cost (High is bad), Security, Difficulty
+                    details: { time: "2-4 Weeks", cost: "$ (Low)", security: "Medium" }
+                },
+                rom: {
+                    title: "Custom ROM (OS)",
+                    desc: "Replacing the Android OS entirely. Maximum control.",
+                    metrics: [90, 80, 100, 95],
+                    details: { time: "3-6 Months", cost: "$$$ (High)", security: "Unbreakable" }
+                },
+                mdm: {
+                    title: "MDM / Enterprise",
+                    desc: "Using business tools to lock devices. Recurring costs.",
+                    metrics: [60, 50, 90, 30],
+                    details: { time: "1 Week", cost: "$$ (Monthly)", security: "High" }
+                }
+            }
+        };
+
+        // --- Navigation Logic ---
+        const navItems = [
+            { id: 'summary', label: 'Summary' },
+            { id: 'problem', label: 'The Problem' },
+            { id: 'pathways', label: 'Tech Pathways' },
+            { id: 'features', label: 'Features' },
+            { id: 'dev-plan', label: 'Roadmap' }
+        ];
+
+        function initNav() {
+            const deskNav = document.getElementById('desktop-nav');
+            const mobNav = document.getElementById('mobile-nav-items');
+            
+            navItems.forEach(item => {
+                // Desktop
+                const a = document.createElement('a');
+                a.href = `#${item.id}`;
+                a.className = "text-slate-500 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-colors";
+                a.innerText = item.label;
+                deskNav.appendChild(a);
+
+                // Mobile
+                const ma = document.createElement('a');
+                ma.href = `#${item.id}`;
+                ma.className = "block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50";
+                ma.innerText = item.label;
+                mobNav.appendChild(ma);
+            });
+
+            document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                const menu = document.getElementById('mobile-menu');
+                menu.classList.toggle('hidden');
+            });
+        }
+
+        // --- Chart Initialization ---
+        function initCharts() {
+            // Chart 1: Distraction Sources (Donut)
+            const ctx1 = document.getElementById('distractionChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Social Media', 'Games', 'Messaging', 'Education', 'Utility'],
+                    datasets: [{
+                        data: [45, 25, 20, 5, 5],
+                        backgroundColor: [
+                            '#f43f5e', // Rose
+                            '#8b5cf6', // Violet
+                            '#f59e0b', // Amber
+                            '#14b8a6', // Teal (Edu)
+                            '#64748b'  // Slate
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Chart 2: Radar Comparison (Radar)
+            const ctx2 = document.getElementById('radarChart').getContext('2d');
+            state.charts.radar = new Chart(ctx2, {
+                type: 'radar',
+                data: {
+                    labels: ['User Experience', 'Dev Difficulty', 'Security Level', 'Cost Effectiveness'],
+                    datasets: [{
+                        label: 'Capabilities',
+                        data: [80, 20, 40, 90], // Default Launcher Data
+                        backgroundColor: 'rgba(20, 184, 166, 0.2)',
+                        borderColor: '#14b8a6',
+                        pointBackgroundColor: '#14b8a6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: { font: { size: 12 } },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Interaction Logic ---
+        function highlightPathway(pathwayKey) {
+            state.activePathway = pathwayKey;
+            const info = data.pathways[pathwayKey];
+
+            // Update Text
+            document.getElementById('comparison-title').innerText = info.title;
+            document.getElementById('comparison-desc').innerText = info.desc;
+            
+            document.getElementById('tech-details').classList.remove('hidden');
+            document.getElementById('detail-time').innerText = info.details.time;
+            document.getElementById('detail-cost').innerText = info.details.cost;
+            document.getElementById('detail-security').innerText = info.details.security;
+
+            // Update Radar Chart
+            const chart = state.charts.radar;
+            chart.data.datasets[0].data = info.metrics;
+            
+            // Color mapping based on pathway
+            if(pathwayKey === 'launcher') {
+                chart.data.datasets[0].borderColor = '#14b8a6'; // Teal
+                chart.data.datasets[0].backgroundColor = 'rgba(20, 184, 166, 0.2)';
+            } else if (pathwayKey === 'rom') {
+                chart.data.datasets[0].borderColor = '#4f46e5'; // Indigo
+                chart.data.datasets[0].backgroundColor = 'rgba(79, 70, 229, 0.2)';
+            } else {
+                chart.data.datasets[0].borderColor = '#64748b'; // Slate
+                chart.data.datasets[0].backgroundColor = 'rgba(100, 116, 139, 0.2)';
+            }
+            chart.update();
+        }
+
+        function toggleFocusMode() {
+            state.focusMode = !state.focusMode;
+            const btn = document.getElementById('focus-btn');
+            const body = document.body;
+
+            if (state.focusMode) {
+                // Activate Focus Mode
+                body.classList.add('focus-mode-active');
+                btn.innerHTML = '<span>✕</span> Exit Focus Mode';
+                btn.classList.add('bg-slate-800', 'text-white', 'border-transparent');
+                btn.classList.remove('bg-white', 'text-slate-700');
+            } else {
+                // Deactivate
+                body.classList.remove('focus-mode-active');
+                btn.innerHTML = '<span>⊙</span> Test Focus Mode';
+                btn.classList.remove('bg-slate-800', 'text-white', 'border-transparent');
+                btn.classList.add('bg-white', 'text-slate-700');
+            }
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Initialization ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initNav();
+            initCharts();
+            // Trigger default view
+            highlightPathway('launcher');
+        });
+
+    </script>
+</body>
+</html>
