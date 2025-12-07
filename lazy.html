@@ -3,127 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posture Police</title>
+    <title>Neural Focus Guardian</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <style>
         body {
             margin: 0;
-            background: #111;
-            color: white;
-            font-family: sans-serif;
-            overflow: hidden; /* Stop scrolling */
-            transition: background 0.5s;
-        }
-        
-        /* The Content (Your Study Material) */
-        #content {
-            padding: 20px;
-            filter: blur(20px); /* Default to blurred */
-            pointer-events: none; /* Can't click anything */
-            transition: filter 0.5s;
-            height: 100vh;
+            background-color: #0f0f0f;
+            color: #00ffcc;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
         }
 
-        /* The Warning Overlay */
-        #warning {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+        /* The Main Display Area */
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 2px solid #333;
+        }
+
+        /* Camera Feed (Hidden mostly, we want the overlay) */
+        video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4; /* Dimmed to look cool */
+            z-index: 1;
+        }
+
+        /* The Canvas where AI draws the skeleton */
+        canvas {
+            position: absolute;
+            z-index: 2;
+        }
+
+        /* HUD - Heads Up Display */
+        #hud {
+            z-index: 3;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 1px solid #00ffcc;
+            font-size: 0.8rem;
+        }
+
+        /* The Status Panel */
+        #status-panel {
+            height: 40vh;
+            width: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(255, 0, 0, 0.8);
-            z-index: 999;
-            text-align: center;
+            background: #1a1a1a;
+            z-index: 4;
+            transition: background 0.3s;
         }
-        
-        h1 { font-size: 3rem; margin: 0; text-transform: uppercase; }
-        p { font-size: 1.2rem; margin-top: 10px; }
-        
-        /* Debug info */
-        #data { position: fixed; bottom: 10px; left: 10px; font-family: monospace; color: #888; }
+
+        h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; }
+        .sub-text { color: #888; margin-top: 10px; }
+
+        /* Alerts */
+        .alert { color: #ff3333; border-color: #ff3333; }
+        .good { color: #00ffcc; border-color: #00ffcc; }
 
     </style>
 </head>
 <body>
 
-    <div id="content">
-        <h2>Physics Formula Sheet</h2>
-        <ul>
-            <li>F = ma</li>
-            <li>E = mc^2</li>
-            <li>v = u + at</li>
-            <li>s = ut + 1/2at^2</li>
-        </ul>
-        <button onclick="alert('You clicked me!')">Interactive Button</button>
-        <p>This content is only visible if you are sitting UPRIGHT.</p>
+    <div id="container">
+        <video id="video" autoplay muted playsinline></video>
+        <div id="hud">
+            <div>SYSTEM: INITIALIZING...</div>
+            <div id="tiltData">TILT: --°</div>
+            <div id="distData">SCORE: --</div>
+        </div>
     </div>
 
-    <div id="warning">
-        <h1>SIT UP!</h1>
-        <p>Don't study in bed.</p>
-        <button id="permBtn" style="margin-top:20px; padding:10px;">Enable Sensor</button>
+    <div id="status-panel">
+        <h1 id="statusText">LOADING AI...</h1>
+        <div class="sub-text">Place phone on stand. Sit straight.</div>
     </div>
-
-    <div id="data">Waiting for sensor...</div>
 
     <script>
-        const content = document.getElementById('content');
-        const warning = document.getElementById('warning');
-        const dataDisplay = document.getElementById('data');
-        const permBtn = document.getElementById('permBtn');
+        const video = document.getElementById('video');
+        const statusText = document.getElementById('statusText');
+        const panel = document.getElementById('status-panel');
+        const tiltData = document.getElementById('tiltData');
+        const hud = document.getElementById('hud');
 
-        // iOS requires permission button, Android usually just works but good practice
-        function startSensor() {
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            permBtn.style.display = 'none';
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                // Non-iOS devices (Android)
-                window.addEventListener('deviceorientation', handleOrientation);
-                permBtn.style.display = 'none';
+        // Load AI Models
+        async function loadModels() {
+            // Using a specific CDN for stability
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                startVideo();
+            } catch (err) {
+                statusText.innerText = "MODEL ERROR";
+                console.error(err);
             }
         }
 
-        function handleOrientation(event) {
-            // Beta is the front-to-back tilt in degrees [-180 to 180]
-            // 90 is upright (standing up)
-            // 0 is flat on table
-            // 45 is roughly "holding in hand while sitting"
-            // < 20 often means lying flat looking up
-            
-            const tilt = event.beta; 
-            
-            dataDisplay.innerText = "Tilt Angle: " + Math.round(tilt) + "°";
+        function startVideo() {
+            navigator.mediaDevices.getUserMedia({ video: {} })
+                .then(stream => {
+                    video.srcObject = stream;
+                    statusText.innerText = "CALIBRATING...";
+                })
+                .catch(err => statusText.innerText = "CAMERA DENIED");
+        }
 
-            // LOGIC: If tilt is less than 30 degrees (lying back) OR greater than 140 (upside down)
-            // Note: This needs calibration based on how YOU hold the phone.
-            // Let's assume Sitting Upright = 45 to 90 degrees.
+        video.addEventListener('play', () => {
+            const canvas = faceapi.createCanvasFromMedia(video);
+            document.getElementById('container').append(canvas);
             
-            const isUpright = (tilt > 40 && tilt < 100);
+            const displaySize = { width: video.clientWidth, height: video.clientHeight };
+            faceapi.matchDimensions(canvas, displaySize);
 
-            if (isUpright) {
-                // GOOD POSTURE
-                warning.style.opacity = "0";
-                setTimeout(() => warning.style.display = 'none', 500); // Hide after fade
-                content.style.filter = "blur(0px)";
-                content.style.pointerEvents = "auto";
+            setInterval(async () => {
+                // 1. Detect Face & Landmarks
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks();
+
+                // Clear previous drawings
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (detections.length > 0) {
+                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                    
+                    // Draw the "Tech" lines (Jaw, Eyes)
+                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+                    // 2. The Logic: Get Eye Coordinates
+                    const landmarks = resizedDetections[0].landmarks;
+                    const leftEye = landmarks.getLeftEye();
+                    const rightEye = landmarks.getRightEye();
+
+                    // Calculate Center Points of eyes
+                    const leftEyeCenter = getCenterPoint(leftEye);
+                    const rightEyeCenter = getCenterPoint(rightEye);
+
+                    // 3. Calculate Tilt Angle (Trigonometry)
+                    // Difference in Y divided by Difference in X
+                    const dy = rightEyeCenter.y - leftEyeCenter.y;
+                    const dx = rightEyeCenter.x - leftEyeCenter.x;
+                    const angleRad = Math.atan2(dy, dx); 
+                    const angleDeg = angleRad * (180 / Math.PI);
+
+                    updateInterface(angleDeg);
+
+                } else {
+                    // No Face Found
+                    statusText.innerText = "ABSENT";
+                    panel.style.background = "#330000"; // Dark Red
+                    statusText.style.color = "#ff3333";
+                }
+            }, 200); // Check every 200ms
+        });
+
+        function getCenterPoint(points) {
+            let x = 0, y = 0;
+            points.forEach(p => { x += p.x; y += p.y; });
+            return { x: x / points.length, y: y / points.length };
+        }
+
+        function updateInterface(angle) {
+            // Absolute angle (ignoring left vs right tilt direction)
+            const absAngle = Math.abs(angle);
+            
+            tiltData.innerText = "TILT: " + absAngle.toFixed(1) + "°";
+
+            // THRESHOLD: If head tilts more than 20 degrees, you are slouching/sleeping
+            if (absAngle > 20) {
+                statusText.innerText = "POSTURE BAD";
+                statusText.style.color = "#ff3333";
+                panel.style.background = "#330000"; // Red Warning
+                hud.style.borderColor = "#ff3333";
             } else {
-                // BAD POSTURE (Lying down or Phone Flat)
-                warning.style.display = "flex";
-                setTimeout(() => warning.style.opacity = "1", 10);
-                content.style.filter = "blur(20px)";
-                content.style.pointerEvents = "none";
+                statusText.innerText = "FOCUSED";
+                statusText.style.color = "#00ffcc";
+                panel.style.background = "#003300"; // Green Good
+                hud.style.borderColor = "#00ffcc";
             }
         }
 
-        permBtn.addEventListener('click', startSensor);
-
+        // Start the system
+        loadModels();
     </script>
 </body>
 </html>
