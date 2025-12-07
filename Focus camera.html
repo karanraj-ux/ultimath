@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neural Focus Guardian v4.0 (Full)</title>
+    <title>Neural Focus Guardian: Pro Performance</title>
     <style>
-        /* --- FULL CSS STYLING --- */
+        /* --- PRO UI STYLING --- */
         body {
             margin: 0;
             padding: 0;
@@ -16,314 +16,245 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Prevents scrolling */
+            overflow: hidden;
         }
 
-        /* The Main Camera Area */
+        /* Top Camera Section */
         #container {
             position: relative;
             width: 100%;
-            height: 65%; /* Takes top 65% of screen */
-            background-color: #111111;
-            border-bottom: 2px solid #333333;
+            height: 60%;
+            background-color: #0a0a0a;
+            border-bottom: 2px solid #333;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Video and Canvas Setup - Mirrored */
+        /* Mirrored Video Feed */
         video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
             height: 100%;
-            object-fit: cover; /* Fills screen without stretching */
-            transform: scaleX(-1); /* Mirror effect */
-            z-index: 1;
-            opacity: 0.8;
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* Match the video mirror */
-            z-index: 2;
+            transform: scaleX(-1);
+            opacity: 0.8; 
+            z-index: 1;
         }
 
-        /* The Control Panel Area */
+        /* Bottom Dashboard Section */
         #panel {
-            height: 35%; /* Takes bottom 35% of screen */
+            height: 40%;
             width: 100%;
             background-color: #050505;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 20px;
+            padding-top: 15px;
             box-sizing: border-box;
             z-index: 10;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.4s ease;
         }
 
-        /* Status Text Styling */
         h1 {
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
+            font-size: 2rem;
+            margin: 0;
             text-transform: uppercase;
             letter-spacing: 2px;
             text-align: center;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
         }
 
         p {
-            margin: 5px 0;
-            color: #888888;
+            margin: 5px 0 15px 0;
+            color: #888;
             font-size: 0.9rem;
         }
 
-        /* The Debug Log Box (Scrollable) */
+        /* Scrollable System Log */
         #logs {
-            margin-top: 15px;
             width: 90%;
             height: 80px;
             background-color: #111;
             border: 1px solid #333;
-            color: #aaaaaa;
+            color: #aaa;
             font-size: 0.75rem;
-            padding: 8px;
-            overflow-y: auto; /* Scroll if too many logs */
+            padding: 10px;
+            overflow-y: auto;
             text-align: left;
-            font-family: monospace;
             border-radius: 4px;
+            font-family: monospace;
         }
 
-        /* Specific Status Colors */
-        .status-good { color: #00ff00; text-shadow: 0 0 10px #00ff00; }
-        .status-bad { color: #ff3333; text-shadow: 0 0 10px #ff3333; }
+        /* Dynamic Status Colors */
+        .status-good { color: #00ff00; text-shadow: 0 0 15px #00ff00; }
+        .status-bad { color: #ff3333; text-shadow: 0 0 15px #ff3333; }
         .status-wait { color: #ffff00; }
-        
-        /* Helper class to hide elements */
-        .hidden { display: none !important; }
 
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #00ff00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="container">
-        <div id="loading-spinner" style="color: white;">Waiting for System...</div>
+        <div id="loader" class="spinner"></div>
     </div>
 
     <div id="panel">
-        <h1 id="mainStatus" class="status-wait">INITIALIZING...</h1>
-        <p id="subStatus">System Boot Sequence Started</p>
-        
-        <div id="logs">
-            > [SYSTEM] Log Interface Ready.<br>
-        </div>
+        <h1 id="mainStatus" class="status-wait">SYSTEM BOOT</h1>
+        <p id="subStatus">Initializing Neural Engine...</p>
+        <div id="logs">> [SYSTEM] Power On.<br></div>
     </div>
 
     <script>
-        // --- GLOBAL VARIABLES ---
-        let isModelLoaded = false;
-        let isCameraActive = false;
         const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights/';
+        let isRunning = false;
 
-        // --- HELPER FUNCTION: LOGGING ---
-        // Writes messages to the gray box on screen so you can see what's happening
+        // Logging Utility
         function log(msg) {
-            console.log(msg); // To browser console
+            console.log(msg);
             const logBox = document.getElementById('logs');
             const time = new Date().toLocaleTimeString().split(' ')[0];
-            // Prepend new log to the top
             logBox.innerHTML = `> [${time}] ${msg}<br>` + logBox.innerHTML;
         }
 
-        // --- STEP 1: INITIALIZATION ---
-        // This function runs ONLY when the external library script triggers 'onload'
+        // 1. STARTUP SEQUENCE
         function initApp() {
-            log("Library 'face-api.js' loaded successfully.");
-            
+            log("Core Library Loaded.");
             const mainStatus = document.getElementById('mainStatus');
-            mainStatus.innerText = "LOADING BRAIN...";
+            mainStatus.innerText = "LOADING AI...";
             
-            loadAIModels();
+            // Load only the essential light models
+            Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
+            ]).then(startCamera).catch(err => {
+                log("CRITICAL ERROR: " + err);
+                mainStatus.innerText = "NETWORK ERROR";
+                mainStatus.className = "status-bad";
+                alert("Could not download AI models. Check internet.");
+            });
         }
 
-        // --- STEP 2: LOAD AI MODELS ---
-        async function loadAIModels() {
-            log("Downloading AI Models from CDN...");
+        // 2. CAMERA SETUP (Optimized for Mobile Performance)
+        function startCamera() {
+            log("AI Models Ready. Requesting Camera...");
             
-            try {
-                // We load two specific models: TinyFace (fast detection) and Landmarks (for eyes)
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-                ]);
-
-                isModelLoaded = true;
-                log("Models Downloaded & Loaded into Memory.");
-                
-                // Once models are ready, start the camera
-                startCameraStream();
-
-            } catch (error) {
-                log("CRITICAL ERROR: Failed to load models.");
-                log("Error Details: " + error.message);
-                document.getElementById('mainStatus').innerText = "MODEL ERROR";
-                document.getElementById('mainStatus').className = "status-bad";
-                alert("Error loading AI. Check internet connection.");
-            }
-        }
-
-        // --- STEP 3: START CAMERA ---
-        function startCameraStream() {
-            log("Requesting Camera Access...");
-            document.getElementById('mainStatus').innerText = "OPENING CAM...";
-
+            // KEY UPGRADE: We ask for 320x240 resolution. 
+            // This is crystal clear for AI but 4x faster for your CPU than HD.
             const constraints = {
                 audio: false,
                 video: {
-                    facingMode: "user", // Front camera
-                    width: { ideal: 640 }, // Lower resolution for speed
-                    height: { ideal: 480 }
+                    facingMode: "user",
+                    width: { ideal: 320 },
+                    height: { ideal: 240 }
                 }
             };
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
-                    log("Camera Access GRANTED.");
-                    
                     const container = document.getElementById('container');
-                    const spinner = document.getElementById('loading-spinner');
-                    if(spinner) spinner.style.display = 'none';
+                    const loader = document.getElementById('loader');
+                    loader.style.display = 'none'; // Hide spinner
 
-                    // Create Video Element Programmatically
                     const video = document.createElement('video');
                     video.srcObject = stream;
                     video.autoplay = true;
-                    video.playsInline = true; // Required for iOS/Android
+                    video.playsInline = true;
                     video.muted = true;
-                    video.id = "webcam";
-                    
                     container.appendChild(video);
 
-                    // Wait for video to actually have data
                     video.onloadedmetadata = () => {
-                        log("Video Stream Active. Dimensions: " + video.videoWidth + "x" + video.videoHeight);
-                        isCameraActive = true;
-                        startDetectionLoop(video);
+                        log("Camera Active. Engine Started.");
+                        runDetectionEngine(video);
                     };
                 })
                 .catch(err => {
-                    log("CAMERA ERROR: " + err.name);
-                    log("Message: " + err.message);
-                    document.getElementById('mainStatus').innerText = "CAM BLOCKED";
+                    log("CAMERA BLOCKED: " + err.message);
+                    document.getElementById('mainStatus').innerText = "NO CAMERA";
                     document.getElementById('mainStatus').className = "status-bad";
-                    document.getElementById('subStatus').innerText = "Please reset site permissions.";
                 });
         }
 
-        // --- STEP 4: THE DETECTION LOOP (THE BRAIN) ---
-        function startDetectionLoop(video) {
-            log("Starting AI Detection Loop...");
-            document.getElementById('mainStatus').innerText = "SCANNING...";
-            document.getElementById('mainStatus').className = "status-wait";
+        // 3. THE DETECTION ENGINE (The Brain)
+        function runDetectionEngine(video) {
+            const mainStatus = document.getElementById('mainStatus');
+            const subStatus = document.getElementById('subStatus');
+            const panel = document.getElementById('panel');
 
-            // Setup Canvas for Drawing Overlay
-            const container = document.getElementById('container');
-            const canvas = faceapi.createCanvasFromMedia(video);
-            canvas.id = "overlay";
-            container.appendChild(canvas);
+            // PERFORMANCE TUNING: inputSize 160 is the secret.
+            // It processes a smaller image internally for maximum speed.
+            const aiOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 });
 
-            // Match Canvas Size to Video
-            const displaySize = { width: video.videoWidth, height: video.videoHeight };
-            faceapi.matchDimensions(canvas, displaySize);
+            mainStatus.innerText = "SCANNING...";
+            mainStatus.className = "status-wait";
 
-            // Run this code every 100 milliseconds (10 times a second)
+            // Loop every 500ms (2 times per second)
+            // This is the perfect balance: Smooth updates, Zero lag.
             setInterval(async () => {
-                if (!isCameraActive || video.paused || video.ended) return;
+                if (video.paused || video.ended) return;
 
-                // 1. Detect Face
-                // We use TinyFaceDetectorOptions for speed on mobile
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-                
-                // 2. Prepare Drawing Context
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous frame
+                // Detect Face & Landmarks
+                const result = await faceapi.detectSingleFace(video, aiOptions).withFaceLandmarks();
 
-                // 3. UI Elements
-                const mainStatus = document.getElementById('mainStatus');
-                const subStatus = document.getElementById('subStatus');
-                const panel = document.getElementById('panel');
-
-                if (detections.length > 0) {
-                    // Face Found!
-                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                    
-                    // Draw the Green Lines on Face
-                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-
-                    // --- MATHEMATICAL LOGIC FOR TILT ---
-                    const landmarks = resizedDetections[0].landmarks;
-                    const leftEye = landmarks.getLeftEye(); 
+                if (result) {
+                    // Face Found - Calculate Tilt
+                    const landmarks = result.landmarks;
+                    const leftEye = landmarks.getLeftEye();
                     const rightEye = landmarks.getRightEye();
 
-                    // Calculate the center (average) of the left eye points
-                    const leftEyeCenter = {
-                        x: leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length,
-                        y: leftEye.reduce((sum, p) => sum + p.y, 0) / leftEye.length
-                    };
+                    // Get average points
+                    const leftY = leftEye.reduce((sum, p) => sum + p.y, 0) / leftEye.length;
+                    const rightY = rightEye.reduce((sum, p) => sum + p.y, 0) / rightEye.length;
+                    const leftX = leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length;
+                    const rightX = rightEye.reduce((sum, p) => sum + p.x, 0) / rightEye.length;
 
-                    // Calculate the center (average) of the right eye points
-                    const rightEyeCenter = {
-                        x: rightEye.reduce((sum, p) => sum + p.x, 0) / rightEye.length,
-                        y: rightEye.reduce((sum, p) => sum + p.y, 0) / rightEye.length
-                    };
+                    // Math: Angle Calculation
+                    const dy = rightY - leftY;
+                    const dx = rightX - leftX;
+                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                    const absAngle = Math.abs(angle);
 
-                    // Calculate Slope: (y2 - y1) / (x2 - x1)
-                    const dy = rightEyeCenter.y - leftEyeCenter.y;
-                    const dx = rightEyeCenter.x - leftEyeCenter.x;
-                    
-                    // Convert to Degrees
-                    const angleRad = Math.atan2(dy, dx);
-                    const angleDeg = angleRad * (180 / Math.PI);
-                    const absAngle = Math.abs(angleDeg);
+                    // Update UI
+                    subStatus.innerText = "Head Tilt: " + absAngle.toFixed(1) + "°";
 
-                    // --- UPDATE UI BASED ON ANGLE ---
-                    subStatus.innerText = "Current Tilt: " + absAngle.toFixed(1) + "°";
-
-                    // Threshold: 20 degrees is the limit for "Good Posture"
                     if (absAngle > 20) {
-                        // BAD POSTURE STATE
-                        mainStatus.innerText = "POSTURE BAD";
+                        // BAD POSTURE
+                        mainStatus.innerText = "BAD POSTURE";
                         mainStatus.className = "status-bad";
-                        panel.style.backgroundColor = "#220000"; // Dark Red Background
+                        panel.style.backgroundColor = "#330000"; // Red Flash
                     } else {
-                        // GOOD POSTURE STATE
+                        // GOOD POSTURE
                         mainStatus.innerText = "FOCUSED";
                         mainStatus.className = "status-good";
-                        panel.style.backgroundColor = "#002200"; // Dark Green Background
+                        panel.style.backgroundColor = "#002200"; // Green Glow
                     }
 
                 } else {
-                    // Face Not Found
+                    // No Face Found
                     mainStatus.innerText = "NO FACE";
                     mainStatus.className = "status-wait";
                     subStatus.innerText = "Please look at the camera";
-                    panel.style.backgroundColor = "#111111"; // Default Black
+                    panel.style.backgroundColor = "#050505"; // Reset Black
                 }
-            }, 100);
+
+            }, 500); // 500ms Interval = Smooth & Fast
         }
     </script>
 
-    <script 
-        src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" 
-        onload="initApp()" 
-        onerror="alert('Failed to load face-api.js library. Check AdBlock or Internet.')">
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" 
+            onload="initApp()" 
+            onerror="alert('Failed to load AI library. Check AdBlock or Connection.')">
     </script>
 
 </body>
