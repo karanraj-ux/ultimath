@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ultimath-ecosystem-v2-final';
+const CACHE_NAME = 'ultimath-ecosystem-v3-final';
 const ASSETS = [
   '/',
   '/index.html',      // Public Calculator
