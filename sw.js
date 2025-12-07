@@ -8,6 +8,8 @@ const ASSETS = [
   '/omega.html',      // Brother Control
   '/Security.html',   //security app
   '/Sync.html',       // UltiSync (Conference)
+  '/lazy.html',       // lazy focus tool
+  '/neuro.html',      //neuro
   '/manifest.json',
 
   
