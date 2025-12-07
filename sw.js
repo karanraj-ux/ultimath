@@ -6,7 +6,7 @@ const ASSETS = [
   '/titan.html',      // Shop OS
   '/print.html',      // P2P Printer
   '/omega.html',      // Brother Control
-  '/uplink.html',     // Secret Chat
+  '/security.html',   //security app
   '/sync.html',       // UltiSync (Conference)
   '/manifest.json',
 
