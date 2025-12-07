@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Focus Guardian</title>
-    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+    <title>Neural Focus Guardian v2</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -17,7 +17,6 @@
             overflow: hidden;
         }
 
-        /* The Main Display Area */
         #container {
             position: relative;
             width: 100vw;
@@ -28,23 +27,22 @@
             border-bottom: 2px solid #333;
         }
 
-        /* Camera Feed (Hidden mostly, we want the overlay) */
         video {
             position: absolute;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.4; /* Dimmed to look cool */
+            opacity: 0.6; 
             z-index: 1;
+            transform: scaleX(-1); /* Mirror the camera */
         }
 
-        /* The Canvas where AI draws the skeleton */
         canvas {
             position: absolute;
             z-index: 2;
+            transform: scaleX(-1); /* Mirror the drawings to match video */
         }
 
-        /* HUD - Heads Up Display */
         #hud {
             z-index: 3;
             position: absolute;
@@ -56,7 +54,6 @@
             font-size: 0.8rem;
         }
 
-        /* The Status Panel */
         #status-panel {
             height: 40vh;
             width: 100%;
@@ -70,11 +67,7 @@
         }
 
         h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; }
-        .sub-text { color: #888; margin-top: 10px; }
-
-        /* Alerts */
-        .alert { color: #ff3333; border-color: #ff3333; }
-        .good { color: #00ffcc; border-color: #00ffcc; }
+        .sub-text { color: #888; margin-top: 10px; font-size: 0.9rem; }
 
     </style>
 </head>
@@ -83,46 +76,50 @@
     <div id="container">
         <video id="video" autoplay muted playsinline></video>
         <div id="hud">
-            <div>SYSTEM: INITIALIZING...</div>
+            <div>SYSTEM: ONLINE</div>
             <div id="tiltData">TILT: --°</div>
-            <div id="distData">SCORE: --</div>
         </div>
     </div>
 
     <div id="status-panel">
         <h1 id="statusText">LOADING AI...</h1>
-        <div class="sub-text">Place phone on stand. Sit straight.</div>
+        <div class="sub-text" id="subText">Please wait. Downloading models...</div>
     </div>
 
     <script>
         const video = document.getElementById('video');
         const statusText = document.getElementById('statusText');
+        const subText = document.getElementById('subText');
         const panel = document.getElementById('status-panel');
         const tiltData = document.getElementById('tiltData');
-        const hud = document.getElementById('hud');
 
-        // Load AI Models
+        // NEW: Reliable CDN for models
+        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights/';
+
         async function loadModels() {
-            // Using a specific CDN for stability
-            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-            
             try {
+                // Load only what we need
                 await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                 await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
                 startVideo();
             } catch (err) {
                 statusText.innerText = "MODEL ERROR";
+                subText.innerText = "Error: " + err.message + ". Check internet connection.";
+                panel.style.background = "#330000";
                 console.error(err);
             }
         }
 
         function startVideo() {
+            statusText.innerText = "STARTING CAM...";
             navigator.mediaDevices.getUserMedia({ video: {} })
                 .then(stream => {
                     video.srcObject = stream;
-                    statusText.innerText = "CALIBRATING...";
                 })
-                .catch(err => statusText.innerText = "CAMERA DENIED");
+                .catch(err => {
+                    statusText.innerText = "CAMERA DENIED";
+                    subText.innerText = "Please allow camera access in browser settings.";
+                });
         }
 
         video.addEventListener('play', () => {
@@ -133,45 +130,32 @@
             faceapi.matchDimensions(canvas, displaySize);
 
             setInterval(async () => {
-                // 1. Detect Face & Landmarks
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks();
-
-                // Clear previous drawings
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (detections.length > 0) {
                     const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                    
-                    // Draw the "Tech" lines (Jaw, Eyes)
                     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
 
-                    // 2. The Logic: Get Eye Coordinates
                     const landmarks = resizedDetections[0].landmarks;
                     const leftEye = landmarks.getLeftEye();
                     const rightEye = landmarks.getRightEye();
 
-                    // Calculate Center Points of eyes
                     const leftEyeCenter = getCenterPoint(leftEye);
                     const rightEyeCenter = getCenterPoint(rightEye);
 
-                    // 3. Calculate Tilt Angle (Trigonometry)
-                    // Difference in Y divided by Difference in X
                     const dy = rightEyeCenter.y - leftEyeCenter.y;
                     const dx = rightEyeCenter.x - leftEyeCenter.x;
-                    const angleRad = Math.atan2(dy, dx); 
-                    const angleDeg = angleRad * (180 / Math.PI);
+                    const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
 
                     updateInterface(angleDeg);
-
                 } else {
-                    // No Face Found
                     statusText.innerText = "ABSENT";
-                    panel.style.background = "#330000"; // Dark Red
+                    panel.style.background = "#330000"; 
                     statusText.style.color = "#ff3333";
                 }
-            }, 200); // Check every 200ms
+            }, 100); 
         });
 
         function getCenterPoint(points) {
@@ -181,26 +165,20 @@
         }
 
         function updateInterface(angle) {
-            // Absolute angle (ignoring left vs right tilt direction)
             const absAngle = Math.abs(angle);
-            
             tiltData.innerText = "TILT: " + absAngle.toFixed(1) + "°";
 
-            // THRESHOLD: If head tilts more than 20 degrees, you are slouching/sleeping
             if (absAngle > 20) {
                 statusText.innerText = "POSTURE BAD";
                 statusText.style.color = "#ff3333";
-                panel.style.background = "#330000"; // Red Warning
-                hud.style.borderColor = "#ff3333";
+                panel.style.background = "#330000"; 
             } else {
                 statusText.innerText = "FOCUSED";
                 statusText.style.color = "#00ffcc";
-                panel.style.background = "#003300"; // Green Good
-                hud.style.borderColor = "#00ffcc";
+                panel.style.background = "#003300"; 
             }
         }
 
-        // Start the system
         loadModels();
     </script>
 </body>
