@@ -10,6 +10,7 @@ const ASSETS = [
   '/Sync.html',       // UltiSync (Conference)
   '/lazy.html',       // lazy focus tool
   '/neuro.html',      //neuro
+  '/Focus camera.html. //focus camera tool
   '/manifest.json',
 
   
