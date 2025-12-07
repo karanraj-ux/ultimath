@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <title>UltiSync: Workspace</title>
+    
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* CORE THEME */
+        :root { --glass: rgba(30, 41, 59, 0.9); --border: rgba(255, 255, 255, 0.1); }
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        
+        /* CHAT BUBBLES */
+        .msg-me { align-self: flex-end; background: #4f46e5; color: white; border-radius: 12px 12px 0 12px; }
+        .msg-other { align-self: flex-start; background: #1e293b; border: 1px solid var(--border); border-radius: 12px 12px 12px 0; }
+        .msg-system { align-self: center; background: rgba(255,255,255,0.05); border-radius: 20px; color: #94a3b8; font-size: 0.7rem; padding: 4px 12px; margin: 8px 0; border: 1px solid rgba(255,255,255,0.05); font-family: 'JetBrains Mono', monospace; }
+        .msg-img { max-width: 240px; border-radius: 8px; margin-top: 5px; cursor: pointer; transition: transform 0.2s; border: 1px solid var(--border); }
+        .msg-img:active { transform: scale(0.98); }
+
+        /* ANIMATIONS */
+        @keyframes ring { 0% { transform: rotate(0deg); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-15deg); } 60% { transform: rotate(10deg); } 80% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
+        .ringing-phone { animation: ring 1s infinite ease-in-out; color: #ef4444; }
+        
+        /* UTILS */
+        .glass-panel { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); }
+        .badge-vip { background: #059669; color: white; font-size: 0.6rem; padding: 1px 5px; border-radius: 4px; font-weight: bold; letter-spacing: 0.5px; }
+        .drag-overlay { background: rgba(79, 70, 229, 0.9); backdrop-filter: blur(4px); }
+        .h-dvh { height: 100dvh; } 
+    </style>
+</head>
+<body class="h-dvh w-screen flex flex-col" ondrop="handleDrop(event)" ondragover="event.preventDefault()">
+
+    <header class="h-14 bg-[#0f172a] border-b border-slate-800 flex items-center justify-between px-4 shrink-0 z-30 shadow-md">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="ph ph-hexagon text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm tracking-wide leading-tight text-white">Ulti<span class="text-indigo-400">Sync</span></h1>
+                <div id="statusIndicator" class="text-[10px] text-slate-500 flex items-center gap-1 font-mono mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Connecting...
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="copyId()" class="w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition flex items-center justify-center active:scale-95" title="Copy Room ID">
+                <i class="ph ph-copy text-lg"></i>
+            </button>
+            <button onclick="toggleSidebar()" class="lg:hidden w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition flex items-center justify-center active:scale-95">
+                <i class="ph ph-list text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <aside id="sidebar" class="absolute lg:relative w-80 h-full bg-[#0f172a] border-r border-slate-800 transform -translate-x-full lg:translate-x-0 transition duration-300 z-20 flex flex-col shadow-2xl lg:shadow-none">
+            
+            <div class="p-5 border-b border-slate-800">
+                <div class="flex items-center gap-3 mb-4 bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                    <img src="" id="myAvatar" class="w-10 h-10 rounded-full border border-slate-600">
+                    <div class="flex-1">
+                        <label class="text-[9px] uppercase text-slate-500 font-bold tracking-wider">Your Name</label>
+                        <input type="text" id="username" class="bg-transparent border-none text-sm font-semibold text-white focus:outline-none w-full placeholder-slate-600" placeholder="Enter Name..." onchange="updateName(this.value)">
+                    </div>
+                </div>
+                
+                <div id="setupPanel" class="flex flex-col gap-3">
+                    <div class="relative">
+                        <i class="ph ph-key absolute left-3 top-2.5 text-slate-500 text-sm"></i>
+                        <input type="text" id="hostPasscode" placeholder="Set VIP Code (Optional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none transition">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="createBtn" onclick="createRoom()" disabled class="bg-indigo-600 disabled:bg-slate-700 disabled:cursor-not-allowed hover:bg-indigo-500 text-white py-2.5 rounded-lg text-xs font-bold shadow-lg shadow-indigo-600/20 active:translate-y-0.5 transition flex items-center justify-center gap-2">
+                            <i class="ph ph-plus-circle text-lg"></i> CREATE
+                        </button>
+                        <button onclick="openJoinModal()" class="bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-lg text-xs font-bold active:translate-y-0.5 transition flex items-center justify-center gap-2">
+                            <i class="ph ph-sign-in text-lg"></i> JOIN
+                        </button>
+                    </div>
+                </div>
+
+                <div id="hostControls" class="hidden flex-col gap-2 mt-2">
+                    <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1"><i class="ph ph-sliders"></i> Room Controls</div>
+                    
+                    <button onclick="toggleSilence()" id="silenceBtn" class="flex items-center justify-between px-3 py-2.5 bg-slate-800 rounded-lg border border-slate-700 hover:border-red-500/50 hover:bg-slate-800/80 transition group active:scale-[0.98]">
+                        <span class="text-xs font-medium text-slate-300 group-hover:text-red-400">Silence All</span>
+                        <i class="ph ph-microphone-slash text-slate-500 group-hover:text-red-400"></i>
+                    </button>
+                    
+                    <button onclick="toggleLock()" id="lockBtn" class="flex items-center justify-between px-3 py-2.5 bg-slate-800 rounded-lg border border-slate-700 hover:border-orange-500/50 hover:bg-slate-800/80 transition group active:scale-[0.98]">
+                        <span class="text-xs font-medium text-slate-300 group-hover:text-orange-400">Lock Room</span>
+                        <i class="ph ph-lock-key text-slate-500 group-hover:text-orange-400"></i>
+                    </button>
+                    
+                    <button onclick="leaveRoom()" class="flex items-center justify-between px-3 py-2.5 bg-red-500/10 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition group active:scale-[0.98] mt-1">
+                        <span class="text-xs font-bold text-red-400">End Session</span>
+                        <i class="ph ph-power text-red-400"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-3 space-y-1" id="userList">
+                </div>
+
+            <div class="p-4 bg-[#0f172a] border-t border-slate-800 flex gap-3">
+                <button onclick="toggleMic()" id="micBtn" class="flex-1 h-12 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center text-white transition border border-slate-700 shadow-sm active:scale-95 group">
+                    <i class="ph ph-microphone text-xl group-hover:text-indigo-400 transition"></i>
+                </button>
+                <button onclick="leaveRoom()" title="Leave / Reset" class="w-12 h-12 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl flex items-center justify-center transition border border-red-500/20 shadow-sm active:scale-95">
+                    <i class="ph ph-phone-disconnect text-xl"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-[#0b0f19] relative w-full">
+            
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-4">
+                <div class="flex flex-col items-center justify-center h-full opacity-20">
+                    <i class="ph ph-circles-three-plus text-7xl mb-4"></i>
+                    <p class="text-sm font-medium">Ready to Sync.</p>
+                </div>
+            </div>
+
+            <div id="dragOverlay" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center text-white pointer-events-none drag-overlay">
+                <i class="ph ph-image text-7xl mb-4 animate-bounce"></i>
+                <h2 class="text-2xl font-bold tracking-tight">Drop Image to Send</h2>
+            </div>
+
+            <div class="p-3 bg-[#0f172a] border-t border-slate-800 z-20 shrink-0 relative">
+                 <div id="lockedOverlay" class="hidden absolute inset-0 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center z-30">
+                    <span class="text-xs font-bold text-red-400 uppercase tracking-widest flex items-center gap-2 border border-red-500/30 px-4 py-2 rounded-full bg-red-500/10">
+                        <i class="ph ph-lock-key"></i> Room Locked by Host
+                    </span>
+                 </div>
+
+                <form onsubmit="sendMessage(event)" class="flex gap-2 items-end max-w-4xl mx-auto">
+                    <button type="button" onclick="document.getElementById('imgInput').click()" class="p-3 text-slate-400 hover:text-indigo-400 transition hover:bg-slate-800 rounded-xl active:scale-95">
+                        <i class="ph ph-image text-xl"></i>
+                    </button>
+                    <input type="file" id="imgInput" accept="image/*" class="hidden" onchange="handleFileSelect(this)">
+                    
+                    <div class="flex-1 bg-slate-800 rounded-xl border border-slate-700 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition flex items-center shadow-inner">
+                        <input type="text" id="msgInput" placeholder="Type message..." autocomplete="off" class="w-full bg-transparent border-none text-white px-4 py-3.5 focus:outline-none text-sm placeholder-slate-500">
+                    </div>
+                    
+                    <button type="submit" class="p-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition active:scale-90">
+                        <i class="ph ph-paper-plane-right text-lg"></i>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div id="joinModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-panel p-6 w-full max-w-sm rounded-2xl shadow-2xl transform transition-all scale-100">
+            <h3 class="text-lg font-bold text-white mb-1">Join Workspace</h3>
+            <p class="text-xs text-slate-400 mb-5">Enter the Room ID shared by your host.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Room ID</label>
+                    <input type="text" id="joinId" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition mt-1" placeholder="Paste ID here">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">VIP Passcode (Optional)</label>
+                    <input type="text" id="joinCode" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-sm text-indigo-300 focus:border-indigo-500 outline-none font-mono transition mt-1" placeholder="Enter code">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="document.getElementById('joinModal').style.display='none'" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition">Cancel</button>
+                <button onclick="joinRoom()" class="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-500/25 active:scale-95 transition">CONNECT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="callModal" class="fixed inset-0 bg-[#0f172a] hidden flex-col items-center justify-center z-[100]">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSI+PHBhdGggZD0iTTAgNDBMNDAgME0wIDBwNDAgNDAiLz48L3N2Zz4=')] opacity-20"></div>
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="w-32 h-32 rounded-full bg-slate-800 border-4 border-slate-700 flex items-center justify-center mb-8 relative shadow-2xl">
+                <i class="ph ph-phone-incoming text-5xl ringing-phone"></i>
+                <div class="absolute inset-0 rounded-full border-2 border-red-500 animate-ping opacity-50"></div>
+            </div>
+            <h2 class="text-3xl font-bold text-white mb-2 tracking-tight" id="callerName">Unknown</h2>
+            <p class="text-slate-400 text-sm mb-12 bg-slate-800/50 px-4 py-1 rounded-full border border-slate-700">is requesting to join...</p>
+            <div class="flex gap-10">
+                <div class="flex flex-col items-center gap-2">
+                    <button onclick="rejectCall()" class="w-20 h-20 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-xl shadow-red-500/40 transition transform hover:scale-110 active:scale-90"><i class="ph ph-phone-disconnect text-3xl"></i></button>
+                    <span class="text-xs text-red-400 font-bold uppercase tracking-wider">Decline</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <button onclick="acceptCall()" class="w-20 h-20 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-xl shadow-green-500/40 transition transform hover:scale-110 active:scale-90 animate-pulse"><i class="ph ph-phone text-3xl"></i></button>
+                    <span class="text-xs text-green-400 font-bold uppercase tracking-wider">Accept</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="audioContainer" class="hidden"></div>
+
+    <script>
+        // --- 1. CONFIG & STATE ---
+        const el = id => document.getElementById(id);
+        const generateName = () => 'Student ' + Math.floor(Math.random()*100);
+        
+        const state = {
+            id: null,
+            name: localStorage.getItem('us_name') && localStorage.getItem('us_name') !== 'undefined' ? localStorage.getItem('us_name') : generateName(),
+            role: 'GUEST',
+            vipCode: null,
+            room: null,
+            isSilenced: false,
+            isLocked: false
+        };
+        const room = { users: [], waiting: null };
+        let peer, myStream, connections = {};
+        let ringInterval;
+        let heartbeatInterval;
+
+        // Init
+        el('username').value = state.name;
+        updateAvatar(state.name);
+
+        // --- 2. AUDIO CONTEXT ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function resumeAudio() { if(audioCtx.state === 'suspended') audioCtx.resume(); }
+        document.body.addEventListener('click', resumeAudio, {once:true});
+
+        function playRing() {
+            resumeAudio(); 
+            const startTime = audioCtx.currentTime;
+            function beep(time) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, time);
+                osc.frequency.setValueAtTime(600, time + 0.1);
+                gain.gain.setValueAtTime(0.1, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+                osc.start(time);
+                osc.stop(time + 0.4);
+            }
+            beep(audioCtx.currentTime);
+            beep(audioCtx.currentTime + 0.5); 
+            ringInterval = setInterval(() => {
+                beep(audioCtx.currentTime);
+                beep(audioCtx.currentTime + 0.5);
+            }, 3000);
+        }
+        function stopRing() { clearInterval(ringInterval); }
+
+        // --- 3. PEERJS INIT ---
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
+            myStream = s;
+            initPeer();
+        }).catch(e => {
+            console.error(e);
+            initPeer(); // Continue without mic if needed
+        });
+
+        function initPeer() {
+            peer = new Peer(null, { debug: 1 });
+            peer.on('open', id => {
+                state.id = id;
+                updateStatus(true);
+                startHeartbeat();
+                // Enable Create Button
+                el('createBtn').disabled = false;
+                el('createBtn').classList.remove('bg-slate-700', 'cursor-not-allowed');
+                el('createBtn').classList.add('bg-indigo-600');
+            });
+            peer.on('error', err => {
+                if(err.type === 'peer-unavailable') {
+                    alert("Room ID not found or Host offline.");
+                    location.reload();
+                }
+            });
+            peer.on('connection', conn => {
+                conn.on('data', d => handleData(conn, d));
+                conn.on('close', () => handleDisconnect(conn.peer));
+                connections[conn.peer] = conn;
+            });
+            peer.on('call', call => {
+                if(myStream) call.answer(myStream);
+                call.on('stream', s => addAudio(call.peer, s));
+            });
+        }
+
+        // --- 4. HOST LOGIC ---
+        function createRoom() {
+            if(!state.id) return alert("Still connecting to network...");
+            resumeAudio();
+            state.role = 'HOST';
+            state.vipCode = el('hostPasscode').value.trim();
+            room.users = [{id: state.id, name: state.name, role: 'HOST'}];
+            
+            el('setupPanel').classList.add('hidden');
+            el('hostControls').classList.remove('hidden');
+            el('hostControls').classList.add('flex');
+            
+            renderUsers();
+            addMsg('system', `Workspace Ready. ID: ${state.id}`);
+            if(state.vipCode) addMsg('system', `VIP Code: ${state.vipCode}`);
+        }
+
+        function handleData(conn, data) {
+            if(data.type === 'PING') return;
+            if(data.type === 'JOIN') {
+                const { id, name, pass } = data.payload;
+                if(state.isLocked) {
+                    conn.send({type: 'REJECTED', reason: 'Room is Locked'});
+                    return;
+                }
+                if(state.vipCode && pass === state.vipCode) {
+                    acceptUser(conn, {id, name}, true);
+                } else {
+                    room.waiting = { conn, id, name };
+                    el('callerName').innerText = name;
+                    el('callModal').classList.remove('hidden');
+                    el('callModal').classList.add('flex');
+                    playRing();
+                }
+            }
+            if(data.type === 'CHAT') {
+                // Relay if host
+                if(state.role === 'HOST') broadcast(data);
+                addMsg('other', data.payload.text, data.payload.sender, data.payload.img);
+                notify(data.payload.sender, data.payload.text || 'Shared an image');
+            }
+            if(data.type === 'SYNC') updateRoomState(data.payload);
+            if(data.type === 'KICK') {
+                alert("Session Ended: " + data.reason);
+                location.reload();
+            }
+        }
+
+        function acceptCall() {
+            stopRing();
+            el('callModal').classList.add('hidden');
+            el('callModal').classList.remove('flex');
+            if(room.waiting) acceptUser(room.waiting.conn, room.waiting);
+            room.waiting = null;
+        }
+
+        function rejectCall() {
+            stopRing();
+            el('callModal').classList.add('hidden');
+            el('callModal').classList.remove('flex');
+            if(room.waiting) room.waiting.conn.send({type: 'REJECTED', reason: 'Host Declined'});
+            room.waiting = null;
+        }
+
+        function acceptUser(conn, user, isVip=false) {
+            if(room.users.find(u => u.id === user.id)) return;
+            room.users.push({id: user.id, name: user.name, role: 'GUEST'});
+            const payload = { users: room.users, silenced: state.isSilenced, locked: state.isLocked };
+            conn.send({type: 'ACCEPTED', payload: payload});
+            broadcast({type: 'SYNC', payload: payload});
+            renderUsers();
+            addMsg('system', `${user.name} joined ${isVip ? '(VIP)' : ''}`);
+        }
+
+        // --- 5. CLIENT LOGIC ---
+        function openJoinModal() { el('joinModal').classList.remove('hidden'); el('joinModal').classList.add('flex'); }
+        
+        function joinRoom() {
+            resumeAudio();
+            const hostId = el('joinId').value.trim();
+            const pass = el('joinCode').value.trim();
+            if(!hostId) return;
+
+            el('joinModal').style.display = 'none';
+            el('setupPanel').innerHTML = `<div class="text-xs text-yellow-400 animate-pulse text-center mt-4">Dialing Host... Please Wait...</div>`;
+
+            const conn = peer.connect(hostId, {reliable: true});
+            conn.on('open', () => {
+                conn.send({type: 'JOIN', payload: {id: state.id, name: state.name, pass}});
+            });
+            conn.on('data', d => {
+                if(d.type === 'ACCEPTED') {
+                    state.role = 'GUEST';
+                    state.room = hostId;
+                    updateRoomState(d.payload);
+                    addMsg('system', 'Connected to Workspace.');
+                    el('setupPanel').classList.add('hidden');
+                    if(myStream) {
+                        const call = peer.call(hostId, myStream);
+                        call.on('stream', s => addAudio(hostId, s));
+                    }
+                }
+                else if(d.type === 'REJECTED') {
+                    alert("Connection Denied: " + d.reason);
+                    location.reload();
+                }
+                else if(d.type === 'SYNC') updateRoomState(d.payload);
+                else if(d.type === 'CHAT') {
+                    addMsg('other', d.payload.text, d.payload.sender, d.payload.img);
+                    notify(d.payload.sender, d.payload.text || 'Image');
+                }
+                else if(d.type === 'KICK') {
+                    alert("Session Ended: " + d.reason);
+                    location.reload();
+                }
+            });
+            connections[hostId] = conn;
+        }
+
+        // --- 6. CORE FEATURES ---
+        function updateRoomState(payload) {
+            room.users = payload.users;
+            state.isSilenced = payload.silenced;
+            state.isLocked = payload.locked;
+            renderUsers();
+            
+            if(state.isLocked && state.role !== 'HOST') {
+                el('lockedOverlay').classList.remove('hidden');
+                el('msgInput').disabled = true;
+            } else {
+                el('lockedOverlay').classList.add('hidden');
+                el('msgInput').disabled = false;
+            }
+
+            if(state.isSilenced && state.role !== 'HOST') {
+                if(myStream) myStream.getAudioTracks()[0].enabled = false;
+                updateMicUI(false, true); 
+            } else {
+                 if(myStream) updateMicUI(myStream.getAudioTracks()[0].enabled, false);
+            }
+        }
+
+        function sendMessage(e) {
+            e.preventDefault();
+            const txt = el('msgInput').value.trim();
+            if(!txt) return;
+            sendPayload(txt, null);
+            el('msgInput').value = '';
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if(file) processImage(file);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            el('dragOverlay').classList.add('hidden');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) processImage(e.dataTransfer.files[0]);
+        }
+        window.addEventListener('paste', e => {
+            if (e.clipboardData.files.length > 0) processImage(e.clipboardData.files[0]);
+        });
+
+        function processImage(file) {
+            if(!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX = 800; 
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > MAX) { h *= MAX/w; w = MAX; }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    sendPayload(null, canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function sendPayload(text, imgData) {
+            const msg = { sender: state.name, text: text, img: imgData };
+            addMsg('me', text, 'You', imgData);
+            if(state.role === 'HOST') broadcast({type: 'CHAT', payload: msg});
+            else Object.values(connections).forEach(c => c.send({type: 'CHAT', payload: msg}));
+        }
+
+        // --- 7. UI UTILS ---
+        function addMsg(type, text, sender, img) {
+            if(el('chatContainer').children.length === 0) el('chatContainer').innerHTML = ''; 
+            
+            const div = document.createElement('div');
+            
+            if (type === 'system') {
+                div.className = 'msg-system';
+                div.innerText = text;
+            } else {
+                div.className = `flex flex-col max-w-[85%] mb-2 ${type === 'me' ? 'items-end self-end' : 'items-start self-start'}`;
+                
+                let content = '';
+                if(img) content += `<img src="${img}" class="msg-img" onclick="window.open(this.src)">`;
+                if(text) content += `<div class="p-3 shadow-sm text-sm ${type === 'me' ? 'msg-me' : 'msg-other'}">${text}</div>`;
+                
+                // USERNAME FIX: Always display username, even for self if desired, but definitely for others
+                div.innerHTML = `
+                    <span class="text-[10px] text-slate-500 mb-1 ml-1 font-bold">${type === 'me' ? 'You' : (sender || 'Unknown')}</span>
+                    ${content}
+                    <span class="text-[9px] text-slate-600 mt-1 mr-1 text-right w-full block">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                `;
+            }
+            const c = el('chatContainer');
+            c.appendChild(div);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function broadcast(data) { Object.values(connections).forEach(c => { if(c.open) c.send(data); }); }
+
+        function renderUsers() {
+            const list = el('userList');
+            list.innerHTML = '';
+            room.users.forEach(u => {
+                list.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 group transition">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-500/20">
+                                ${u.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span class="text-sm text-slate-300 font-medium truncate w-32">
+                                ${u.name} ${u.role === 'HOST' ? '<span class="badge-vip">HOST</span>' : ''}
+                            </span>
+                        </div>
+                        ${state.role === 'HOST' && u.role !== 'HOST' ? 
+                            `<button onclick="kick('${u.id}')" class="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-500/10 transition"><i class="ph ph-x"></i></button>` : ''}
+                    </div>
+                `;
+            });
+        }
+        function kick(id) {
+            room.users = room.users.filter(u => u.id !== id);
+            broadcast({type: 'SYNC', payload: { users: room.users, silenced: state.isSilenced, locked: state.isLocked }});
+            renderUsers();
+            if(connections[id]) connections[id].send({type: 'KICK', reason: 'Removed by Host'});
+        }
+
+        function leaveRoom() {
+            if(confirm("Are you sure you want to end/leave this session?")) {
+                if(state.role === 'HOST') {
+                    broadcast({type: 'KICK', reason: 'Host ended the session'});
+                }
+                setTimeout(() => location.reload(), 200);
+            }
+        }
+
+        function toggleSilence() {
+            state.isSilenced = !state.isSilenced;
+            el('silenceBtn').classList.toggle('border-red-500', state.isSilenced);
+            el('silenceBtn').classList.toggle('bg-red-900/20', state.isSilenced);
+            el('silenceBtn').querySelector('span').innerText = state.isSilenced ? 'Unsilence All' : 'Silence All';
+            broadcast({type: 'SYNC', payload: { users: room.users, silenced: state.isSilenced, locked: state.isLocked }});
+        }
+        function toggleLock() {
+            state.isLocked = !state.isLocked;
+            el('lockBtn').classList.toggle('border-orange-500', state.isLocked);
+            el('lockBtn').classList.toggle('bg-orange-900/20', state.isLocked);
+            el('lockBtn').querySelector('span').innerText = state.isLocked ? 'Unlock Room' : 'Lock Room';
+            broadcast({type: 'SYNC', payload: { users: room.users, silenced: state.isSilenced, locked: state.isLocked }});
+            updateRoomState({users: room.users, silenced: state.isSilenced, locked: state.isLocked});
+        }
+        function toggleMic() {
+            if(state.isSilenced && state.role !== 'HOST') return alert("Host has silenced the room.");
+            if(!myStream) return alert("Microphone not active.");
+            const track = myStream.getAudioTracks()[0];
+            track.enabled = !track.enabled;
+            updateMicUI(track.enabled, false);
+        }
+        function updateMicUI(enabled, forcedDisabled) {
+            const btn = el('micBtn');
+            if(forcedDisabled) {
+                btn.className = "flex-1 h-12 bg-red-500/20 text-red-500 rounded-xl flex items-center justify-center transition border border-red-500 cursor-not-allowed";
+                btn.innerHTML = '<i class="ph ph-microphone-slash text-xl"></i>';
+            } else if(enabled) {
+                btn.className = "flex-1 h-12 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center text-white transition border border-slate-700 shadow-sm";
+                btn.innerHTML = '<i class="ph ph-microphone text-xl"></i>';
+            } else {
+                btn.className = "flex-1 h-12 bg-red-500 text-white rounded-xl flex items-center justify-center transition shadow-md hover:bg-red-600";
+                btn.innerHTML = '<i class="ph ph-microphone-slash text-xl"></i>';
+            }
+        }
+        function addAudio(id, stream) {
+            if(document.getElementById(`a-${id}`)) return;
+            const a = document.createElement('audio');
+            a.id = `a-${id}`;
+            a.srcObject = stream;
+            a.autoplay = true;
+            el('audioContainer').appendChild(a);
+        }
+        function copyId() { navigator.clipboard.writeText(state.id); alert("Room ID Copied!"); }
+        
+        function updateName(val) { 
+            state.name = val; 
+            if(val) localStorage.setItem('us_name', val); 
+            updateAvatar(val);
+        }
+        function updateAvatar(name) { el('myAvatar').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&bold=true&name=${encodeURIComponent(name || 'User')}`; }
+        
+        function updateStatus(online) {
+            const ind = el('statusIndicator');
+            ind.innerHTML = online 
+                ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online` 
+                : `<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Connecting...`;
+            ind.className = online ? "text-[10px] text-emerald-400 flex items-center gap-1 font-mono mt-0.5" : "text-[10px] text-slate-500 flex items-center gap-1 font-mono mt-0.5";
+        }
+        function toggleSidebar() { el('sidebar').classList.toggle('-translate-x-full'); }
+        function notify(title, body) { if(document.visibilityState === 'hidden' && Notification.permission === "granted") new Notification(title, { body }); }
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        
+        function startHeartbeat() {
+            heartbeatInterval = setInterval(() => { Object.values(connections).forEach(c => { if(c.open) c.send({type:'PING'}); }); }, 5000);
+        }
+        function handleDisconnect(peerId) {
+            if(connections[peerId]) delete connections[peerId];
+            if(document.getElementById(`a-${peerId}`)) document.getElementById(`a-${peerId}`).remove();
+        }
+        window.addEventListener('dragenter', () => el('dragOverlay').classList.remove('hidden'));
+        el('dragOverlay').addEventListener('dragleave', () => el('dragOverlay').classList.add('hidden'));
+        el('dragOverlay').addEventListener('drop', () => el('dragOverlay').classList.add('hidden'));
+    </script>
+</body>
+</html>
