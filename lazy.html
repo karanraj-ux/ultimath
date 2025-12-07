@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posture Police</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden; /* Stop scrolling */
+            transition: background 0.5s;
+        }
+        
+        /* The Content (Your Study Material) */
+        #content {
+            padding: 20px;
+            filter: blur(20px); /* Default to blurred */
+            pointer-events: none; /* Can't click anything */
+            transition: filter 0.5s;
+            height: 100vh;
+        }
+
+        /* The Warning Overlay */
+        #warning {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 0, 0, 0.8);
+            z-index: 999;
+            text-align: center;
+        }
+        
+        h1 { font-size: 3rem; margin: 0; text-transform: uppercase; }
+        p { font-size: 1.2rem; margin-top: 10px; }
+        
+        /* Debug info */
+        #data { position: fixed; bottom: 10px; left: 10px; font-family: monospace; color: #888; }
+
+    </style>
+</head>
+<body>
+
+    <div id="content">
+        <h2>Physics Formula Sheet</h2>
+        <ul>
+            <li>F = ma</li>
+            <li>E = mc^2</li>
+            <li>v = u + at</li>
+            <li>s = ut + 1/2at^2</li>
+        </ul>
+        <button onclick="alert('You clicked me!')">Interactive Button</button>
+        <p>This content is only visible if you are sitting UPRIGHT.</p>
+    </div>
+
+    <div id="warning">
+        <h1>SIT UP!</h1>
+        <p>Don't study in bed.</p>
+        <button id="permBtn" style="margin-top:20px; padding:10px;">Enable Sensor</button>
+    </div>
+
+    <div id="data">Waiting for sensor...</div>
+
+    <script>
+        const content = document.getElementById('content');
+        const warning = document.getElementById('warning');
+        const dataDisplay = document.getElementById('data');
+        const permBtn = document.getElementById('permBtn');
+
+        // iOS requires permission button, Android usually just works but good practice
+        function startSensor() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                            permBtn.style.display = 'none';
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Non-iOS devices (Android)
+                window.addEventListener('deviceorientation', handleOrientation);
+                permBtn.style.display = 'none';
+            }
+        }
+
+        function handleOrientation(event) {
+            // Beta is the front-to-back tilt in degrees [-180 to 180]
+            // 90 is upright (standing up)
+            // 0 is flat on table
+            // 45 is roughly "holding in hand while sitting"
+            // < 20 often means lying flat looking up
+            
+            const tilt = event.beta; 
+            
+            dataDisplay.innerText = "Tilt Angle: " + Math.round(tilt) + "°";
+
+            // LOGIC: If tilt is less than 30 degrees (lying back) OR greater than 140 (upside down)
+            // Note: This needs calibration based on how YOU hold the phone.
+            // Let's assume Sitting Upright = 45 to 90 degrees.
+            
+            const isUpright = (tilt > 40 && tilt < 100);
+
+            if (isUpright) {
+                // GOOD POSTURE
+                warning.style.opacity = "0";
+                setTimeout(() => warning.style.display = 'none', 500); // Hide after fade
+                content.style.filter = "blur(0px)";
+                content.style.pointerEvents = "auto";
+            } else {
+                // BAD POSTURE (Lying down or Phone Flat)
+                warning.style.display = "flex";
+                setTimeout(() => warning.style.opacity = "1", 10);
+                content.style.filter = "blur(20px)";
+                content.style.pointerEvents = "none";
+            }
+        }
+
+        permBtn.addEventListener('click', startSensor);
+
+    </script>
+</body>
+</html>
