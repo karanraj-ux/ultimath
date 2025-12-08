@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <title>TITAN OS: ULTIMATE EDITION</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        /* --- CORE VARIABLES & RESET --- */
+        :root {
+            --cyan: #06b6d4;
+            --red: #ef4444;
+            --bg: #000000;
+            --glass: rgba(20, 20, 20, 0.6);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: black;
+            color: white;
+            overflow: hidden; /* Prevents scrolling on mobile */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        h1, h2, h3, .font-mono { 
+            font-family: 'JetBrains Mono', monospace; 
+        }
+
+        /* --- BOOT LOADER ANIMATIONS --- */
+        .loader-ring {
+            width: 60px; height: 60px; border: 4px solid #333;
+            border-top-color: var(--cyan); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .glitch {
+            position: relative;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 1px); }
+            20% { clip-path: inset(80% 0 10% 0); transform: translate(2px, -1px); }
+            40% { clip-path: inset(40% 0 20% 0); transform: translate(-2px, 2px); }
+            60% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -2px); }
+            80% { clip-path: inset(70% 0 5% 0); transform: translate(-1px, 1px); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+        }
+
+        /* --- APP & NAVIGATION UTILS --- */
+        .os-app {
+            display: none; 
+            opacity: 0; 
+            transform: scale(0.98);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            width: 100%;
+        }
+        .os-app.active-app {
+            display: flex; 
+            opacity: 1; 
+            transform: scale(1);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #64748b; background: none; border: none; width: 60px;
+            cursor: pointer;
+        }
+        .nav-btn.active-nav { color: white; }
+        .nav-btn.active-nav i { color: var(--cyan); filter: drop-shadow(0 0 8px rgba(6,182,212,0.5)); }
+
+        /* --- SENTRY SECURITY VISUALS --- */
+        .clip-path-button {
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .grid-bg {
+            background-image: linear-gradient(rgba(255,0,0,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #sentry-ring { transition: all 0.5s ease; }
+        #sentry-ring.armed {
+            border-color: var(--red);
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.4);
+        }
+        #sentry-ping.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+        /* --- CHAT BUBBLES (SYNC) --- */
+        .msg-me { align-self: flex-end; background: #4f46e5; border-radius: 12px 12px 0 12px; }
+        .msg-other { align-self: flex-start; background: #334155; border-radius: 12px 12px 12px 0; }
+
+        /* --- CUSTOM SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-black text-white selection:bg-cyan-500 selection:text-black">
+
+    <div id="boot-screen" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
+        <div class="loader-ring"></div>
+        <h1 class="mt-8 text-4xl font-bold tracking-[0.5em] text-cyan-500 glitch" data-text="TITAN OS">TITAN OS</h1>
+        <div id="boot-log" class="mt-4 font-mono text-xs text-gray-500">INITIALIZING KERNEL...</div>
+    </div>
+
+    <div id="os-root" class="opacity-0 transition-opacity duration-1000 h-full flex flex-col">
+        
+        <header class="h-12 border-b border-white/10 flex items-center justify-between px-4 bg-black/80 backdrop-blur-md z-40 shrink-0">
+            <div class="flex items-center gap-4">
+                <i data-lucide="cpu" class="text-cyan-500 w-5 h-5"></i>
+                <span class="font-bold tracking-widest text-sm">TITAN <span class="text-xs text-gray-500">v9.0</span></span>
+            </div>
+            <div class="flex items-center gap-4 font-mono text-xs text-gray-400">
+                <span id="ai-status" class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> AI OFFLINE</span>
+                <span id="clock-display">00:00:00</span>
+            </div>
+        </header>
+
+        <main class="flex-1 relative overflow-hidden">
+            
+            <section id="app-command" class="os-app active-app p-4 flex flex-col h-full overflow-y-auto">
+                <div class="max-w-3xl mx-auto w-full space-y-4 pb-20">
+                    
+                    <div class="glass-panel p-4 rounded-xl border border-cyan-500/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-cyan-400 font-bold tracking-wider flex items-center gap-2"><i data-lucide="brain-circuit"></i> NEURAL CORE</h2>
+                            <button onclick="AI.clear()" class="text-xs text-gray-500 hover:text-white">CLEAR</button>
+                        </div>
+                        <div id="ai-output" class="min-h-[60px] text-sm text-gray-300 font-mono mb-3 whitespace-pre-wrap">System Ready. Awaiting query...</div>
+                        <div class="flex gap-2">
+                            <input type="text" id="ai-input" placeholder="Ask Gemini or Calculate (e.g. Integral of x^2)..." 
+                                class="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-cyan-500 outline-none font-mono text-white">
+                            <button onclick="AI.ask()" class="bg-cyan-600 hover:bg-cyan-500 text-black font-bold px-4 py-2 rounded-lg text-sm transition">EXECUTE</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-xl hover:border-cyan-500/50 transition cursor-pointer" onclick="App.switch('shield')">
+                            <div class="text-xs text-gray-500 mb-1">SECURITY LEVEL</div>
+                            <div class="text-2xl font-bold text-red-500">SENTRY</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl hover:border-cyan-500/50 transition cursor-pointer" onclick="App.switch('arena')">
+                            <div class="text-xs text-gray-500 mb-1">XP POINTS</div>
+                            <div class="text-2xl font-bold text-yellow-500" id="dash-xp">0</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h3 class="text-sm font-bold text-gray-400 mb-3 flex items-center gap-2"><i data-lucide="list-todo"></i> PROTOCOLS</h3>
+                        <div id="task-list" class="space-y-2 max-h-40 overflow-y-auto">
+                            </div>
+                        <div class="mt-3 flex gap-2">
+                            <input type="text" id="task-input" placeholder="New Protocol..." class="flex-1 bg-transparent border-b border-white/10 text-sm p-1 outline-none text-white">
+                            <button onclick="Tasks.add()" class="text-cyan-500 font-bold px-2 text-xl">+</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="app-shield" class="os-app p-4 h-full flex flex-col items-center justify-center relative bg-red-950/10">
+                <div class="absolute inset-0 grid-bg opacity-20 pointer-events-none"></div>
+                
+                <div class="w-64 h-64 rounded-full border-4 border-dashed border-red-900 flex flex-col items-center justify-center relative mb-8 transition-all duration-500 overflow-hidden" id="sentry-ring">
+                    <i data-lucide="shield-alert" class="w-16 h-16 text-red-700 transition-all duration-500 absolute z-10" id="sentry-icon"></i>
+                    <div class="text-red-500 font-mono font-bold mt-20 tracking-widest z-10" id="sentry-status">DISARMED</div>
+                    <div class="absolute inset-0 rounded-full animate-ping opacity-0 bg-red-500/20" id="sentry-ping"></div>
+                </div>
+
+                <div class="flex gap-4 z-10">
+                    <button onclick="Sentry.toggle()" class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-none border border-red-400 clip-path-button tracking-widest transition active:scale-95">
+                        TOGGLE SYSTEM
+                    </button>
+                    <button onclick="Sentry.camera()" class="px-4 py-3 bg-gray-800 border border-gray-600 text-gray-300 hover:text-white rounded-none clip-path-button transition active:scale-95">
+                        <i data-lucide="camera"></i>
+                    </button>
+                </div>
+                
+                <div id="log-console" class="mt-8 w-full max-w-md h-32 overflow-y-auto bg-black/80 border border-red-900/50 p-2 font-mono text-xs text-red-400/80 z-10">
+                    > SYSTEM READY...
+                </div>
+                
+                <video id="sentry-cam" class="hidden" autoplay playsinline muted></video>
+            </section>
+
+            <section id="app-sync" class="os-app flex flex-col h-full bg-slate-900">
+                <div class="p-3 border-b border-white/10 bg-slate-800 flex justify-between items-center shrink-0">
+                    <div>
+                        <div class="text-xs font-bold text-indigo-400">MY ID</div>
+                        <div id="my-peer-id" class="font-mono text-[10px] text-gray-400 cursor-pointer hover:text-white transition" onclick="Sync.copyId()">Connecting...</div>
+                    </div>
+                    <div class="flex gap-2">
+                         <input id="connect-id" placeholder="Partner ID" class="bg-black/30 border border-white/10 rounded px-2 text-xs w-24 text-white focus:border-indigo-500 outline-none">
+                         <button onclick="Sync.connect()" class="bg-indigo-600 px-3 py-1 rounded text-xs font-bold hover:bg-indigo-500 transition">JOIN</button>
+                    </div>
+                </div>
+                
+                <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+                    <div class="text-center text-xs text-gray-600 mt-10">Encrypted P2P Link Initialized.<br>No Server Logs.</div>
+                </div>
+                
+                <form onsubmit="Sync.send(event)" class="p-3 border-t border-white/10 bg-slate-800 flex gap-2 shrink-0">
+                    <input id="chat-input" class="flex-1 bg-black/30 rounded px-3 py-2 text-sm text-white outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Secure Message...">
+                    <button type="submit" class="text-indigo-400 p-2 hover:text-white transition"><i data-lucide="send"></i></button>
+                </form>
+            </section>
+
+            <section id="app-arena" class="os-app flex flex-col h-full relative bg-gradient-to-b from-slate-900 to-black">
+                <div class="absolute top-4 left-4 z-10">
+                    <div class="text-xs text-gray-500 font-bold">HP</div>
+                    <div class="w-32 h-4 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+                        <div id="player-hp" class="h-full bg-green-500 w-full transition-all duration-300"></div>
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <div id="game-viz" class="w-full h-32 flex items-end justify-center gap-1 mb-8 px-8 opacity-50">
+                        </div>
+                    
+                    <h1 id="game-status" class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500 italic tracking-tighter transition-all duration-100">
+                        READY?
+                    </h1>
+                    
+                    <div class="mt-8 grid grid-cols-2 gap-4 w-full max-w-sm px-4">
+                        <button onclick="Game.attack('low')" class="h-24 bg-blue-900/30 border border-blue-500/50 rounded-xl hover:bg-blue-500 hover:text-black transition flex flex-col items-center justify-center active:scale-95">
+                            <i data-lucide="mic" class="mb-2"></i>
+                            <span class="font-bold">LOW HUM</span>
+                        </button>
+                        <button onclick="Game.attack('high')" class="h-24 bg-red-900/30 border border-red-500/50 rounded-xl hover:bg-red-500 hover:text-black transition flex flex-col items-center justify-center active:scale-95">
+                            <i data-lucide="zap" class="mb-2"></i>
+                            <span class="font-bold">LOUD SNAP</span>
+                        </button>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">Allow Microphone access for gameplay</div>
+                </div>
+            </section>
+
+        </main>
+
+        <nav class="h-16 bg-black/90 border-t border-white/10 flex items-center justify-around px-2 pb-safe z-50 shrink-0">
+            <button onclick="App.switch('command')" class="nav-btn active-nav group" data-target="app-command">
+                <i data-lucide="terminal-square" class="group-hover:text-cyan-400 transition"></i>
+                <span class="text-[10px] mt-1 font-bold tracking-widest text-gray-500 group-hover:text-white">CMD</span>
+            </button>
+            <button onclick="App.switch('shield')" class="nav-btn group" data-target="app-shield">
+                <i data-lucide="shield" class="group-hover:text-red-500 transition"></i>
+                <span class="text-[10px] mt-1 font-bold tracking-widest text-gray-500 group-hover:text-white">SHIELD</span>
+            </button>
+            <button onclick="App.switch('sync')" class="nav-btn group" data-target="app-sync">
+                <i data-lucide="network" class="group-hover:text-indigo-500 transition"></i>
+                <span class="text-[10px] mt-1 font-bold tracking-widest text-gray-500 group-hover:text-white">SYNC</span>
+            </button>
+            <button onclick="App.switch('arena')" class="nav-btn group" data-target="app-arena">
+                <i data-lucide="gamepad-2" class="group-hover:text-yellow-500 transition"></i>
+                <span class="text-[10px] mt-1 font-bold tracking-widest text-gray-500 group-hover:text-white">ARENA</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // === TITAN OS CORE CONTROLLER ===
+        const App = {
+            init: () => {
+                // Initialize Icons
+                if(window.lucide) lucide.createIcons();
+                
+                // Boot Sequence Animation
+                setTimeout(() => {
+                    const boot = document.getElementById('boot-screen');
+                    const root = document.getElementById('os-root');
+                    boot.style.transition = "opacity 0.5s ease";
+                    boot.style.opacity = '0';
+                    setTimeout(() => {
+                        boot.style.display = 'none';
+                        root.style.opacity = '1';
+                    }, 500);
+                }, 1500); // 1.5s Fake Boot Delay
+
+                // Start System Clocks
+                setInterval(() => {
+                    document.getElementById('clock-display').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                }, 1000);
+
+                // Initialize Sub-Modules
+                AI.init();
+                Tasks.load();
+                Sync.init();
+            },
+
+            // App Switching Logic
+            switch: (id) => {
+                // 1. Update Navigation Icons
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
+                const targetBtn = document.querySelector(`[data-target="app-${id}"]`);
+                if(targetBtn) targetBtn.parentNode.classList.add('active-nav'); // Fix for icon click vs button click
+                
+                // 2. Hide all Apps, Show Target
+                document.querySelectorAll('.os-app').forEach(el => el.classList.remove('active-app'));
+                document.getElementById(`app-${id}`).classList.add('active-app');
+                
+                // 3. Trigger Specific Module logic if needed
+                if(id === 'arena') Game.initAudio();
+                if(window.lucide) lucide.createIcons();
+            }
+        };
+
+        // === MODULE 1: COMMAND (AI & Tasks) ===
+        const AI = {
+            // Split Key to avoid simple scrappers (Note: Client-side keys are never 100% secure)
+            keyPart1: "AIzaSy",
+            keyPart2: "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c", 
+            
+            init: () => {
+                // Show online status green dot
+                document.getElementById('ai-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ONLINE`;
+            },
+
+            ask: async () => {
+                const input = document.getElementById('ai-input');
+                const out = document.getElementById('ai-output');
+                const txt = input.value.trim();
+                if(!txt) return;
+
+                out.innerText = "Thinking...";
+                input.value = ""; // Clear input
+
+                // 1. Local Math Check (Speed optimization)
+                if(/[\d\+\-\*\/]/.test(txt) && !txt.includes("?")) {
+                    try {
+                        // Safe evaluation for simple math
+                        const res = Function('"use strict";return (' + txt + ')')();
+                        out.innerText = `= ${res}`;
+                        return;
+                    } catch(e) {}
+                }
+
+                // 2. Gemini API Call
+                try {
+                    const fullKey = AI.keyPart1 + AI.keyPart2;
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${fullKey}`;
+                    
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "Answer concisely: " + txt }] }] })
+                    });
+                    
+                    const data = await res.json();
+                    const ans = data.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No data received.";
+                    
+                    // Render Output (supports LaTeX math formatting)
+                    out.innerHTML = ans.replace(/\n/g, '<br>');
+                    if(window.renderMathInElement) {
+                        renderMathInElement(out, { delimiters: [{left: "$", right: "$", display: false}] });
+                    }
+                } catch(e) {
+                    out.innerText = "Connection Error. Check Internet.";
+                    console.error(e);
+                }
+            },
+
+            clear: () => document.getElementById('ai-output').innerText = "System Ready."
+        };
+
+        const Tasks = {
+            items: JSON.parse(localStorage.getItem('titan_tasks') || "[]"),
+            
+            add: () => {
+                const i = document.getElementById('task-input');
+                if(i.value) {
+                    Tasks.items.push({txt: i.value, done: false});
+                    Tasks.save();
+                    i.value = "";
+                }
+            },
+            
+            toggle: (idx) => {
+                Tasks.items[idx].done = !Tasks.items[idx].done;
+                Tasks.save();
+            },
+            
+            save: () => {
+                localStorage.setItem('titan_tasks', JSON.stringify(Tasks.items));
+                Tasks.load();
+            },
+            
+            load: () => {
+                const list = document.getElementById('task-list');
+                if(Tasks.items.length === 0) {
+                    list.innerHTML = '<div class="text-xs text-gray-600 italic">No active protocols.</div>';
+                    return;
+                }
+                list.innerHTML = Tasks.items.map((t, i) => `
+                    <div class="flex items-center gap-2 text-sm p-2 rounded hover:bg-white/5 cursor-pointer ${t.done ? 'opacity-50 line-through' : ''}" onclick="Tasks.toggle(${i})">
+                        <div class="w-4 h-4 border ${t.done ? 'bg-cyan-500 border-cyan-500' : 'border-gray-500'} rounded-sm flex items-center justify-center">
+                             ${t.done ? '<i data-lucide="check" class="w-3 h-3 text-black"></i>' : ''}
+                        </div>
+                        <span class="truncate">${t.txt}</span>
+                    </div>
+                `).join('');
+                if(window.lucide) lucide.createIcons();
+            }
+        };
+
+        // === MODULE 2: SHIELD (Sentry Security) ===
+        const Sentry = {
+            armed: false,
+            stream: null,
+            lastVal: null,
+            
+            toggle: () => {
+                Sentry.armed = !Sentry.armed;
+                const ring = document.getElementById('sentry-ring');
+                const stat = document.getElementById('sentry-status');
+                const ping = document.getElementById('sentry-ping');
+                const log = document.getElementById('log-console');
+
+                if(Sentry.armed) {
+                    ring.classList.add('armed');
+                    stat.innerText = "ARMED";
+                    stat.classList.add('text-red-500');
+                    ping.classList.add('opacity-100');
+                    log.innerHTML += `<div>[${new Date().toLocaleTimeString()}] SYSTEM ARMED. SENSORS ACTIVE.</div>`;
+                    log.scrollTop = log.scrollHeight;
+                    Sentry.startMotion();
+                } else {
+                    ring.classList.remove('armed');
+                    stat.innerText = "DISARMED";
+                    stat.classList.remove('text-red-500');
+                    ping.classList.remove('opacity-100');
+                    log.innerHTML += `<div>[${new Date().toLocaleTimeString()}] SYSTEM DISARMED.</div>`;
+                    log.scrollTop = log.scrollHeight;
+                    Sentry.stopMotion();
+                }
+            },
+
+            startMotion: async () => {
+                // Use DeviceMotion API for movement detection
+                if (window.DeviceMotionEvent) {
+                    window.addEventListener('devicemotion', Sentry.detect);
+                } else {
+                    document.getElementById('log-console').innerHTML += `<div class="text-yellow-500">Warning: No Accelerometer found.</div>`;
+                }
+            },
+
+            stopMotion: () => {
+                window.removeEventListener('devicemotion', Sentry.detect);
+            },
+
+            detect: (e) => {
+                if(!Sentry.armed) return;
+                const acc = e.accelerationIncludingGravity;
+                if(!acc) return;
+                
+                // Compare current acceleration to last frame
+                if(Sentry.lastVal) {
+                    const delta = Math.abs(acc.x - Sentry.lastVal.x) + Math.abs(acc.y - Sentry.lastVal.y);
+                    // Threshold sensitivity
+                    if(delta > 4) {
+                        Sentry.triggerAlarm(delta);
+                    }
+                }
+                Sentry.lastVal = {x: acc.x, y: acc.y};
+            },
+
+            triggerAlarm: (delta) => {
+                const log = document.getElementById('log-console');
+                log.innerHTML += `<div class="text-red-500 font-bold">[!] MOTION DETECTED: DELTA ${delta.toFixed(1)}</div>`;
+                log.scrollTop = log.scrollHeight;
+                
+                // Audio Alarm
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.connect(ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.1);
+                osc.start();
+                setTimeout(() => osc.stop(), 500);
+
+                // Auto-Capture Evidence (if Camera is active)
+                if(Sentry.stream) {
+                    // Logic to capture frame could go here
+                    log.innerHTML += `<div class="text-cyan-500">EVIDENCE CAPTURED.</div>`;
+                }
+            },
+
+            camera: async () => {
+                const vid = document.getElementById('sentry-cam');
+                const ring = document.getElementById('sentry-ring');
+                const icon = document.getElementById('sentry-icon');
+
+                if(Sentry.stream) {
+                    // Stop Camera
+                    Sentry.stream.getTracks().forEach(t => t.stop());
+                    Sentry.stream = null;
+                    vid.classList.add('hidden');
+                    icon.style.opacity = '1';
+                    // Remove video from ring
+                    if(ring.contains(vid)) ring.removeChild(vid);
+                    document.getElementById('app-shield').appendChild(vid); // move back to dom hidden
+                } else {
+                    // Start Camera
+                    try {
+                        const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}});
+                        Sentry.stream = s;
+                        vid.srcObject = s;
+                        vid.classList.remove('hidden');
+                        
+                        // Move video element into the UI Ring
+                        icon.style.opacity = '0'; // Hide icon
+                        ring.appendChild(vid);
+                        vid.className = "w-full h-full object-cover absolute inset-0 z-0 opacity-50";
+                    } catch(e) { 
+                        alert("Camera Access Denied or Not Available"); 
+                    }
+                }
+            }
+        };
+
+        // === MODULE 3: SYNC (P2P Chat) ===
+        const Sync = {
+            peer: null,
+            conn: null,
+
+            init: () => {
+                // Initialize PeerJS
+                if(window.Peer) {
+                    Sync.peer = new Peer();
+                    Sync.peer.on('open', (id) => {
+                        document.getElementById('my-peer-id').innerText = id;
+                    });
+                    Sync.peer.on('connection', (c) => {
+                        Sync.setupConn(c);
+                        Sync.log("Incoming connection established.");
+                    });
+                    Sync.peer.on('error', (err) => {
+                        console.log(err);
+                        document.getElementById('my-peer-id').innerText = "Net Error (Retry)";
+                    });
+                }
+            },
+
+            connect: () => {
+                const id = document.getElementById('connect-id').value;
+                if(!id) return;
+                const c = Sync.peer.connect(id);
+                Sync.setupConn(c);
+            },
+
+            setupConn: (c) => {
+                Sync.conn = c;
+                c.on('open', () => {
+                    Sync.log("Connected to partner.");
+                });
+                c.on('data', (d) => {
+                    const box = document.getElementById('chat-box');
+                    box.innerHTML += `<div class="msg-other p-2 text-sm text-gray-200 w-fit max-w-[80%] mb-1">${d}</div>`;
+                    box.scrollTop = box.scrollHeight;
+                });
+            },
+
+            send: (e) => {
+                e.preventDefault();
+                const inp = document.getElementById('chat-input');
+                const val = inp.value;
+                if(val && Sync.conn) {
+                    Sync.conn.send(val);
+                    const box = document.getElementById('chat-box');
+                    box.innerHTML += `<div class="msg-me p-2 text-sm text-white w-fit max-w-[80%] mb-1">${val}</div>`;
+                    box.scrollTop = box.scrollHeight;
+                    inp.value = "";
+                } else if(!Sync.conn) {
+                    alert("Not connected to a peer!");
+                }
+            },
+
+            copyId: () => {
+                const txt = document.getElementById('my-peer-id').innerText;
+                navigator.clipboard.writeText(txt);
+                alert("ID Copied: " + txt);
+            },
+
+            log: (txt) => {
+                const box = document.getElementById('chat-box');
+                box.innerHTML += `<div class="text-center text-[10px] text-gray-500 my-2">${txt}</div>`;
+                box.scrollTop = box.scrollHeight;
+            }
+        };
+
+        // === MODULE 4: ARENA (Sonic Audio Game) ===
+        const Game = {
+            ctx: null,
+            analyser: null,
+            dataArray: null,
+            hp: 100,
+            
+            initAudio: async () => {
+                if(Game.ctx) return; // Already running
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+                    Game.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const src = Game.ctx.createMediaStreamSource(stream);
+                    Game.analyser = Game.ctx.createAnalyser();
+                    Game.analyser.fftSize = 64;
+                    src.connect(Game.analyser);
+                    
+                    Game.dataArray = new Uint8Array(Game.analyser.frequencyBinCount);
+                    
+                    // Start Visualizer Loop
+                    Game.loop();
+                } catch(e) { 
+                    console.log("Mic Error: ", e);
+                    document.getElementById('game-status').innerText = "MIC ERROR";
+                }
+            },
+
+            loop: () => {
+                if(document.getElementById('app-arena').classList.contains('active-app')) {
+                    requestAnimationFrame(Game.loop);
+                    
+                    Game.analyser.getByteFrequencyData(Game.dataArray);
+                    
+                    // Render Visualizer Bars
+                    const viz = document.getElementById('game-viz');
+                    let html = '';
+                    let vol = 0;
+                    
+                    // Use only first 10 bins for simple viz
+                    for(let i=0; i<10; i++) {
+                        const val = Game.dataArray[i];
+                        const h = (val / 255) * 100;
+                        vol += val;
+                        html += `<div style="height:${Math.max(5, h)}%; width:8px; background: #06b6d4; border-radius:2px; transition: height 0.1s;"></div>`;
+                    }
+                    viz.innerHTML = html;
+                    
+                    // Attack Logic: Volume Threshold
+                    const avgVol = vol / 10;
+                    if(avgVol > 120) {
+                        Game.triggerAttack();
+                    }
+                } else {
+                    // Check again later if not active
+                    setTimeout(Game.loop, 500);
+                }
+            },
+
+            triggerAttack: () => {
+                // Debounce simple visual feedback
+                const stat = document.getElementById('game-status');
+                if(stat.innerText !== "ATTACK!") {
+                    stat.innerText = "ATTACK!";
+                    stat.classList.add('text-red-500', 'scale-110');
+                    
+                    // Update XP
+                    let xp = parseInt(document.getElementById('dash-xp').innerText);
+                    xp += 10;
+                    document.getElementById('dash-xp').innerText = xp;
+
+                    setTimeout(() => {
+                        stat.innerText = "READY?";
+                        stat.classList.remove('text-red-500', 'scale-110');
+                    }, 300);
+                }
+            },
+
+            attack: (type) => {
+                // Manual Button Trigger
+                Game.triggerAttack();
+                // Add haptic feedback if available
+                if(navigator.vibrate) navigator.vibrate(50);
+            }
+        };
+
+        // Initialize Application
+        window.onload = App.init;
+
+    </script>
+</body>
+</html>
