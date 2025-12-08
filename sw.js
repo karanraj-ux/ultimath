@@ -11,6 +11,8 @@ const ASSETS = [
   '/lazy.html',       // lazy focus tool
   '/neuro.html',      //neuro
   '/Focus camera.html. //focus camera tool
+  '/sonic.html',       // sonic war 
+  '/ desi.html',      // sound app
   '/manifest.json',
 
   
