@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SONIC WARS: TOXIC EDITION</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Modern "Pro League" Palette */
+            --bg-grad: radial-gradient(circle at top right, #1e293b, #0f172a);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1; /* Indigo */
+            --accent: #ec4899; /* Pink */
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            background: #0f172a; background-image: var(--bg-grad);
+            color: var(--text-main); 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 600;
+            margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* --- UI UTILITIES --- */
+        .screen {
+            position: absolute; inset: 0; padding: 24px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 10; opacity: 1; visibility: visible;
+        }
+        .hidden { opacity: 0; visibility: hidden; transform: scale(0.98); pointer-events: none; }
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 20px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 16px;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-family: 'Teko', sans-serif; 
+            font-size: 64px; margin: 0 0 0px 0; line-height: 0.9;
+            text-transform: uppercase; letter-spacing: 2px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .sub-head { color: var(--primary); font-weight: 700; font-size: 16px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 32px; }
+
+        /* --- FORMS & INPUTS --- */
+        .input-group { width: 100%; margin-bottom: 12px; }
+        .input-box {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            color: white; padding: 16px; width: 100%; border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif; font-weight: 700;
+            font-size: 18px; text-align: center;
+            outline: none; transition: 0.3s; text-transform: uppercase;
+        }
+        .input-box:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        
+        select.input-box { 
+            appearance: none; text-align-last: center; 
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.5em;
+        }
+        option { background: #1e293b; color: white; }
+
+        /* --- BUTTONS --- */
+        .btn {
+            width: 100%; padding: 18px; border: none; border-radius: 14px;
+            font-family: 'Teko', sans-serif; font-size: 24px; letter-spacing: 1px;
+            cursor: pointer; position: relative; overflow: hidden; margin-bottom: 12px;
+            text-transform: uppercase; transition: transform 0.1s, filter 0.2s;
+            font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn:active { transform: scale(0.96); }
+        
+        .btn-green { background: linear-gradient(135deg, var(--success), #059669); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #4f46e5); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        .btn-accent { background: linear-gradient(135deg, var(--accent), #db2777); color: white; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
+        .btn-outline { background: transparent; border: 2px solid var(--glass-border); color: var(--text-muted); }
+        .btn-ghost { background: rgba(255,255,255,0.05); color: white; }
+
+        /* --- TOGGLES --- */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; padding: 0 10px; }
+        .toggle-label { font-size: 16px; color: var(--text-muted); font-weight: 700; }
+        .switch {
+            position: relative; display: inline-block; width: 44px; height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- GAME HUD --- */
+        .hud-top { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+        
+        .player-stat { display: flex; flex-direction: column; align-items: center; width: 80px; }
+        .avatar-circle { 
+            width: 56px; height: 56px; border-radius: 50%; background: #1e293b; 
+            border: 2px solid #334155; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 8px;
+            position: relative; font-family: 'Teko';
+        }
+        .hp-val { font-size: 14px; font-weight: bold; color: var(--text-muted); }
+        
+        .vs-pill { font-family: 'Teko'; font-size: 32px; color: var(--text-muted); opacity: 0.5; }
+
+        /* --- NEW FEATURES UI --- */
+        #quitBtn {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger);
+            color: var(--danger); padding: 5px 12px; border-radius: 8px;
+            font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; z-index: 100;
+        }
+
+        #superBtn {
+            width: 48%; background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: black; border: 2px solid #fff; 
+            opacity: 0.3; pointer-events: none; transition: 0.3s;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 18px;
+        }
+        #superBtn.ready { opacity: 1; pointer-events: all; animation: pulseGold 1.5s infinite; }
+        #superBtn.active { background: #fff; color: #d97706; transform: scale(0.98); }
+
+        #hackBtn {
+            width: 48%; background: #000; border: 1px solid #33ff00;
+            color: #33ff00; font-family: 'Courier New', monospace;
+            display: flex; align-items: center; justify-content: center;
+            text-shadow: 0 0 5px #33ff00; letter-spacing: -1px;
+            font-weight: 900;
+        }
+        #hackBtn:active { background: #33ff00; color: black; }
+
+        .power-row { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; }
+
+        @keyframes pulseGold { 0% {transform:scale(1);} 50% {transform:scale(1.02);} 100% {transform:scale(1);} }
+
+        /* --- VISUALIZER --- */
+        #visualizer { 
+            width: 100%; height: 60px; background: rgba(0,0,0,0.2); 
+            border-radius: 12px; margin-bottom: 15px; 
+            border: 1px solid var(--glass-border); 
+        }
+
+        /* --- CARDS GRID --- */
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; flex-grow: 1; overflow-y: auto; padding-bottom: 20px; }
+        .music-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; border-radius: 16px; font-weight: 700; font-size: 16px; padding: 12px;
+            transition: all 0.2s; color: var(--text-muted); font-family: 'Rajdhani';
+            position: relative; overflow: hidden;
+            text-transform: uppercase;
+        }
+        .music-card:active { transform: scale(0.98); background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.2); }
+        
+        .card-correct { background: rgba(16, 185, 129, 0.2) !important; border-color: var(--success) !important; color: white !important; }
+        .card-wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--danger) !important; color: white !important; }
+
+        /* --- EXTRAS --- */
+        .status-pill {
+            background: rgba(99, 102, 241, 0.1); color: var(--primary);
+            padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 700;
+            margin-bottom: 10px; letter-spacing: 1px; display: inline-block;
+        }
+        
+        /* Floating Taunts */
+        .floating-emoji {
+            position: absolute; font-size: 48px; pointer-events: none; z-index: 100;
+            animation: floatUp 1.5s cubic-bezier(0,0.5,0.5,1) forwards;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+        @keyframes floatUp { 0% {opacity:0; transform:translateY(20px) scale(0.5);} 20% {opacity:1; transform:translateY(0) scale(1.2);} 100% {opacity:0; transform:translateY(-100px) scale(1);} }
+
+        /* --- VICTORY --- */
+        .win-card {
+            background: linear-gradient(180deg, rgba(30,41,59,0.9), rgba(15,23,42,1));
+            border: 1px solid var(--glass-border); padding: 40px 20px;
+            border-radius: 24px; text-align: center; width: 100%; max-width: 320px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .coin-val { font-size: 56px; font-weight: 700; color: white; margin: 10px 0; font-family: 'Teko'; line-height: 1; }
+    </style>
+</head>
+<body>
+
+    <div id="lobby" class="screen">
+        <div class="glass-card" style="width: auto; padding: 8px 20px; margin-bottom: 30px;">
+            <span style="font-size:16px; color:#94a3b8; font-weight:700;">CREDITS </span>
+            <span id="lobbyCoins" style="font-size:18px; font-weight:bold; color:white;">1000</span>
+        </div>
+
+        <h1>SONIC WARS</h1>
+        <div class="sub-head">Toxic Edition</div>
+
+        <button onclick="Core.autoMatch()" class="btn btn-green">⚡ QUICK MATCH</button>
+
+        <div class="glass-card">
+            <div class="input-group">
+                <input type="number" id="roomCode" class="input-box" placeholder="ROOM CODE (Example: 123)">
+            </div>
+            <div class="input-group">
+                <select id="genre" class="input-box">
+                    <option value="desi hip hop">🇮🇳 DESI HIP HOP</option>
+                    <option value="90s bollywood">📼 90s BOLLYWOOD</option>
+                    <option value="punjabi hits">👳 PUNJABI HITS</option>
+                    <option value="bollywood party">🎬 BOLLYWOOD NEW</option>
+                    <option value="tamil hits">🧨 TAMIL MASS</option>
+                    <option value="telugu hits">⚡ TELUGU BEATS</option>
+                    <option value="90s pop">📀 90s ENGLISH POP</option>
+                </select>
+            </div>
+            
+            <div class="toggle-row">
+                <span class="toggle-label">⚠️ SIMULATE LAG (400ms)</span>
+                <label class="switch">
+                    <input type="checkbox" id="lagToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <button onclick="Bot.init()" class="btn btn-ghost" style="border: 1px solid rgba(255,255,255,0.1);">
+            🤖 PRACTICE VS BOT
+        </button>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; width:100%;">
+            <button onclick="Core.init('HOST')" class="btn btn-primary">HOST</button>
+            <button onclick="Core.init('JOIN')" class="btn btn-accent">JOIN</button>
+        </div>
+    </div>
+
+    <div id="searching" class="screen hidden">
+        <div id="quitBtn" onclick="Core.quit()">❌ EXIT</div>
+        <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 1s infinite;">📡</div>
+        <h2 style="color:white; font-family:'Teko'; font-size:48px; margin:0;">CONNECTING...</h2>
+        <p style="color:var(--text-muted); font-weight:700;">SCANNING SERVER</p>
+    </div>
+
+    <div id="arena" class="screen hidden">
+        <div id="quitBtn" onclick="Core.quit()">❌ EXIT</div>
+
+        <div class="hud-top">
+            <div class="player-stat">
+                <div class="avatar-circle" style="border-color:var(--success)">ME</div>
+                <span class="hp-val" id="myHpTxt">100 HP</span>
+            </div>
+            
+            <div class="vs-pill">VS</div>
+
+            <div class="player-stat">
+                <div class="avatar-circle" style="border-color:var(--danger)">OPP</div>
+                <span class="hp-val" id="enHpTxt">100 HP</span>
+            </div>
+        </div>
+
+        <div class="power-row">
+            <button id="superBtn" class="btn" onclick="Game.activateSuper()">
+                ⚡ SUPER (0/2)
+            </button>
+            <button id="hackBtn" class="btn" onclick="Game.hack()">
+                💀 AIMBOT
+            </button>
+        </div>
+
+        <div id="statusPill" class="status-pill">WAITING FOR DATA...</div>
+        
+        <canvas id="visualizer"></canvas>
+        
+        <div style="width:100%; height:4px; background:#334155; margin-bottom:15px; border-radius:2px; overflow:hidden;">
+            <div id="fogBar" style="height:100%; width:0%; background:var(--primary);"></div>
+        </div>
+
+        <div class="card-grid" id="grid"></div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-ghost" style="width:50px; padding:0;" onclick="Net.taunt('😂')">😂</button>
+            <button class="btn btn-ghost" style="width:50px; padding:0;" onclick="Net.taunt('🤫')">🤫</button>
+            <button class="btn btn-ghost" style="width:50px; padding:0;" onclick="Net.taunt('💀')">💀</button>
+        </div>
+    </div>
+
+    <div id="victory" class="screen hidden">
+        <div class="win-card">
+            <div style="font-size:60px; margin-bottom:10px;">🏆</div>
+            <h1 id="endTitle" style="color:white;">VICTORY</h1>
+            <p style="color:var(--text-muted); margin:0;" id="roastMsg">MATCH EARNINGS</p>
+            <div class="coin-val" id="endScore">+200</div>
+            <div style="height:1px; background:var(--glass-border); width:100%; margin:20px 0;"></div>
+            <button onclick="location.reload()" class="btn btn-primary">RETURN TO LOBBY</button>
+        </div>
+    </div>
+
+<script>
+// === CONFIGURATION ===
+const CFG = { 
+    Broker: "broker.hivemq.com", Port: 8000, 
+    Bet: 100, Dmg: 25, LagMs: 400, Lobby: "sonic_esports_lobby_v3"
+};
+
+// === SOUND ENGINE ===
+const Snd = {
+    ctx: null,
+    init: () => { if(!Snd.ctx) Snd.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
+    play: async (url, dur) => {
+        Snd.init(); if(Snd.ctx.state === 'suspended') await Snd.ctx.resume();
+        try {
+            if(Snd.src) try{Snd.src.stop()}catch(e){}
+            const r = await fetch(url);
+            const b = await r.arrayBuffer();
+            const d = await Snd.ctx.decodeAudioData(b);
+            
+            Snd.src = Snd.ctx.createBufferSource(); Snd.src.buffer = d;
+            Snd.flt = Snd.ctx.createBiquadFilter(); Snd.flt.type = 'lowpass';
+            Snd.anz = Snd.ctx.createAnalyser(); Snd.anz.fftSize = 64;
+
+            Snd.src.connect(Snd.flt); Snd.flt.connect(Snd.anz); Snd.anz.connect(Snd.ctx.destination);
+            
+            const t = Snd.ctx.currentTime;
+            Snd.flt.frequency.setValueAtTime(100, t);
+            Snd.flt.frequency.exponentialRampToValueAtTime(16000, t + dur);
+            Snd.src.start(0);
+        } catch(e){ console.error(e); }
+    },
+    fx: (k) => {
+        if(!Snd.ctx) return;
+        const t=Snd.ctx.currentTime, o=Snd.ctx.createOscillator(), g=Snd.ctx.createGain();
+        o.connect(g); g.connect(Snd.ctx.destination);
+        
+        if(k=='win'){ o.type='triangle'; o.freq=400; o.frequency.linearRampToValueAtTime(800,t+0.2); }
+        if(k=='hit'){ o.type='sawtooth'; o.freq=100; o.frequency.exponentialRampToValueAtTime(10,t+0.2); }
+        if(k=='taunt'){ o.type='sine'; o.freq=800; o.frequency.exponentialRampToValueAtTime(200,t+0.3); }
+        if(k=='super'){ o.type='square'; o.freq=200; o.frequency.linearRampToValueAtTime(600,t+0.5); } 
+        
+        g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.5);
+        o.start(t); o.stop(t+0.5);
+    },
+    stop: () => { if(Snd.src) Snd.src.stop(); }
+};
+
+// === BOT BRAIN ===
+const Bot = {
+    active: false,
+    timer: null,
+    init: () => {
+        Bot.active = true;
+        Core.mode = 'OFFLINE';
+        Core.role = 'HOST';
+        Core.genre = document.getElementById('genre').value;
+        UI.screen('arena');
+        Core.newRound(); 
+    },
+    think: () => {
+        if(!Game.active || !Bot.active) return;
+        const reaction = 3000 + Math.random() * 5000; 
+        
+        Bot.timer = setTimeout(() => {
+            if(!Game.active) return;
+            const isSmart = Math.random() < 0.7;
+            
+            if(isSmart) {
+                Game.takeDmg(CFG.Dmg);
+                UI.showTaunt("🤖");
+                UI.txt("BOT SCORED!");
+                setTimeout(Core.newRound, 1500);
+            } else {
+                UI.showTaunt("🤡");
+            }
+        }, reaction);
+    },
+    stop: () => clearTimeout(Bot.timer)
+};
+
+// === GAME LOGIC ===
+const Game = {
+    coins: 1000, hp: 100, enHp: 100, active: false, ans: "", 
+    streak: 0, superActive: false,
+    roasts: ["SKILL ISSUE 🤡", "DELETE THE APP", "MY GRANDMA IS FASTER", "NOOB DETECTED", "CRY ABOUT IT", "EASY TARGET"],
+
+    startRound: async (d) => {
+        Game.active = true; Game.ans = d.ans;
+        UI.render(d.opts); 
+        UI.txt("🎵 LISTENING...");
+        
+        if(Game.superActive) {
+            Game.superActive = false;
+            document.getElementById('superBtn').classList.remove('active');
+            document.getElementById('superBtn').innerText = `⚡ SUPER (${Game.streak}/2)`;
+        }
+
+        await Snd.play(d.url, d.time);
+        Viz.loop(d.time);
+        if(Bot.active) Bot.think();
+    },
+
+    activateSuper: () => {
+        if(Game.streak < 2) return;
+        Game.superActive = true;
+        Snd.fx('super');
+        UI.txt("⚡ 2X DAMAGE ACTIVE!");
+        document.getElementById('superBtn').classList.add('active');
+        document.getElementById('superBtn').innerText = "🔥 READY!";
+    },
+
+    // NEW: UNFAIR AIMBOT
+    hack: () => {
+        if(!Game.active) return;
+        // Find the correct card and simulate a click
+        const cards = document.getElementsByClassName('music-card');
+        for(let c of cards) {
+            if(c.innerText.includes(Game.ans.substring(0,5).toUpperCase())) {
+                UI.txt("💀 HACK ACTIVATED");
+                c.click();
+                return;
+            }
+        }
+        // Fallback if match fails (shouldn't happen)
+        Game.guess(Game.ans, null); 
+    },
+
+    guess: (txt, elem) => {
+        if(!Game.active) return;
+        
+        const lag = document.getElementById('lagToggle').checked ? CFG.LagMs : 0;
+        if(lag > 0) { if(elem) elem.style.opacity = "0.5"; UI.txt("BUFFERING..."); }
+
+        setTimeout(() => {
+            if(!Game.active) return;
+            
+            if(txt === Game.ans) {
+                if(elem) elem.classList.add('card-correct');
+                const dmg = Game.superActive ? CFG.Dmg * 2 : CFG.Dmg;
+                Game.streak++;
+                UI.updateSuperBtn();
+
+                if(Bot.active) {
+                    Game.enHp -= dmg; UI.hp(); Snd.fx('win');
+                    UI.txt("YOU SCORED!"); Game.active = false; Bot.stop();
+                    setTimeout(Core.newRound, 1500);
+                } else {
+                    Net.send("HIT", {amt: dmg});
+                    Game.enHp -= dmg; UI.hp(); Snd.fx('win');
+                    UI.txt("CORRECT!"); Game.active = false;
+                    if(Core.role=='HOST') setTimeout(Core.newRound, 1500);
+                }
+            } else {
+                if(elem) elem.classList.add('card-wrong');
+                Game.takeDmg(10); 
+                
+                // NEW: ROAST TEXT
+                const bad = Game.roasts[Math.floor(Math.random()*Game.roasts.length)];
+                UI.txt(bad);
+                
+                Game.streak = 0; 
+                UI.updateSuperBtn();
+            }
+            if(elem) elem.style.opacity = "1";
+        }, lag);
+    },
+
+    takeDmg: (amt) => {
+        Game.hp -= amt; UI.hp(); Snd.fx('hit');
+        if(Game.hp <= 0) { 
+            Game.active = false; Snd.stop(); Bot.stop();
+            Core.gameOver(false); 
+        } else if (Game.enHp <= 0) {
+             Game.active = false; Snd.stop(); Bot.stop();
+             Core.gameOver(true);
+        }
+    }
+};
+
+// === NETWORKING ===
+const Core = {
+    client: null, room: null, role: null, genre: '', mode: 'ONLINE',
+
+    init: (role) => {
+        const c = document.getElementById('roomCode').value;
+        if(!c) return alert("Please enter a Room Code");
+        Core.start(role, c);
+    },
+
+    // NEW: QUIT FUNCTION
+    quit: () => {
+        Snd.stop(); Bot.stop();
+        if(Core.client) try{ Core.client.disconnect(); } catch(e){}
+        UI.screen('lobby');
+        Game.hp = 100; Game.enHp = 100; Game.streak = 0;
+        UI.updateSuperBtn();
+    },
+
+    autoMatch: () => {
+        UI.screen('searching');
+        const myID = Math.floor(Math.random()*100000);
+        const l = new Paho.MQTT.Client(CFG.Broker, CFG.Port, "lob_"+myID);
+        l.connect({useSSL:true, onSuccess:()=>{
+            l.subscribe(CFG.Lobby);
+            const msg = new Paho.MQTT.Message(JSON.stringify({type:"SEEK", id:myID}));
+            msg.destinationName = CFG.Lobby; l.send(msg);
+            
+            l.onMessageArrived = (m) => {
+                const d = JSON.parse(m.payloadString);
+                if(d.type=="SEEK" && d.id!=myID){
+                    const room = Math.max(myID,d.id)+"_"+Math.min(myID,d.id);
+                    l.disconnect();
+                    Core.start(myID>d.id?'HOST':'JOIN', room);
+                }
+            }
+        }});
+    },
+
+    start: (role, code) => {
+        Core.mode = 'ONLINE';
+        Core.room = "sonic_wars_"+code; Core.role = role;
+        Core.genre = document.getElementById('genre').value;
+        
+        Core.client = new Paho.MQTT.Client(CFG.Broker, CFG.Port, "u_"+Math.random().toString(16).substr(2));
+        Core.client.onMessageArrived = Core.onMsg;
+        Core.client.connect({useSSL:true, onSuccess:()=>{
+            Core.client.subscribe(Core.room);
+            UI.screen('arena');
+            if(role=='HOST') UI.txt("WAITING FOR OPPONENT..."); else Net.send("JOIN",{});
+        }});
+    },
+
+    newRound: async () => {
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(Core.genre)}&country=IN&limit=50&media=music&entity=song`;
+        try {
+            const res = await fetch(url); const j = await res.json();
+            const t = j.results[Math.floor(Math.random()*j.results.length)];
+            const o = j.results.sort(()=>0.5-Math.random()).slice(0,3);
+            const opts = [t,...o].sort(()=>0.5-Math.random()).map(x=>x.artistName);
+            
+            const load = { url: t.previewUrl, ans: t.artistName, opts, time: 12 };
+            
+            if(Core.mode === 'ONLINE') Net.send("START", load);
+            Game.startRound(load);
+        } catch(e) { console.log("Fetch Error", e); }
+    },
+
+    onMsg: (m) => {
+        const d = JSON.parse(m.payloadString);
+        if(d.sender == Core.role) return;
+        if(d.type=="JOIN" && Core.role=="HOST") Core.newRound();
+        if(d.type=="START") Game.startRound(d.load);
+        if(d.type=="HIT") Game.takeDmg(d.load.amt);
+        if(d.type=="WIN") Core.gameOver(true);
+        if(d.type=="TAUNT") UI.showTaunt(d.load.emoji);
+    },
+
+    gameOver: (win) => {
+        if(Core.mode === 'ONLINE') Net.send("WIN", {});
+        UI.screen('victory');
+        document.getElementById('endTitle').innerText = win ? "VICTORY" : "DEFEAT";
+        document.getElementById('endTitle').style.color = win ? "#10b981" : "#ef4444";
+        document.getElementById('endScore').innerText = win ? "+200" : "-100";
+        // Final Roast
+        if(!win) document.getElementById('roastMsg').innerText = "YOU PLAY LIKE A BOT 🤡";
+        else document.getElementById('roastMsg').innerText = "MATCH EARNINGS";
+    }
+};
+
+const Net = { 
+    send: (t,l) => {
+        if(Core.mode !== 'ONLINE') return;
+        const m = new Paho.MQTT.Message(JSON.stringify({type:t, load:l, sender:Core.role}));
+        m.destinationName = Core.room; Core.client.send(m);
+    },
+    taunt: (e) => { 
+        if(Core.mode === 'ONLINE') Net.send("TAUNT", {emoji:e}); 
+        UI.showTaunt(e); 
+    }
+};
+
+// === UI MANAGER ===
+const UI = {
+    screen: (id) => { 
+        ['lobby','searching','arena','victory'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    },
+    txt: (t) => document.getElementById('statusPill').innerText = t,
+    hp: () => {
+        document.getElementById('myHpTxt').innerText = Math.max(0,Game.hp) + " HP";
+        document.getElementById('enHpTxt').innerText = Math.max(0,Game.enHp) + " HP";
+        document.getElementById('arena').style.transform = "translateX(5px)";
+        setTimeout(()=>document.getElementById('arena').style.transform="translateX(0)", 100);
+    },
+    render: (opts) => {
+        const g = document.getElementById('grid'); g.innerHTML="";
+        opts.forEach(o => {
+            const b = document.createElement('div'); b.className='music-card';
+            b.innerText = o.length>25?o.substr(0,25)+"..":o;
+            b.onclick = (e)=>Game.guess(o, e.target); 
+            g.appendChild(b);
+        });
+    },
+    showTaunt: (e) => {
+        Snd.fx('taunt');
+        const el = document.createElement('div'); el.innerText=e; el.className='floating-emoji';
+        el.style.left = (20 + Math.random()*60) + "%"; el.style.top = "60%";
+        document.body.appendChild(el); setTimeout(()=>el.remove(),2000);
+    },
+    updateSuperBtn: () => {
+        const btn = document.getElementById('superBtn');
+        if(Game.streak >= 2) {
+            btn.classList.add('ready');
+            btn.innerText = "⚡ ACTIVATE";
+        } else {
+            btn.classList.remove('ready', 'active');
+            btn.innerText = `⚡ SUPER (${Game.streak}/2)`;
+        }
+    }
+};
+
+// === VISUALIZER ===
+const Viz = {
+    loop: (dur) => {
+        if(!Game.active) return;
+        requestAnimationFrame(()=>Viz.loop(dur));
+        const prog = (Snd.ctx.currentTime/dur)*100;
+        document.getElementById('fogBar').style.width = Math.min(100,prog)+"%";
+        
+        const c=document.getElementById('visualizer'), x=c.getContext('2d');
+        if(c.width!=c.offsetWidth){c.width=c.offsetWidth;c.height=c.offsetHeight;}
+        const d=new Uint8Array(Snd.anz.frequencyBinCount); Snd.anz.getByteFrequencyData(d);
+        x.clearRect(0,0,c.width,c.height);
+        
+        const w=(c.width/d.length)*2.5; let px=0;
+        for(let i=0;i<d.length;i++){
+            const h=(d[i]/255)*c.height;
+            x.fillStyle = `rgba(99, 102, 241, ${d[i]/255})`;
+            x.fillRect(px,c.height-h,w,h); px+=w+2;
+        }
+    }
+};
+</script>
+</body>
+</html>

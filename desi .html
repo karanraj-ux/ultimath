@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description" content="Sonic Wars: The Ultimate Audio Battle Game">
+    <title>SONIC WARS: ELITE</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           1. CORE THEME VARIABLES
+           ========================================= */
+        :root {
+            --bg: #050505; 
+            --glass: rgba(18, 18, 18, 0.95);
+            --prim: #00f3ff; 
+            --sec: #ff0055; 
+            --gold: #ffcc00; 
+            --text: #fff;
+            --font-head: 'Black Ops One', cursive;
+            --font-body: 'Rajdhani', sans-serif;
+        }
+
+        /* Color Theme Overrides */
+        body.theme-gold { --prim: #ffcc00; --sec: #ffaa00; --bg: #0f0c00; }
+        body.theme-blood { --prim: #ff0000; --sec: #800000; --bg: #0f0000; }
+        body.theme-dark { --prim: #ffffff; --sec: #555555; --bg: #000000; }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+            touch-action: manipulation; 
+        }
+
+        body {
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: var(--font-body);
+            margin: 0; 
+            height: 100dvh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column;
+            transition: background 0.3s ease;
+        }
+
+        /* =========================================
+           2. ANIMATED BACKGROUND
+           ========================================= */
+        .bg-grid {
+            position: absolute; 
+            inset: 0; 
+            opacity: 0.15; 
+            z-index: -1;
+            background-image: 
+                linear-gradient(var(--prim) 1px, transparent 1px), 
+                linear-gradient(90deg, var(--prim) 1px, transparent 1px);
+            background-size: 40px 40px; 
+            animation: gridScroll 30s linear infinite;
+        }
+        @keyframes gridScroll { 
+            0% {background-position: 0 0;} 
+            100% {background-position: 40px 40px;} 
+        }
+
+        /* =========================================
+           3. SCREEN MANAGEMENT
+           ========================================= */
+        .screen {
+            position: absolute; 
+            inset: 0; 
+            padding: 20px; 
+            z-index: 10;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            backdrop-filter: blur(0px);
+        }
+        .hidden { 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: scale(1.05); 
+            filter: blur(10px); 
+        }
+
+        /* =========================================
+           4. UI COMPONENTS
+           ========================================= */
+        h1 {
+            font-family: var(--font-head); 
+            font-size: 44px; 
+            margin: 0 0 15px 0; 
+            line-height: 0.9;
+            text-shadow: 0 0 20px var(--prim); 
+            text-transform: uppercase; 
+            text-align: center;
+            background: linear-gradient(to bottom, #fff, #888); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+
+        .panel {
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; 
+            padding: 25px; 
+            width: 100%; 
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            margin-bottom: 20px; 
+            position: relative; 
+            overflow: hidden;
+        }
+        .panel::before {
+            content:''; 
+            position: absolute; 
+            top:0; left:0; 
+            width:100%; height:4px;
+            background: linear-gradient(90deg, var(--prim), var(--sec));
+        }
+
+        input, select {
+            width: 100%; 
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid #333; 
+            color: white;
+            padding: 15px; 
+            border-radius: 10px; 
+            font-family: var(--font-body); 
+            font-size: 18px;
+            font-weight: 700; 
+            outline: none; 
+            text-align: center; 
+            text-transform: uppercase; 
+            appearance: none;
+        }
+        input:focus, select:focus { 
+            border-color: var(--prim); 
+            box-shadow: 0 0 10px var(--prim); 
+        }
+
+        .btn {
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 10px;
+            font-family: var(--font-head); 
+            font-size: 20px; 
+            color: #000;
+            cursor: pointer; 
+            text-transform: uppercase; 
+            position: relative;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            transition: 0.1s;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-prim { background: var(--prim); box-shadow: 0 0 25px var(--prim); }
+        .btn-gold { background: var(--gold); box-shadow: 0 0 25px var(--gold); }
+        .btn-ghost { background: transparent; border: 1px solid #444; color: #888; font-size: 14px; }
+        .btn-share { background: #25D366; color: white; margin-top: 10px; font-family: sans-serif; font-weight: bold; }
+
+        /* =========================================
+           5. AVATAR & THEME SELECTION
+           ========================================= */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        
+        .av-btn { 
+            height: 50px; 
+            background: #111; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            font-size: 24px; 
+            display: grid; 
+            place-items: center; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        .av-btn.selected { 
+            border-color: var(--prim); 
+            background: #222; 
+            box-shadow: 0 0 10px var(--prim); 
+        }
+        
+        .theme-row { display: flex; gap: 15px; justify-content: center; }
+        .t-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #555; cursor: pointer; }
+
+        /* =========================================
+           6. GAME HUD
+           ========================================= */
+        .hud-row { display: flex; justify-content: space-between; width: 100%; align-items: flex-end; margin-bottom: 10px; }
+        .hp-con { width: 42%; }
+        
+        .hp-bar { 
+            height: 14px; 
+            background: #222; 
+            border-radius: 7px; 
+            overflow: hidden; 
+            margin-top: 4px; 
+            border: 1px solid #444; 
+        }
+        .hp-fill { 
+            height: 100%; 
+            background: var(--prim); 
+            width: 100%; 
+            transition: width 0.2s linear; 
+        }
+        .hp-fill.danger { background: var(--sec); }
+        
+        .pl-name { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .rage-bar { 
+            width: 100%; height: 6px; background: #222; border-radius: 3px; 
+            position: relative; overflow: hidden; margin-bottom: 20px; 
+        }
+        .rage-fill { height: 100%; background: linear-gradient(90deg, #fff, var(--sec)); width: 0%; transition: width 0.1s; }
+
+        /* =========================================
+           7. VISUALIZERS
+           ========================================= */
+        .arena-center { position: relative; width: 100%; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .tower { 
+            width: 90px; height: 60%; background: #000; border-radius: 45px; 
+            border: 4px solid #333; position: relative; overflow: hidden; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 5;
+        }
+        .tower-fill { 
+            position: absolute; bottom: 0; width: 100%; height: 0%; 
+            background: linear-gradient(to top, var(--prim), var(--sec)); 
+            transition: height 0.05s linear; opacity: 0.9;
+        }
+        
+        /* MOVING TARGET FOR VOICE SURF MODE */
+        .target-line {
+            position: absolute; bottom: 50%; height: 12%; width: 100%;
+            background: rgba(255,255,255,0.15); 
+            border-top: 4px solid var(--prim); 
+            border-bottom: 4px solid var(--prim);
+            pointer-events: none; display: none; z-index: 6; 
+            box-shadow: 0 0 30px var(--prim);
+        }
+
+        /* =========================================
+           8. EFFECTS & OVERLAYS
+           ========================================= */
+        .combo-pop { 
+            position: absolute; top: 15%; right: 10%; font-family: var(--font-head); font-size: 56px; 
+            color: var(--gold); transform: scale(0); transition: 0.2s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
+            text-shadow: 0 0 20px black; z-index: 20; pointer-events: none;
+        }
+        .combo-pop.active { transform: scale(1.2) rotate(-10deg); }
+
+        #toast {
+            position: absolute; width: 100%; text-align: center; top: 10%;
+            font-family: var(--font-head); font-size: 36px; z-index: 50; 
+            text-shadow: 0 0 20px black; pointer-events: none;
+            opacity: 0; transform: translateY(-20px); transition: 0.3s;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+        
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        #iosOverlay, #tutorial {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .tut-card { 
+            background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; 
+            margin-bottom: 8px; width: 100%; max-width: 400px; display: flex; align-items: center; gap: 15px;
+        }
+        .tut-icon { font-size: 24px; min-width: 40px; text-align: center; }
+        .tut-text { text-align: left; font-size: 13px; color: #ccc; line-height: 1.2; }
+        .tut-title { color: var(--prim); font-weight: bold; display: block; font-family: var(--font-head); font-size: 14px; margin-bottom: 2px;}
+        
+        .tap-icon { font-size: 60px; animation: pulse 1s infinite; margin-bottom: 20px; }
+        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <div id="iosOverlay" class="hidden">
+        <div class="tap-icon">👆</div>
+        <h2 style="font-family: var(--font-head);">TAP TO ACTIVATE</h2>
+        <p style="color:#888;">INITIALIZING AUDIO ENGINE...</p>
+    </div>
+
+    <div id="tutorial" class="hidden">
+        <h1 style="font-size:32px; margin-bottom:20px;">TRAINING MANUAL</h1>
+        <div class="tut-card"><div class="tut-icon">📢</div><div class="tut-text"><span class="tut-title">LUNG POWER</span>Scream loud to drain enemy health. Watch your overheat meter!</div></div>
+        <div class="tut-card"><div class="tut-icon">👏</div><div class="tut-text"><span class="tut-title">REFLEX TEST</span>Sharp noises only. Clap or snap to shoot bullets.</div></div>
+        <div class="tut-card"><div class="tut-icon">🌊</div><div class="tut-text"><span class="tut-title">VOICE SURF</span>Control volume to keep your bar inside the Green Zone.</div></div>
+        <div class="tut-card"><div class="tut-icon">🧘</div><div class="tut-text"><span class="tut-title">MEDITATION</span>Hold a constant "Ommm" humming sound to attack.</div></div>
+        <div class="tut-card"><div class="tut-icon">👹</div><div class="tut-text"><span class="tut-title">DEMON VOICE</span>Deep voice only. Hum low notes to attack.</div></div>
+        <div class="tut-card"><div class="tut-icon">🤫</div><div class="tut-text"><span class="tut-title">NINJA MODE</span>Stay dead silent. Any noise hurts you!</div></div>
+        <button onclick="UI.hideTut()" class="btn btn-prim" style="margin-top:20px; width:100%; max-width:400px;">UNDERSTOOD</button>
+    </div>
+
+    <div id="setup" class="screen">
+        <h1>SONIC WARS</h1>
+        <p style="letter-spacing:4px; font-weight:bold; color:var(--prim); margin-bottom:20px;">ELITE EDITION</p>
+        <div class="panel">
+            <label style="font-size:10px; color:#888;">SELECT OPERATOR</label>
+            <div class="grid-3" id="avGrid"></div>
+            <label style="font-size:10px; color:#888;">SYSTEM THEME</label>
+            <div class="theme-row">
+                <div class="t-dot" style="background:#00f3ff" onclick="App.setTheme('')"></div>
+                <div class="t-dot" style="background:#ffcc00" onclick="App.setTheme('theme-gold')"></div>
+                <div class="t-dot" style="background:#ff0000" onclick="App.setTheme('theme-blood')"></div>
+                <div class="t-dot" style="background:#ffffff" onclick="App.setTheme('theme-dark')"></div>
+            </div>
+            <input type="text" id="username" placeholder="CODENAME" maxlength="10">
+        </div>
+        <button onclick="App.saveAndStart()" class="btn btn-prim">INITIALIZE</button>
+    </div>
+
+    <div id="lobby" class="screen hidden">
+        <div id="rankDisplay" style="font-family:var(--font-head); color:var(--gold); margin-bottom:10px; border:1px solid var(--gold); padding:5px 15px; border-radius:20px;">🏆 ROOKIE</div>
+        <h1>LOBBY</h1>
+        <div class="panel">
+            <label style="font-size:10px; color:#666;">COMBAT MODE</label>
+            <select id="gameMode">
+                <option value="scream">📢 LUNG POWER (SCREAM)</option>
+                <option value="clap">👏 REFLEX TEST (CLAP)</option>
+                <option value="rap">🌊 VOICE SURF (CONTROL)</option>
+                <option value="hum">🧘 MEDITATION (STABILITY)</option>
+                <option value="bass">👹 DEMON VOICE (DEEP)</option>
+                <option value="silence">🤫 NINJA MODE (SILENCE)</option>
+            </select>
+            <input type="number" id="roomCode" placeholder="ROOM CODE (100-999)">
+        </div>
+        
+        <button onclick="Net.quickMatch()" class="btn btn-gold">⚡ QUICK MATCH</button>
+        
+        <div style="display:flex; gap:10px; width:100%; max-width:400px; margin-top:10px;">
+            <button onclick="Net.connect('HOST')" class="btn btn-prim" style="flex:1">HOST</button>
+            <button onclick="Net.connect('JOIN')" class="btn btn-prim" style="flex:1">JOIN</button>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 3fr 1fr; gap:10px; width:100%; max-width:400px; margin-top:10px;">
+            <button onclick="Bot.start()" class="btn btn-ghost">🤖 VS BOT</button>
+            <button onclick="UI.showTut()" class="btn btn-ghost">📖</button>
+        </div>
+    </div>
+
+    <div id="waiting" class="screen hidden">
+        <div style="font-size:40px; animation:pulse 1s infinite;">📡</div>
+        <h2 style="font-family:var(--font-head); margin-top:10px;">SEARCHING...</h2>
+        <p style="color:#888; text-align:center;">WAITING FOR OPPONENT TO CONNECT</p>
+        <div id="waitCode" style="font-size:20px; color:var(--prim); font-weight:bold; margin-top:20px;"></div>
+        <button onclick="location.reload()" class="btn btn-ghost" style="margin-top:40px;">CANCEL</button>
+    </div>
+
+    <div id="arena" class="screen hidden">
+        <div onclick="Net.quit()" style="position:absolute; top:20px; right:20px; font-weight:bold; color:#666; font-size:12px; z-index:50;">❌ ABORT</div>
+        
+        <div id="comboDisplay" class="combo-pop">x2</div>
+        <div id="toast">HEADSHOT!</div>
+
+        <div class="hud-row">
+            <div class="hp-con">
+                <div id="p1Name" class="pl-name">YOU</div>
+                <div class="hp-bar"><div id="p1Hp" class="hp-fill"></div></div>
+            </div>
+            <div style="font-size:24px; font-family:var(--font-head);">VS</div>
+            <div class="hp-con" style="text-align:right">
+                <div id="p2Name" class="pl-name">ENEMY</div>
+                <div class="hp-bar"><div id="p2Hp" class="hp-fill danger"></div></div>
+            </div>
+        </div>
+
+        <div class="rage-bar"><div id="rageFill" class="rage-fill"></div></div>
+
+        <div class="arena-center">
+            <div class="tower">
+                <div id="targetBar" class="target-line"></div>
+                <div id="micFill" class="tower-fill"></div>
+            </div>
+            <h2 id="instruction" style="font-family:var(--font-head); color:var(--prim); margin-top:20px; text-align:center; font-size:22px;">READY</h2>
+        </div>
+    </div>
+
+    <div id="end" class="screen hidden">
+        <h1 id="endTitle" style="font-size:60px;">VICTORY</h1>
+        <div id="xpDisplay" style="color:#aaa; font-weight:bold; margin:10px 0; font-size:20px;">+100 XP</div>
+        <button onclick="App.share()" class="btn btn-share">SHARE RESULT 💬</button>
+        <button onclick="location.reload()" class="btn btn-prim" style="margin-top:10px;">MAIN MENU</button>
+    </div>
+
+<script>
+// ==========================================
+// 1. APP MANAGER (Persistence & State)
+// ==========================================
+const App = {
+    data: { name: "Agent", av: "🦁", theme: "", xp: 0, seenTut: false },
+    
+    init: () => {
+        // Load persistent data from LocalStorage
+        const saved = localStorage.getItem('sonic_elite_data');
+        if(saved) App.data = JSON.parse(saved);
+        
+        // Restore user state
+        document.getElementById('username').value = App.data.name;
+        document.body.className = App.data.theme;
+        App.renderRank();
+        App.renderAvatars();
+        
+        // Detect iOS to show Audio Unlocker
+        if(/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            document.getElementById('iosOverlay').classList.remove('hidden');
+            document.getElementById('iosOverlay').onclick = () => {
+                AudioEng.init().then(() => document.getElementById('iosOverlay').classList.add('hidden'));
+            };
+        }
+    },
+
+    saveAndStart: () => {
+        // Save user input
+        App.data.name = document.getElementById('username').value || "Agent";
+        localStorage.setItem('sonic_elite_data', JSON.stringify(App.data));
+        
+        AudioEng.init(); // Initialize Audio Context
+        
+        // Show Tutorial for first-time users
+        if(!App.data.seenTut) {
+            UI.showTut();
+            App.data.seenTut = true;
+            localStorage.setItem('sonic_elite_data', JSON.stringify(App.data));
+        } else {
+            UI.show('lobby');
+        }
+    },
+
+    setTheme: (t) => {
+        App.data.theme = t;
+        document.body.className = t;
+    },
+
+    setAv: (a) => {
+        App.data.av = a;
+        App.renderAvatars();
+    },
+
+    renderAvatars: () => {
+        const grid = document.getElementById('avGrid');
+        grid.innerHTML = '';
+        ['🦁','💀','👽','🤖','👹','🤡'].forEach(a => {
+            const d = document.createElement('div');
+            d.className = `av-btn ${App.data.av === a ? 'selected' : ''}`;
+            d.innerText = a;
+            d.onclick = () => App.setAv(a);
+            grid.appendChild(d);
+        });
+    },
+
+    renderRank: () => {
+        const x = App.data.xp;
+        let r = "ROOKIE";
+        if(x > 500) r = "SOLDIER";
+        if(x > 1500) r = "VETERAN";
+        if(x > 3000) r = "ELITE";
+        if(x > 5000) r = "GOD";
+        document.getElementById('rankDisplay').innerText = `🏆 ${r} (${x} XP)`;
+    },
+    
+    share: () => {
+        const txt = `I just won in Sonic Wars! Rank: ${App.data.xp} XP. Beat me if you can! 🏆🎤`;
+        if (navigator.share) {
+            navigator.share({ title: 'Sonic Wars', text: txt, url: window.location.href });
+        } else {
+            prompt("Copy to share:", txt);
+        }
+    }
+};
+
+// ==========================================
+// 2. AUDIO ENGINE (Robust & No MP3s)
+// ==========================================
+const AudioEng = {
+    ctx: null,
+    
+    init: async () => {
+        if (!AudioEng.ctx) AudioEng.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (AudioEng.ctx.state === 'suspended') await AudioEng.ctx.resume();
+        
+        // Wake Lock to keep screen on during battle
+        if ('wakeLock' in navigator) {
+            try { await navigator.wakeLock.request('screen'); } catch(e){}
+        }
+    },
+
+    play: (type) => {
+        if (!AudioEng.ctx) return;
+        const t = AudioEng.ctx.currentTime;
+        const o = AudioEng.ctx.createOscillator();
+        const g = AudioEng.ctx.createGain();
+        o.connect(g); g.connect(AudioEng.ctx.destination);
+
+        if (type === 'hit') {
+            o.frequency.setValueAtTime(150, t); 
+            o.frequency.exponentialRampToValueAtTime(0.01, t+0.1);
+            g.gain.setValueAtTime(0.5, t); 
+            g.gain.linearRampToValueAtTime(0, t+0.1);
+            o.start(t); o.stop(t+0.1);
+        }
+        else if (type === 'win') {
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(300, t); 
+            o.frequency.linearRampToValueAtTime(600, t+0.3);
+            g.gain.setValueAtTime(0.3, t); 
+            g.gain.linearRampToValueAtTime(0, t+0.6);
+            o.start(t); o.stop(t+0.6);
+        }
+    }
+};
+
+// ==========================================
+// 3. UI UTILS
+// ==========================================
+const UI = {
+    show: (id) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    },
+    showTut: () => {
+        document.getElementById('tutorial').classList.remove('hidden');
+    },
+    hideTut: () => {
+        document.getElementById('tutorial').classList.add('hidden');
+        UI.show('lobby');
+    },
+    upd: () => {
+        if(typeof Game !== 'undefined') {
+            document.getElementById('p1Hp').style.width = Math.max(0, Game.hp) + "%";
+            document.getElementById('p2Hp').style.width = Math.max(0, Game.enHp) + "%";
+        }
+    },
+    toast: (t, c) => {
+        const el = document.getElementById('toast');
+        el.innerText = t; el.style.color = c;
+        el.classList.add('show');
+        setTimeout(()=>el.classList.remove('show'), 600);
+    }
+};
+
+// ==========================================
+// 4. GAME LOGIC
+// ==========================================
+const Game = {
+    hp: 100, enHp: 100, active: false, mode: 'scream',
+    heat: 0, combo: 0, targetY: 50, dir: 1, lastSend: 0,
+
+    start: (mode, isBot=false) => {
+        Game.active = true; Game.mode = mode;
+        
+        const i = document.getElementById('instruction');
+        const b = document.getElementById('targetBar');
+        b.style.display = 'none';
+
+        // Instructions
+        if(mode==='scream') i.innerText = "SCREAM TO ATTACK";
+        if(mode==='clap') i.innerText = "CLAP LOUDLY";
+        if(mode==='hum') i.innerText = "HUM STEADILY";
+        if(mode==='bass') i.innerText = "LOW VOICE (BASS)";
+        if(mode==='silence') i.innerText = "STAY SILENT";
+        
+        // RAP MODE Setup
+        if(mode==='rap') { 
+            i.innerText = "MATCH THE BAR"; 
+            b.style.display='block'; 
+            Game.rapLoop(); 
+        }
+
+        Mic.start();
+    },
+
+    loop: (vol, bass) => {
+        if (!Game.active) return;
+        
+        const pct = Math.min(100, vol);
+        document.getElementById('micFill').style.height = pct + "%";
+        
+        // Heat Management
+        if(Game.heat > 0) Game.heat -= 0.5;
+        document.getElementById('rageFill').style.width = Game.heat + "%";
+        if(Game.heat >= 100) { 
+            Game.takeDmg(5); 
+            UI.toast("OVERHEAT!", "red"); 
+            Game.heat=50; 
+            return; 
+        }
+
+        const now = Date.now();
+        let hit = 0;
+
+        // MODE LOGIC
+        if(Game.mode==='scream' && pct > 60) { Game.heat+=1; hit = 0.5; }
+        if(Game.mode==='clap' && pct > 90) { Game.addCombo(); hit = 12; UI.toast("CLAP!", "var(--gold)"); }
+        if(Game.mode==='hum' && pct > 40 && pct < 70) hit = 0.3;
+        if(Game.mode==='bass' && pct > 40 && bass > 1.3) { hit = 0.6; UI.toast("BASS!", "var(--prim)"); }
+        if(Game.mode==='rap' && Math.abs(pct - Game.targetY) < 12) hit = 0.4;
+        if(Game.mode==='silence' && pct > 15) { Game.takeDmg(1); UI.toast("NOISE!", "red"); }
+
+        // Send hit if damage > 0 and not spamming network
+        if(hit > 0 && now - Game.lastSend > 100) {
+            Net.sendHit(hit * (1 + Game.combo * 0.1));
+            Game.lastSend = now;
+        }
+    },
+
+    rapLoop: () => {
+        if(!Game.active || Game.mode !== 'rap') return;
+        Game.targetY += Game.dir;
+        if(Game.targetY > 90 || Game.targetY < 10) Game.dir *= -1;
+        document.getElementById('targetBar').style.bottom = Game.targetY + "%";
+        requestAnimationFrame(Game.rapLoop);
+    },
+
+    addCombo: () => {
+        Game.combo++;
+        const c = document.getElementById('comboDisplay');
+        c.innerText = "x" + Game.combo; c.classList.add('active');
+        setTimeout(()=>c.classList.remove('active'), 400);
+        setTimeout(()=>Game.combo=0, 2000);
+    },
+
+    takeDmg: (amt) => {
+        Game.hp -= amt; UI.upd();
+        AudioEng.play('hit');
+        
+        // Haptic Feedback
+        if(navigator.vibrate) navigator.vibrate(200);
+        
+        document.body.classList.add('shake');
+        setTimeout(()=>document.body.classList.remove('shake'), 200);
+        
+        if(Game.hp <= 0) Net.endGame(false);
+    }
+};
+
+// ==========================================
+// 5. NETWORK
+// ==========================================
+const Net = {
+    client: null, room: null, role: null, mode: 'ONLINE',
+
+    quickMatch: () => {
+        // Random room 100-999
+        document.getElementById('roomCode').value = Math.floor(Math.random()*900)+100;
+        Net.connect('JOIN');
+    },
+
+    connect: (role) => {
+        const code = document.getElementById('roomCode').value;
+        const user = App.data.name;
+        if(!code) return alert("ENTER CODE");
+
+        Net.role = role; Net.room = "sonic_elite_" + code;
+        
+        Net.client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "u_" + Math.random().toString(16).substr(2));
+        Net.client.onMessageArrived = Net.handle;
+        
+        UI.show('waiting');
+        if(role==='HOST') document.getElementById('waitCode').innerText = "ROOM ID: " + code;
+        else document.getElementById('waitCode').innerText = "CONNECTING...";
+
+        Net.client.connect({useSSL:true, onSuccess:()=>{
+            Net.client.subscribe(Net.room);
+            if(role === 'JOIN') Net.send("HANDSHAKE", {name: user});
+        }});
+    },
+
+    handle: (m) => {
+        const d = JSON.parse(m.payloadString);
+        if(d.s === Net.role) return;
+
+        if(d.t === "HANDSHAKE" && Net.role === 'HOST') {
+            const mode = document.getElementById('gameMode').value;
+            Net.send("START", {mode: mode, name: App.data.name});
+            document.getElementById('p2Name').innerText = d.l.name;
+            UI.show('arena');
+            Game.start(mode);
+        }
+        if(d.t === "START") {
+            document.getElementById('p2Name').innerText = d.l.name;
+            UI.show('arena');
+            Game.start(d.l.mode);
+        }
+        
+        if(d.t === "HIT") Game.takeDmg(d.l.amt);
+        if(d.t === "WIN") Net.endGame(true);
+    },
+
+    sendHit: (amt) => {
+        Game.enHp -= amt; UI.upd();
+        if(Game.enHp <= 0) Net.endGame(true);
+        Net.send("HIT", {amt: amt});
+    },
+
+    send: (t, l) => {
+        if(Net.mode === 'OFFLINE') return;
+        const m = new Paho.MQTT.Message(JSON.stringify({t:t, l:l, s:Net.role}));
+        m.destinationName = Net.room; Net.client.send(m);
+    },
+
+    endGame: (win) => {
+        Game.active = false;
+        if(Net.mode === 'ONLINE' && !win) Net.send("WIN", {});
+        UI.show('end');
+        
+        const t = document.getElementById('endTitle');
+        t.innerText = win ? "VICTORY" : "DEFEATED";
+        t.style.color = win ? "var(--prim)" : "var(--sec)";
+        
+        if(win) {
+            App.data.xp += 100;
+            localStorage.setItem('sonic_elite_data', JSON.stringify(App.data));
+            document.getElementById('xpDisplay').innerText = "+100 XP";
+            
+            // Log History
+            let history = JSON.parse(localStorage.getItem('sonic_history') || "[]");
+            history.unshift({ res: "WIN", time: new Date().toLocaleTimeString() });
+            localStorage.setItem('sonic_history', JSON.stringify(history));
+        } else {
+             document.getElementById('xpDisplay').innerText = "+0 XP";
+        }
+    },
+    
+    quit: () => location.reload()
+};
+
+// ==========================================
+// 6. MIC INPUT
+// ==========================================
+const Mic = {
+    active: false,
+    start: async () => {
+        if(Mic.active) return;
+        try {
+            const s = await navigator.mediaDevices.getUserMedia({audio:true});
+            const ctx = new AudioContext();
+            const src = ctx.createMediaStreamSource(s);
+            const anz = ctx.createAnalyser();
+            src.connect(anz); anz.fftSize = 256;
+            const d = new Uint8Array(anz.frequencyBinCount);
+            Mic.active = true;
+            
+            const run = () => {
+                if(!Mic.active) return;
+                requestAnimationFrame(run);
+                anz.getByteFrequencyData(d);
+                let sum=0, low=0;
+                for(let i=0;i<d.length;i++) { 
+                    sum+=d[i]; 
+                    if(i<5) low+=d[i]; // Bass Frequencies
+                }
+                const vol = (sum/d.length)/255*100;
+                const bass = (low/5) / (sum/d.length || 1);
+                Game.loop(vol*1.5, bass);
+            }; run();
+        } catch(e) { alert("Mic Error. Check Settings."); }
+    }
+};
+
+// ==========================================
+// 7. BOT LOGIC
+// ==========================================
+const Bot = {
+    start: () => {
+        Net.mode = 'OFFLINE';
+        UI.show('arena');
+        document.getElementById('p2Name').innerText = "BOT [AI]";
+        Game.start(document.getElementById('gameMode').value);
+        
+        setInterval(() => {
+            if(Game.active && Math.random() > 0.5) Game.takeDmg(0.5);
+        }, 100);
+    }
+};
+
+// Start App
+App.init();
+
+</script>
+</body>
+</html>
