@@ -13,6 +13,8 @@ const ASSETS = [
   '/Focus camera.html. //focus camera tool
   '/sonic.html',       // sonic war 
   '/ desi.html',      // sound app
+  ,/ Titan Os .html', // titan edition
+  ,/ jee commander.html', // commander app
   '/manifest.json',
 
   
