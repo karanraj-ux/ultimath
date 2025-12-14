@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OMEGA v25 (SECURE)</title>
+    <title>OMEGA v29 (QR + ANIM)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        :root { --hue: 45; --primary: #fbbf24; --bg: #050505; --text: #fff; --font: 'Courier New', monospace; }
+        :root { --hue: 45; --primary: #fbbf24; --bg: #050505; --text: #fff; --font: 'Courier New', monospace; --cyan: #00f3ff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: var(--bg); color: var(--text); font-family: var(--font); margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; text-transform: uppercase; }
         
@@ -32,21 +33,16 @@
         /* DENIAL SCREEN */
         .denial-box { border: 2px solid red; padding: 20px; text-align: center; background: rgba(50,0,0,0.5); display: none; }
 
-        /* NEW: ID DISPLAY STYLE */
-        .id-box { 
-            position: absolute; 
-            top: 20px; 
-            left: 20px; 
-            font-size: 10px; 
-            color: #444; 
-            border: 1px solid #333; 
-            padding: 5px; 
-            background: #000;
-        }
-        .id-box span { color: var(--primary); font-weight: bold; }
+        /* ID DISPLAY & QR */
+        .id-box { font-size: 10px; color: #444; border: 1px solid #333; padding: 5px; background: #000; margin-bottom: 10px; cursor: pointer; }
+        #qrcode { margin: 10px auto; border: 4px solid #fff; padding: 5px; background: #fff; }
 
-        /* NEW: SECURITY WARNING */
-        .sec-warning { border: 1px solid red; color: red; padding: 15px; font-size: 12px; margin-bottom: 20px; text-align: left; }
+        /* SYNC ANIMATION STYLES */
+        .sync-box { width: 100%; max-width: 300px; border: 1px solid #333; padding: 20px; text-align: center; position: relative; }
+        .sync-icon { font-size: 40px; margin-bottom: 20px; color: var(--cyan); }
+        .progress-bar { width: 100%; height: 4px; background: #333; margin: 20px 0; position: relative; }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--cyan); width: 0%; transition: width 0.2s; }
+        .log-text { font-size: 10px; color: #666; font-family: monospace; height: 60px; overflow: hidden; text-align: left; }
 
     </style>
 </head>
@@ -55,10 +51,11 @@
 <div class="crt"></div>
 
 <div id="view-home" class="screen active">
-    <div class="id-box" onclick="copyId()">ID: <span id="disp-peer-id">CONNECTING...</span></div>
+    <div id="qrcode"></div>
+    <div class="id-box" onclick="copyId()">ID: <span id="disp-peer-id">Generating...</span> (TAP TO COPY)</div>
 
-    <h1 style="font-size:60px; color:var(--primary); font-weight:900; margin-bottom:10px;">LOCKED</h1>
-    <div style="font-size:10px; margin-bottom:50px;">ADAPTIVE PROTOCOL ACTIVE</div>
+    <h1 style="font-size:50px; color:var(--primary); font-weight:900; margin-bottom:10px;">LOCKED</h1>
+    <div style="font-size:10px; margin-bottom:30px;">OMEGA v29 PROTOCOL</div>
     
     <div class="status-badge" id="net-stat">OFFLINE MODE</div>
     
@@ -108,26 +105,26 @@
     <div style="font-size:12px; text-align:center;">QUOTA EXCEEDED.<br>WAITING FOR ADMIN...</div>
 </div>
 
-<div id="view-security" class="screen">
-    <h2 style="color:red; margin-bottom:10px;">SECURITY CHECK</h2>
-    <div class="sec-warning">
-        <strong>CRITICAL VULNERABILITY DETECTED</strong><br><br>
-        IF THE USER UNINSTALLS "APPLOCK", THE PROTOCOL WILL FAIL.<br><br>
-        <strong>SOLUTION:</strong><br>
-        1. Open AppLock Settings.<br>
-        2. Enable "Advanced Protection" or "Prevent Uninstallation".<br>
-        3. This makes AppLock a "Device Admin" so it cannot be deleted.<br>
+<div id="view-anim" class="screen">
+    <div class="sync-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:var(--primary);">PROTOCOL</div>
+            <div style="font-size:20px;">&harr;</div>
+            <div style="color:var(--cyan);">APPLOCK</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="anim-bar"></div></div>
+        <div class="log-text" id="anim-log">INITIATING HANDSHAKE...</div>
     </div>
-    <div style="font-size:10px; color:#666; margin-bottom:20px;">
-        CONFIRM THAT UNINSTALL PROTECTION IS ACTIVE.
-    </div>
-    <button class="btn" onclick="confirmSecurity()" style="border-color:red; color:red;">I HAVE ENABLED IT</button>
 </div>
 
 <div id="view-reveal" class="screen">
     <div style="font-size:12px; color:#0f0; margin-bottom:10px;">ACCESS GRANTED</div>
+    
     <div id="final-pin" style="font-size:80px; font-weight:900; margin-bottom:20px;">----</div>
-    <div style="font-size:10px; color:#666;">(PREFIX 25 + HHMM)</div>
+    
+    <div style="font-size:10px; color:#666;">LOGIC: OFFSET + HOUR</div>
+    <div style="font-size:10px; color:#444; margin-top:5px;">(Type 25 in Offset for 2511 format)</div>
+    
     <div style="color:orange; font-size:12px; margin-top:20px;">SESSION STARTING IN 5s...</div>
 </div>
 
@@ -155,12 +152,12 @@
     </div>
     
     <hr style="border-color:#333; width:100%; margin:20px 0;">
-    <input id="target-id" class="inp" placeholder="Student ID (From Home Screen)">
+    <input id="target-id" class="inp" placeholder="Paste Student ID Here">
     <button class="btn" onclick="remoteUnlock()" style="padding:10px;">FORCE UNLOCK</button>
     
     <hr style="border-color:#333; width:100%; margin:20px 0;">
-    <label style="font-size:10px; color:#888;">PIN OFFSET (Default 2500)</label>
-    <input type="number" id="inp-offset" class="inp">
+    <label style="font-size:10px; color:#888;">PIN OFFSET (TYPE 25 FOR 25+HOUR)</label>
+    <input type="number" id="inp-offset" class="inp" value="25">
     <button class="btn" onclick="saveOffset()" style="padding:10px;">SAVE CONFIG</button>
     
     <button class="btn" onclick="resetCheatCount()" style="border-color:orange; color:orange; margin-top:20px;">RESET CHEAT COUNT</button>
@@ -170,15 +167,13 @@
     // --- CONFIG ---
     const DB = {
         role: localStorage.getItem('omg_role'),
-        offset: parseInt(localStorage.getItem('omg_offset')) || 2500, // Default 2500 for "25 + HHMM"
+        offset: parseInt(localStorage.getItem('omg_offset')) || 25, 
         unlocks: parseInt(localStorage.getItem('omg_unlocks')) || 0,
         cheatCount: parseInt(localStorage.getItem('omg_cheats')) || 0,
         lastReset: parseInt(localStorage.getItem('omg_reset_day')) || 0
     };
     
     // --- QUESTION BANKS ---
-    
-    // EASY (For 1st Unlock - 10 Qs)
     const EASY_Q = [
         {q:"Unit of Force?", o:["Newton","Joule","Watt","Volt"], a:0},
         {q:"Value of g?", o:["9.8","10","9.2","8.9"], a:0},
@@ -194,7 +189,6 @@
         {q:"Speed of Light?", o:["3x10^8","3x10^6","330","Infinite"], a:0}
     ];
 
-    // HARD CALCULATION (For 2nd Unlock - 1 Q) - Requires Pen, ABCD Options
     const HARD_Q = [
         {q:"Force if m=15kg, a=12m/s^2?", o:["180 N","150 N","120 N","200 N"], a:0},
         {q:"Work: F=20N, d=15m, angle=60?", o:["150 J","300 J","100 J","200 J"], a:0},
@@ -239,42 +233,44 @@
         else { el.innerText = "OFFLINE"; el.style.color = "#555"; }
     }
 
-    // --- VISIBILITY (ADAPTIVE ANTI-CHEAT) ---
     document.addEventListener("visibilitychange", () => {
-        // If Hidden (Tab Switch / Minimize)
         if (document.hidden) {
-            // Check if user is in Quiz Mode and NOT authorized to switch
             if (document.getElementById('view-quiz').classList.contains('active')) {
                 if (DB.cheatCount >= 3) {
-                    // Strict Mode Active
                     sfx('err');
                     alert("CHEAT LIMIT REACHED (3/3). TAB SWITCHING DISABLED.");
-                    location.reload(); // Hard Reset
+                    location.reload(); 
                 } else {
-                    // Warning Mode
                     DB.cheatCount++;
                     localStorage.setItem('omg_cheats', DB.cheatCount);
                     document.getElementById('cheat-count').innerText = DB.cheatCount;
-                    // No punishment yet, just tracking
                 }
             }
-            
-            // Alarm Handling
             if(state.alarmActive && state.alarmOsc) { state.alarmOsc.stop(); state.alarmOsc=null; }
             if(navigator.vibrate) navigator.vibrate(0);
         } else {
-            // App Visible Again
             if(state.alarmActive) triggerAlarmLoop();
         }
     });
 
-    // --- PEERJS ---
+    // --- PEERJS & QR CODE ---
     function initPeer() {
-        // Updated to populate the ID field
         state.peer = new Peer(null, { debug: 1 });
         state.peer.on('open', (id) => {
             state.myPeerId = id;
-            document.getElementById('disp-peer-id').innerText = id; // Show ID
+            document.getElementById('disp-peer-id').innerText = id;
+            
+            // GENERATE QR
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: id,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            
             if(DB.role === 'student') {
                 const adminId = localStorage.getItem('omg_admin_id');
                 if(adminId) state.conn = state.peer.connect(adminId);
@@ -285,15 +281,12 @@
             setupConn();
             if(DB.role === 'admin') document.getElementById('request-box').style.display = 'block';
         });
-        state.peer.on('error', (err) => {
-            document.getElementById('disp-peer-id').innerText = "ERR";
-        });
     }
     
     function copyId() {
         if(state.myPeerId) {
             navigator.clipboard.writeText(state.myPeerId);
-            alert("ID COPIED: " + state.myPeerId);
+            alert("ID COPIED!");
         }
     }
 
@@ -307,7 +300,7 @@
         if(DB.role === 'student') localStorage.setItem('omg_admin_id', state.conn.peer);
     }
 
-    // --- ADMIN ACCESS (HOLD 5s) ---
+    // --- ADMIN ---
     function startHold() { 
         document.getElementById('admin-trigger').classList.add('holding');
         state.holdTimer = setTimeout(checkDeviceAndShow, 5000); 
@@ -341,10 +334,7 @@
 
     function verifyAdmin() {
         const p = document.getElementById('admin-pass').value;
-        if(p === "admin123") {
-            DB.role = 'admin'; localStorage.setItem('omg_role', 'admin');
-            show('view-admin');
-        } else if (p === "!admin123") { 
+        if(p === "admin123" || p === "!admin123") {
             DB.role = 'admin'; localStorage.setItem('omg_role', 'admin');
             show('view-admin');
         } else {
@@ -352,24 +342,20 @@
         }
     }
 
-    // --- QUIZ FLOW ---
+    // --- QUIZ ---
     function startFlow() {
         DB.role = 'student'; localStorage.setItem('omg_role', 'student');
-        
         if (DB.unlocks === 0) {
-            // 1st Time: 10 Easy Qs
             state.qType = 'easy';
             state.currentQs = [...EASY_Q].sort(() => 0.5 - Math.random()).slice(0, 10);
             startQuiz();
         } else if (DB.unlocks === 1) {
-            // 2nd Time: 4 Easy + 1 Hard Numeric
             state.qType = 'mixed';
             const easyPart = [...EASY_Q].sort(() => 0.5 - Math.random()).slice(0, 4);
             const hardPart = [...HARD_Q].sort(() => 0.5 - Math.random()).slice(0, 1);
             state.currentQs = [...easyPart, ...hardPart].sort(() => 0.5 - Math.random());
             startQuiz();
         } else {
-            // 3rd Time: Permission
             checkQuota();
         }
     }
@@ -384,16 +370,12 @@
 
     function loadQ() {
         if(state.qIdx >= state.currentQs.length) { unlockSuccess(); return; }
-        
         const q = state.currentQs[state.qIdx];
         document.getElementById('q-idx').innerText = state.qIdx + 1;
         document.getElementById('q-text').innerText = q.q;
-        
         const div = document.getElementById('mc-area'); div.innerHTML = '';
-        
         let opts = q.o.map((txt, i) => ({txt, isCorr: i === q.a}));
         opts.sort(() => 0.5 - Math.random());
-        
         opts.forEach(o => {
             let b = document.createElement('div'); b.className = 'btn'; b.style.marginTop='10px'; b.innerText = o.txt;
             b.onclick = () => { if(o.isCorr) { state.qIdx++; loadQ(); } else { alert("WRONG. RESTARTING."); location.reload(); } };
@@ -411,34 +393,60 @@
         }
     }
 
+    // --- TRANSITION TO ANIMATION ---
     function unlockSuccess() {
-        // Intercepted: Go to Security Check first
-        show('view-security');
-        // Logic will continue in confirmSecurity()
+        playConnectionAnim();
     }
-    
-    function confirmSecurity() {
-        // Actual Reveal Logic
+
+    // NEW: ANIMATION LOGIC
+    function playConnectionAnim() {
+        show('view-anim');
+        const bar = document.getElementById('anim-bar');
+        const log = document.getElementById('anim-log');
+        let width = 0;
+        
+        const logs = [
+            "CONNECTING TO APPLOCK DAEMON...",
+            "VERIFYING INTEGRITY...",
+            "BYPASSING SECURITY LAYER 1...",
+            "SYNCING TIME SYNC...",
+            "GENERATING 25+ HASH...",
+            "CONNECTION ESTABLISHED."
+        ];
+        
+        let i = 0;
+        const int = setInterval(() => {
+            width += 2;
+            bar.style.width = width + "%";
+            
+            if(width % 20 === 0 && i < logs.length) {
+                log.innerText += "\n" + logs[i];
+                log.scrollTop = log.scrollHeight;
+                i++;
+            }
+            
+            if(width >= 100) {
+                clearInterval(int);
+                setTimeout(revealPin, 500);
+            }
+        }, 50); // 2.5 seconds total
+    }
+
+    function revealPin() {
         if(DB.unlocks < 2) { DB.unlocks++; localStorage.setItem('omg_unlocks', DB.unlocks); }
         
         const now = new Date();
-        // Time Formatting for PIN
-        const hour = now.getHours().toString().padStart(2,'0');
-        const min = now.getMinutes().toString().padStart(2,'0');
-        const val = parseInt(hour + min);
+        const hour = now.getHours().toString().padStart(2,'0'); 
         
-        // Calculation: 2500 offset usually means 2500 + HHMM. 
-        // Example: 10:30 -> 1030 + 2500 = 3530.
-        // This effectively puts a "25+" logic on the hour if minutes don't overflow, 
-        // but strictly it adds 2500.
-        const finalPin = val + DB.offset; 
+        // PIN FIX: STRING CONCATENATION
+        const finalPin = DB.offset.toString() + hour; 
         
         document.getElementById('final-pin').innerText = finalPin;
         show('view-reveal');
         setTimeout(() => startSession(45), 5000);
     }
 
-    // --- SESSION & ALARM ---
+    // --- SESSION ---
     function startSession(mins) {
         show('view-session');
         let t = mins * 60;
@@ -523,10 +531,9 @@
         alert("CHEAT COUNT RESET");
     }
 
-    // --- UTILS ---
     function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     function sfx(t) { const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); o.connect(c.destination); o.start(); setTimeout(()=>o.stop(),200); }
 
 </script>
 </body>
-                                                                                                              </html>
+        </html>
