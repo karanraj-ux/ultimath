@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OMEGA v24</title>
+    <title>OMEGA v25 (SECURE)</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --hue: 45; --primary: #fbbf24; --bg: #050505; --text: #fff; --font: 'Courier New', monospace; }
@@ -32,14 +32,31 @@
         /* DENIAL SCREEN */
         .denial-box { border: 2px solid red; padding: 20px; text-align: center; background: rgba(50,0,0,0.5); display: none; }
 
+        /* NEW: ID DISPLAY STYLE */
+        .id-box { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            font-size: 10px; 
+            color: #444; 
+            border: 1px solid #333; 
+            padding: 5px; 
+            background: #000;
+        }
+        .id-box span { color: var(--primary); font-weight: bold; }
+
+        /* NEW: SECURITY WARNING */
+        .sec-warning { border: 1px solid red; color: red; padding: 15px; font-size: 12px; margin-bottom: 20px; text-align: left; }
+
     </style>
 </head>
 <body>
 
 <div class="crt"></div>
 
-<!-- 1. HOME -->
 <div id="view-home" class="screen active">
+    <div class="id-box" onclick="copyId()">ID: <span id="disp-peer-id">CONNECTING...</span></div>
+
     <h1 style="font-size:60px; color:var(--primary); font-weight:900; margin-bottom:10px;">LOCKED</h1>
     <div style="font-size:10px; margin-bottom:50px;">ADAPTIVE PROTOCOL ACTIVE</div>
     
@@ -56,7 +73,6 @@
     </div>
 </div>
 
-<!-- 2. ADMIN AUTH -->
 <div id="view-auth" class="screen">
     <h2>ADMIN CONSOLE</h2>
     <div id="device-warning" class="denial-box" onclick="bypassDenial()">
@@ -76,7 +92,6 @@
     <button class="btn" onclick="location.reload()" style="border-color:#444; color:#666; margin-top:20px;">CANCEL</button>
 </div>
 
-<!-- 3. QUIZ (ABCD Only) -->
 <div id="view-quiz" class="screen">
     <div style="width:100%; max-width:400px; border:1px solid var(--primary); padding:20px;">
         <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:20px;">
@@ -88,21 +103,34 @@
     </div>
 </div>
 
-<!-- 4. PERMISSION WAIT -->
 <div id="view-wait" class="screen">
     <div style="color:orange; animation:pulse 1s infinite; margin-bottom:20px;">PERMISSION REQUIRED</div>
     <div style="font-size:12px; text-align:center;">QUOTA EXCEEDED.<br>WAITING FOR ADMIN...</div>
 </div>
 
-<!-- 5. REVEAL -->
+<div id="view-security" class="screen">
+    <h2 style="color:red; margin-bottom:10px;">SECURITY CHECK</h2>
+    <div class="sec-warning">
+        <strong>CRITICAL VULNERABILITY DETECTED</strong><br><br>
+        IF THE USER UNINSTALLS "APPLOCK", THE PROTOCOL WILL FAIL.<br><br>
+        <strong>SOLUTION:</strong><br>
+        1. Open AppLock Settings.<br>
+        2. Enable "Advanced Protection" or "Prevent Uninstallation".<br>
+        3. This makes AppLock a "Device Admin" so it cannot be deleted.<br>
+    </div>
+    <div style="font-size:10px; color:#666; margin-bottom:20px;">
+        CONFIRM THAT UNINSTALL PROTECTION IS ACTIVE.
+    </div>
+    <button class="btn" onclick="confirmSecurity()" style="border-color:red; color:red;">I HAVE ENABLED IT</button>
+</div>
+
 <div id="view-reveal" class="screen">
     <div style="font-size:12px; color:#0f0; margin-bottom:10px;">ACCESS GRANTED</div>
     <div id="final-pin" style="font-size:80px; font-weight:900; margin-bottom:20px;">----</div>
-    <div style="font-size:10px; color:#666;">(TIME + OFFSET)</div>
+    <div style="font-size:10px; color:#666;">(PREFIX 25 + HHMM)</div>
     <div style="color:orange; font-size:12px; margin-top:20px;">SESSION STARTING IN 5s...</div>
 </div>
 
-<!-- 6. SESSION -->
 <div id="view-session" class="screen">
     <div style="width:250px; height:250px; border: 4px solid #333; border-radius: 50%; display:flex; align-items:center; justify-content:center;">
         <div id="sess-time" style="font-size:60px;">45:00</div>
@@ -110,7 +138,6 @@
     <div style="margin-top:30px; font-size:12px;">SENTINEL MONITORING...</div>
 </div>
 
-<!-- 7. ALARM -->
 <div id="view-alarm" class="screen">
     <h1 style="font-size:50px; background:white; color:black; padding:10px;">TIME UP</h1>
     <div style="margin-top:20px; color:red;">SOLVE TO STOP</div>
@@ -118,7 +145,6 @@
     <div id="pen-area" style="margin-top:20px; width:100%;"></div>
 </div>
 
-<!-- 8. ADMIN DASHBOARD -->
 <div id="view-admin" class="screen" style="border:4px solid var(--primary);">
     <div style="font-size:10px; color:#0f0;">ADMIN CONSOLE</div>
     
@@ -129,11 +155,11 @@
     </div>
     
     <hr style="border-color:#333; width:100%; margin:20px 0;">
-    <input id="target-id" class="inp" placeholder="Student ID">
+    <input id="target-id" class="inp" placeholder="Student ID (From Home Screen)">
     <button class="btn" onclick="remoteUnlock()" style="padding:10px;">FORCE UNLOCK</button>
     
     <hr style="border-color:#333; width:100%; margin:20px 0;">
-    <label style="font-size:10px; color:#888;">PIN OFFSET</label>
+    <label style="font-size:10px; color:#888;">PIN OFFSET (Default 2500)</label>
     <input type="number" id="inp-offset" class="inp">
     <button class="btn" onclick="saveOffset()" style="padding:10px;">SAVE CONFIG</button>
     
@@ -144,7 +170,7 @@
     // --- CONFIG ---
     const DB = {
         role: localStorage.getItem('omg_role'),
-        offset: parseInt(localStorage.getItem('omg_offset')) || 2500,
+        offset: parseInt(localStorage.getItem('omg_offset')) || 2500, // Default 2500 for "25 + HHMM"
         unlocks: parseInt(localStorage.getItem('omg_unlocks')) || 0,
         cheatCount: parseInt(localStorage.getItem('omg_cheats')) || 0,
         lastReset: parseInt(localStorage.getItem('omg_reset_day')) || 0
@@ -183,7 +209,8 @@
     let state = { 
         peer: null, conn: null, alarmOsc: null, sessionInt: null,
         holdTimer: null, alarmActive: false,
-        qIdx: 0, currentQs: [], qType: 'easy', denialTaps: 0
+        qIdx: 0, currentQs: [], qType: 'easy', denialTaps: 0,
+        myPeerId: "Generating..."
     };
 
     // --- INIT ---
@@ -243,8 +270,11 @@
 
     // --- PEERJS ---
     function initPeer() {
+        // Updated to populate the ID field
         state.peer = new Peer(null, { debug: 1 });
         state.peer.on('open', (id) => {
+            state.myPeerId = id;
+            document.getElementById('disp-peer-id').innerText = id; // Show ID
             if(DB.role === 'student') {
                 const adminId = localStorage.getItem('omg_admin_id');
                 if(adminId) state.conn = state.peer.connect(adminId);
@@ -255,6 +285,16 @@
             setupConn();
             if(DB.role === 'admin') document.getElementById('request-box').style.display = 'block';
         });
+        state.peer.on('error', (err) => {
+            document.getElementById('disp-peer-id').innerText = "ERR";
+        });
+    }
+    
+    function copyId() {
+        if(state.myPeerId) {
+            navigator.clipboard.writeText(state.myPeerId);
+            alert("ID COPIED: " + state.myPeerId);
+        }
     }
 
     function setupConn() {
@@ -372,10 +412,28 @@
     }
 
     function unlockSuccess() {
+        // Intercepted: Go to Security Check first
+        show('view-security');
+        // Logic will continue in confirmSecurity()
+    }
+    
+    function confirmSecurity() {
+        // Actual Reveal Logic
         if(DB.unlocks < 2) { DB.unlocks++; localStorage.setItem('omg_unlocks', DB.unlocks); }
+        
         const now = new Date();
-        const val = parseInt(now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0'));
-        document.getElementById('final-pin').innerText = val + DB.offset;
+        // Time Formatting for PIN
+        const hour = now.getHours().toString().padStart(2,'0');
+        const min = now.getMinutes().toString().padStart(2,'0');
+        const val = parseInt(hour + min);
+        
+        // Calculation: 2500 offset usually means 2500 + HHMM. 
+        // Example: 10:30 -> 1030 + 2500 = 3530.
+        // This effectively puts a "25+" logic on the hour if minutes don't overflow, 
+        // but strictly it adds 2500.
+        const finalPin = val + DB.offset; 
+        
+        document.getElementById('final-pin').innerText = finalPin;
         show('view-reveal');
         setTimeout(() => startSession(45), 5000);
     }
@@ -471,4 +529,4 @@
 
 </script>
 </body>
-</html>
+                                                                                                              </html>
