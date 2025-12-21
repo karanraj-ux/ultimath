@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JEE BRAHMASTRA // ULTIMATE GOD MODE</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- CORE THEME VARIABLES (MERGED) --- */
+        :root {
+            --bg: #000000;
+            --panel: #0a0a0a;
+            --text: #ffffff;
+            --gold: #FFD700;       
+            --neon-blue: #00F3FF;
+            --danger: #FF003C;
+            --success: #00FF66;
+            --void: #9D00FF;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-code: 'Courier New', monospace;
+        }
+
+        /* --- GLOBAL RESET --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg); 
+            color: var(--text);
+            font-family: var(--font-main); 
+            margin: 0; 
+            height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            /* Cyberpunk Grid Background */
+            background-image: 
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- NAV BAR (12 TABS - SCROLLABLE) --- */
+        .nav-bar {
+            height: 80px; 
+            background: rgba(0,0,0,0.98); 
+            border-top: 2px solid var(--gold);
+            display: flex; 
+            overflow-x: auto; 
+            align-items: center;
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            z-index: 1000;
+            backdrop-filter: blur(10px); 
+            padding-bottom: 5px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+        }
+        .nav-bar::-webkit-scrollbar { height: 2px; }
+        .nav-bar::-webkit-scrollbar-thumb { background: var(--gold); }
+        
+        .nav-btn {
+            background: none; 
+            border: none; 
+            color: #555; 
+            font-size: 9px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 6px; 
+            cursor: pointer;
+            transition: all 0.2s ease; 
+            font-family: var(--font-code); 
+            font-weight: bold; 
+            text-transform: uppercase;
+            min-width: 65px; 
+            flex-shrink: 0;
+            padding: 5px 0;
+        }
+        .nav-btn.active { 
+            color: var(--gold); 
+            transform: translateY(-5px); 
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); 
+        }
+        .nav-btn.active svg { stroke: var(--gold); stroke-width: 2.5px; }
+
+        /* --- SCREEN CONTAINER --- */
+        .screen {
+            flex: 1; 
+            display: none; 
+            flex-direction: column; 
+            padding: 20px;
+            overflow-y: auto; 
+            padding-bottom: 120px; /* Space for Nav */
+            scrollbar-width: none;
+        }
+        .screen::-webkit-scrollbar { display: none; }
+        .screen.active { 
+            display: flex; 
+            animation: slideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+        }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { 
+            margin: 0; 
+            color: var(--gold); 
+            font-weight: 900; 
+            letter-spacing: -0.5px; 
+            font-size: 28px; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 15px rgba(255,215,0,0.25); 
+            border-left: 4px solid var(--gold);
+            padding-left: 15px;
+            margin-bottom: 5px;
+        }
+        .subtitle { 
+            font-size: 11px; 
+            color: #666; 
+            margin-bottom: 25px; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            padding-left: 19px;
+            font-family: var(--font-code);
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        /* --- SNIPER TAB UI (FROM FILE 1) --- */
+        .sniper-hud { border: 1px solid var(--gold); padding: 5px; margin-bottom: 15px; background: #080808; }
+        .sniper-level-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        .sniper-lvl-btn { flex: 1; background: #111; border: 1px solid #333; color: #666; font-size: 10px; padding: 10px; cursor: pointer; text-align: center; }
+        .sniper-lvl-btn.active { background: var(--gold); color: black; font-weight: bold; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        
+        .sniper-scope { 
+            height: 250px; background: #000; border: 1px solid #333; position: relative; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            overflow: hidden; padding: 20px; text-align: center;
+            border-radius: 4px;
+        }
+        .sniper-scope::before {
+            content: ''; position: absolute; inset: 0; 
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 90%);
+            pointer-events: none;
+        }
+        .sniper-crosshair {
+            position: absolute; width: 100%; height: 100%; pointer-events: none;
+            background: 
+                linear-gradient(#333 1px, transparent 1px) center/100% 100% no-repeat,
+                linear-gradient(90deg, #333 1px, transparent 1px) center/100% 100% no-repeat;
+            background-size: 20px 20px; opacity: 0.2;
+        }
+        .sniper-timer { 
+            position: absolute; top: 0; left: 0; height: 4px; background: var(--danger); width: 100%; 
+            transition: width 1s linear; 
+        }
+        .sniper-q-tag { font-size: 9px; color: var(--neon-blue); margin-bottom: 10px; border: 1px solid var(--neon-blue); padding: 2px 5px; z-index: 2; }
+        .sniper-q-text { font-size: 14px; color: #fff; line-height: 1.4; font-family: var(--font-main); z-index: 2; text-shadow: 0 2px 4px #000; }
+        .sniper-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .sniper-btn { padding: 20px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; font-family: var(--font-code); text-transform: uppercase; }
+        .btn-kill { background: #111; color: var(--success); border: 1px solid var(--success); }
+        .btn-kill:active { background: var(--success); color: black; }
+        .btn-skip { background: #111; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-skip:active { background: var(--danger); color: white; }
+        .sniper-feedback { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: none; 
+            flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+        }
+
+        /* --- PACEMAKER UI (FROM FILE 1) --- */
+        .pace-dial { 
+            width: 220px; height: 220px; border-radius: 50%; border: 6px solid #222; margin: 30px auto;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; transition: border-color 0.5s; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .pace-time { font-size: 48px; font-weight: bold; color: #fff; font-family: var(--font-code); }
+        .pace-label { font-size: 12px; color: #888; text-transform: uppercase; margin-top: 5px; }
+        .pace-phase { position: absolute; bottom: -50px; width: 100%; text-align: center; color: var(--gold); font-size: 14px; font-weight: bold; letter-spacing: 1px; }
+        .pace-btn { width: 100%; padding: 18px; background: var(--neon-blue); color: black; border: none; font-weight: bold; margin-top: 60px; font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+        .pace-btn:active { opacity: 0.8; }
+
+        /* --- COMMON UI ELEMENTS --- */
+        .tool-panel { 
+            background: #0c0c0c; padding: 15px; margin-bottom: 15px; 
+            border: 1px solid #222; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .tool-header { 
+            display: flex; align-items: center; gap: 8px; color: var(--gold); 
+            font-weight: bold; font-size: 13px; margin-bottom: 12px; text-transform: uppercase;
+        }
+        .tool-btn {
+            background: #111; border: 1px solid #333; color: #fff; padding: 10px;
+            border-radius: 4px; font-size: 10px; font-family: var(--font-code);
+            cursor: pointer; text-transform: uppercase; transition: 0.2s; flex: 1;
+        }
+        .tool-btn:active { background: #222; border-color: var(--gold); }
+        .search-box {
+            width: 100%; background: #080808; border: 1px solid #333; color: var(--neon-blue);
+            padding: 12px; border-radius: 4px; font-family: var(--font-code); font-size: 14px;
+            outline: none; margin-bottom: 10px;
+        }
+
+        /* --- INTEL TABS --- */
+        .intel-section { margin-bottom: 30px; }
+        .intel-title { 
+            color: var(--neon-blue); font-size: 13px; font-weight: bold; margin-bottom: 12px; 
+            border-bottom: 1px dashed #333; padding-bottom: 8px; display: flex; justify-content: space-between; 
+        }
+        .trend-card { background: #0e0e0e; border: 1px solid #222; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
+        .trend-year { color: var(--gold); font-weight: bold; font-size: 11px; font-family: var(--font-code); margin-bottom: 6px; display: block; }
+        .trend-desc { font-size: 12px; color: #ccc; line-height: 1.6; }
+        .roi-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .roi-table td { padding: 10px 8px; border-bottom: 1px solid #1a1a1a; }
+        .roi-val { text-align: right; font-family: var(--font-code); color: #fff; }
+        .tier-badge { padding: 3px 8px; border-radius: 3px; font-weight: bold; font-size: 9px; color: #000; }
+        .tier-s { background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+        .tier-a { background: var(--neon-blue); box-shadow: 0 0 5px var(--neon-blue); }
+        .tier-f { background: var(--danger); color: white; }
+        .immortal-item { display: flex; gap: 12px; align-items: center; padding: 12px; background: #0a0a0a; border: 1px solid #222; margin-bottom: 6px; border-radius: 4px; transition: 0.2s; }
+        .immortal-check { width: 18px; height: 18px; border: 1px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .immortal-check.checked { background: var(--success); border-color: var(--success); box-shadow: 0 0 8px var(--success); }
+        .immortal-text { font-size: 12px; color: #bbb; line-height: 1.3; }
+
+        /* --- GUIDE TAB --- */
+        .guide-step { border-left: 2px solid var(--gold); padding-left: 20px; margin-bottom: 25px; position: relative; }
+        .guide-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: var(--bg); border: 2px solid var(--gold); border-radius: 50%; }
+        .guide-time { color: var(--gold); font-family: var(--font-code); font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+        .guide-action { color: #fff; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+        .guide-desc { color: #888; font-size: 11px; line-height: 1.5; }
+
+        /* --- DOJO --- */
+        .dojo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .dojo-card { background: #111; border: 1px solid #333; padding: 20px 15px; text-align: center; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .dojo-card:active { border-color: var(--gold); background: #181818; transform: scale(0.98); }
+        .game-ui { background: #0c0c0c; border: 1px solid #333; padding: 25px; text-align: center; border-radius: 8px; display: none; }
+        .game-q { font-size: 28px; font-weight: bold; color: var(--neon-blue); margin: 25px 0; font-family: var(--font-code); line-height: 1.2; }
+        .game-btn { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 16px; width: 100%; margin-bottom: 8px; cursor: pointer; font-family: var(--font-code); font-size: 14px; border-radius: 4px; }
+        .game-btn.correct { background: var(--success); color: black; border-color: var(--success); }
+        .game-btn.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* --- VAULT/CHEAT --- */
+        .cheat-card { background: #0a0a0a; border: 1px solid #222; padding: 14px; border-radius: 6px; margin-bottom: 10px; overflow: hidden; transition: max-height 0.3s ease; }
+        .cheat-card.high-yield { border: 1px solid var(--gold); background: linear-gradient(90deg, rgba(255, 215, 0, 0.05), transparent); }
+        .c-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .c-title { font-weight: bold; font-size: 13px; color: #fff; }
+        .c-tag { font-size: 9px; padding: 2px 6px; background: #222; border-radius: 3px; color: #888; }
+        .c-body { font-size: 14px; color: var(--neon-blue); margin-top: 5px; font-family: var(--font-code); }
+        .c-extra { font-size: 10px; color: #666; margin-top: 8px; border-top: 1px solid #222; padding-top: 5px; font-style: italic; }
+        .formula-card { background: #111; border-left: 3px solid var(--neon-blue); padding: 10px; margin-bottom: 5px; }
+        .formula-eq { font-family: var(--font-code); font-size: 14px; color: #fff; margin-bottom: 2px; }
+        .formula-name { font-size: 10px; color: #666; text-transform: uppercase; }
+
+        /* --- DASHBOARD --- */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: #0e0e0e; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #222; }
+        .wave-container { height: 40px; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 15px; opacity: 0.3; transition: 0.5s; }
+        .wave-bar { width: 5px; background: var(--gold); animation: wave 1s infinite ease-in-out; border-radius: 2px; }
+        .wave-container.active { opacity: 1; filter: drop-shadow(0 0 5px var(--gold)); }
+        @keyframes wave { 0%,100%{height: 10px;} 50%{height: 35px;} }
+        
+        /* --- PROTOCOL --- */
+        .protocol-item { background: #0c0c0c; border: 1px solid #222; margin-bottom: 5px; border-radius: 4px; overflow: hidden; }
+        .p-head { padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #111; }
+        .p-subs { display: none; padding: 10px; background: #080808; border-top: 1px solid #222; }
+        .protocol-item.expanded .p-subs { display: block; }
+        .p-sub-item { padding: 8px 0; font-size: 11px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .p-sub-item.done { text-decoration: line-through; color: var(--success); }
+
+        /* --- CONSTANTS --- */
+        .const-table { width: 100%; border-collapse: collapse; font-family: var(--font-code); font-size: 13px; }
+        .const-table td { padding: 12px; border-bottom: 1px solid #222; }
+        .const-sym { color: var(--gold); font-weight: bold; }
+        .const-val { color: var(--neon-blue); text-align: right; }
+
+        /* --- TRAPS --- */
+        .trap-card { background: #0f0505; border-left: 3px solid var(--danger); padding: 15px; margin-bottom: 10px; border-radius: 0 4px 4px 0; }
+        .trap-head { color: var(--danger); font-weight: bold; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; }
+        .trap-body { color: #ccc; font-size: 11px; line-height: 1.4; }
+
+        /* --- SHAME --- */
+        .autopsy-card { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 11px; }
+        .autopsy-type { color: var(--danger); font-weight: bold; }
+        .autopsy-date { color: #555; font-family: var(--font-code); }
+
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <button class="nav-btn active" onclick="nav('dash', this)"><i data-lucide="layout-dashboard" width="18"></i> WAR ROOM</button>
+    <button class="nav-btn" onclick="nav('intel', this)"><i data-lucide="brain" width="18"></i> INTEL</button>
+    <button class="nav-btn" onclick="nav('sniper', this)"><i data-lucide="crosshair" width="18"></i> SNIPER</button>
+    <button class="nav-btn" onclick="nav('dojo', this)"><i data-lucide="sword" width="18"></i> DOJO</button>
+    <button class="nav-btn" onclick="nav('pace', this)"><i data-lucide="timer" width="18"></i> PACE</button>
+    <button class="nav-btn" onclick="nav('guide', this)"><i data-lucide="book" width="18"></i> GUIDE</button>
+    <button class="nav-btn" onclick="nav('vault', this)"><i data-lucide="database" width="18"></i> VAULT</button>
+    <button class="nav-btn" onclick="nav('const', this)"><i data-lucide="calculator" width="18"></i> CONST</button>
+    <button class="nav-btn" onclick="nav('graphs', this)"><i data-lucide="activity" width="18"></i> GRAPHS</button>
+    <button class="nav-btn" onclick="nav('traps', this)"><i data-lucide="alert-triangle" width="18"></i> TRAPS</button>
+    <button class="nav-btn" onclick="nav('shame', this)"><i data-lucide="skull" width="18"></i> SHAME</button>
+    <button class="nav-btn" onclick="nav('flash', this)"><i data-lucide="zap" width="18"></i> FLASH</button>
+</div>
+
+<div id="dash" class="screen active">
+    <h1>WAR ROOM</h1>
+    <div class="subtitle">PROTOCOL 10: EXECUTION DASHBOARD</div>
+
+    <div class="stat-grid">
+        <div class="stat-box" style="border-top: 2px solid var(--danger);">
+            <div style="font-size:36px; font-weight:bold; color:var(--danger); font-family:var(--font-code)" id="days">0</div>
+            <div style="font-size:10px; color:#888; margin-top:5px;">DAYS TO IMPACT</div>
+        </div>
+        <div class="stat-box" style="border-top: 2px solid var(--gold);">
+            <div style="font-size:36px; font-weight:bold; color:var(--gold); font-family:var(--font-code)">180+</div>
+            <div style="font-size:10px; color:#888; margin-top:5px;">MISSION TARGET</div>
+        </div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header"><i data-lucide="play-circle"></i> ATTACK STRATEGY</div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:12px;">Generates Exam-Hall Timeline based on your strength.</div>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="tool-btn" style="padding:12px;" onclick="Strat.gen('P')">PHYSICS MAIN</button>
+            <button class="tool-btn" style="padding:12px;" onclick="Strat.gen('C')">CHEM MAIN</button>
+            <button class="tool-btn" style="padding:12px;" onclick="Strat.gen('M')">MATH MAIN</button>
+        </div>
+        <div id="strat-res"></div>
+    </div>
+
+    <div class="tool-panel" onclick="Audio.toggle()">
+        <div class="tool-header"><i data-lucide="brain-circuit"></i> 40Hz GAMMA FOCUS</div>
+        <div class="wave-container" id="wave-viz">
+            <div class="wave-bar" style="animation-duration: 0.8s"></div>
+            <div class="wave-bar" style="animation-duration: 1.2s"></div>
+            <div class="wave-bar" style="animation-duration: 0.5s"></div>
+            <div class="wave-bar" style="animation-duration: 1.0s"></div>
+            <div class="wave-bar" style="animation-duration: 0.7s"></div>
+            <div class="wave-bar" style="animation-duration: 1.1s"></div>
+        </div>
+        <button class="tool-btn" id="audio-btn" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:12px;">ACTIVATE NEURAL SYNC</button>
+    </div>
+
+    <div class="subtitle" style="margin-top:25px; color:var(--gold); border-bottom:1px solid #222; padding-bottom:10px;">MISSION CHECKLIST</div>
+    <div id="protocol-container"></div>
+</div>
+
+<div id="intel" class="screen">
+    <h1>ORACLE INTEL</h1>
+    <div class="subtitle">DATA FROM 2023 - 2025 PAPERS</div>
+
+    <div class="intel-section">
+        <div class="intel-title">2025 SHIFT DECODER</div>
+        <div class="trend-card">
+            <span class="trend-year">JAN 2025 SESSION</span>
+            <div class="trend-desc">
+                High formula usage (60%). Math was lengthy. Physics was moderate but **calculation heavy**. 
+                <strong>Surprise:</strong> Specific spike in Gravitation and EM Waves questions.
+            </div>
+        </div>
+        <div class="trend-card">
+            <span class="trend-year">APRIL 2025 SESSION</span>
+            <div class="trend-desc">
+                Shift towards conceptual assertion-reasoning. Modern Physics weightage increased to 15%. 
+                <strong>Warning:</strong> Electronics (Logic Gates) appeared in 90% of shifts.
+            </div>
+        </div>
+    </div>
+
+    <div class="intel-section">
+        <div class="intel-title">GOLD MINE (ROI HEATMAP)</div>
+        <div class="tool-panel" style="padding:0; overflow:hidden;">
+            <table class="roi-table">
+                <tr><td><span class="tier-badge tier-s">TIER S</span></td><td class="roi-sub" style="color:#fff;">Modern Physics</td><td class="roi-val">12-16 M</td></tr>
+                <tr><td><span class="tier-badge tier-s">TIER S</span></td><td class="roi-sub" style="color:#fff;">Current Elec</td><td class="roi-val">10 M</td></tr>
+                <tr><td><span class="tier-badge tier-s">TIER S</span></td><td class="roi-sub" style="color:#fff;">Thermodynamics</td><td class="roi-val">8-10 M</td></tr>
+                <tr><td><span class="tier-badge tier-a">TIER A</span></td><td class="roi-sub" style="color:#ddd;">Gravitation</td><td class="roi-val">8 M</td></tr>
+                <tr><td><span class="tier-badge tier-a">TIER A</span></td><td class="roi-sub" style="color:#ddd;">Semiconductors</td><td class="roi-val">8 M</td></tr>
+                <tr><td><span class="tier-badge tier-f">TIER F</span></td><td class="roi-sub" style="color:#888;">Fluids / Rotation</td><td class="roi-val">LOW ROI</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="intel-section">
+        <div class="intel-title">THE IMMORTALS (80% REPEAT)</div>
+        <div style="font-size:11px; color:#666; margin-bottom:15px; font-style:italic;">Topics that appeared in >80% shifts (2022-2025). Mastery mandatory.</div>
+        <div id="immortal-list"></div>
+    </div>
+</div>
+
+<div id="sniper" class="screen">
+    <h1>SNIPER SCOPE</h1>
+    <div class="subtitle">JUDGEMENT TRAINER</div>
+    
+    <div class="sniper-hud">
+        <div style="font-size:9px; color:#666; text-transform:uppercase; margin-bottom:5px;">Select Mastery Level</div>
+        <div class="sniper-level-row">
+            <div class="sniper-lvl-btn active" onclick="Sniper.setLvl(1, this)">LVL 1: CLEANER<br>(Find Easy)</div>
+            <div class="sniper-lvl-btn" onclick="Sniper.setLvl(2, this)">LVL 2: HUNTER<br>(Avoid Traps)</div>
+            <div class="sniper-lvl-btn" onclick="Sniper.setLvl(3, this)">LVL 3: SNIPER<br>(2025 Sim)</div>
+        </div>
+        <div style="text-align:right; font-size:10px; color:var(--gold); font-weight:bold;" id="s-score">SCORE: 0</div>
+    </div>
+
+    <div id="sniper-game" style="position:relative;">
+        <div class="sniper-scope">
+            <div class="sniper-crosshair"></div>
+            <div class="sniper-timer" id="s-timer"></div>
+            <div class="sniper-q-tag" id="s-tag">2024 SHIFT 1</div>
+            <div class="sniper-q-text" id="s-text">Question Loading...</div>
+            <div class="sniper-feedback" id="s-feed">
+                <div style="font-size:30px; margin-bottom:10px;" id="s-icon"></div>
+                <div style="color:white; font-size:12px; text-align:center; padding:10px; line-height:1.5;" id="s-msg"></div>
+                <button class="tool-btn" style="width:auto; margin-top:10px; background:#fff; color:#000;" onclick="Sniper.next()">NEXT TARGET</button>
+            </div>
+        </div>
+        <div class="sniper-controls">
+            <button class="sniper-btn btn-kill" onclick="Sniper.act('KILL')">KILL (ATTEMPT)</button>
+            <button class="sniper-btn btn-skip" onclick="Sniper.act('SKIP')">SKIP (LEAVE)</button>
+        </div>
+    </div>
+    <div style="font-size:10px; color:#444; margin-top:10px; text-align:center;">DECIDE IN 5 SECONDS</div>
+</div>
+
+<div id="dojo" class="screen">
+    <h1>TRAINING DOJO</h1>
+    <div class="subtitle">NEURAL RE-WIRING GYM</div>
+    
+    <div class="dojo-grid">
+        <div class="dojo-card" onclick="Dojo.start('DIRTY')">
+            <div style="color:var(--gold); margin-bottom:10px;"><i data-lucide="zap" width="32" height="32"></i></div>
+            <div style="font-weight:bold; font-size:14px; color:#fff;">DIRTY MATH</div>
+            <div style="font-size:10px; color:#666; margin-top:5px;">Speed Approximation</div>
+        </div>
+        <div class="dojo-card" onclick="Dojo.start('FACTOR')">
+            <div style="color:var(--gold); margin-bottom:10px;"><i data-lucide="divide-circle" width="32" height="32"></i></div>
+            <div style="font-weight:bold; font-size:14px; color:#fff;">FACTOR FREAK</div>
+            <div style="font-size:10px; color:#666; margin-top:5px;">Proportionality Logic</div>
+        </div>
+        <div class="dojo-card" onclick="Dojo.start('PROTO')">
+            <div style="color:var(--gold); margin-bottom:10px;"><i data-lucide="shield-check" width="32" height="32"></i></div>
+            <div style="font-weight:bold; font-size:14px; color:#fff;">CONCEPT CHECK</div>
+            <div style="font-size:10px; color:#666; margin-top:5px;">True/False Theory</div>
+        </div>
+        <div class="dojo-card" onclick="Dojo.start('UNIT')">
+            <div style="color:var(--gold); margin-bottom:10px;"><i data-lucide="ruler" width="32" height="32"></i></div>
+            <div style="font-weight:bold; font-size:14px; color:#fff;">UNIT SNIPER</div>
+            <div style="font-size:10px; color:#666; margin-top:5px;">Dimensional Analysis</div>
+        </div>
+    </div>
+
+    <div id="game-area" class="game-ui">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">
+            <div style="font-size:10px; color:#888;">DRILL ACTIVE</div>
+            <div id="g-score" style="font-size:14px; color:var(--gold); font-weight:bold;">STREAK: 0</div>
+        </div>
+        
+        <div id="g-q" class="game-q"></div>
+        <div id="g-opts" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+        
+        <button class="tool-btn" style="margin-top:25px; background:#222; width:100%; border:1px solid #444;" onclick="Dojo.exit()">ABORT DRILL</button>
+    </div>
+</div>
+
+<div id="pace" class="screen">
+    <h1>PACEMAKER</h1>
+    <div class="subtitle">EXAM RHYTHM CONTROLLER</div>
+    
+    <div class="pace-dial" id="p-dial">
+        <div class="pace-time" id="p-time">60:00</div>
+        <div class="pace-label">PHYSICS MODE</div>
+        <div class="pace-phase" id="p-phase">PHASE 1: HUNT</div>
+    </div>
+
+    <button class="pace-btn" id="p-btn" onclick="Pace.toggle()">START PACEMAKER</button>
+    
+    <div style="margin-top:30px; padding:20px; border:1px solid #222; border-radius:8px; font-size:12px; color:#888; line-height:1.6; background:#0c0c0c;">
+        <strong style="color:var(--neon-blue)">BLUE (0-15m):</strong> SCAN MODE. Find easy Qs. Don't solve yet.<br>
+        <strong style="color:var(--gold)">GOLD (15-45m):</strong> EXECUTION. Solve marked Qs accurately.<br>
+        <strong style="color:var(--danger)">RED (45-60m):</strong> SURVIVAL. Guess intelligently & Move.
+    </div>
+</div>
+
+<div id="guide" class="screen">
+    <h1>THE CODEX</h1>
+    <div class="subtitle">OPERATIONAL MANUAL</div>
+
+    <div class="tool-panel">
+        <div class="tool-header">THE DAILY LOOP (ROUTINE)</div>
+        
+        <div class="guide-step">
+            <div class="guide-time">08:00 AM</div>
+            <div class="guide-action">WAR ROOM CHECK</div>
+            <div class="guide-desc">Check days left. Expand "Protocol 10" and select 2 sub-topics to kill today. Never start blind.</div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-time">09:00 AM</div>
+            <div class="guide-action">INTEL TARGETING</div>
+            <div class="guide-desc">Go to "Intel". Check "Gold Mine". Ensure you are studying Tier S or Tier A topics only. Ignore Tier F.</div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-time">11:00 AM</div>
+            <div class="guide-action">SNIPER / DOJO WARMUP</div>
+            <div class="guide-desc">Play "Sniper" (Level 2) or "Dirty Math" for 10 mins before starting numericals to wake up brain speed.</div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-time">02:00 PM</div>
+            <div class="guide-action">DEEP WORK</div>
+            <div class="guide-desc">Activate Audio "40Hz Gamma" in War Room. Solve 20 Questions without standing up.</div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-time">09:00 PM</div>
+            <div class="guide-action">SHAME LOGGING</div>
+            <div class="guide-desc">Open "Shame" tab. Log every silly mistake made today. Read "Traps" before sleep.</div>
+        </div>
+    </div>
+</div>
+
+<div id="vault" class="screen">
+    <h1>THE VAULT</h1>
+    <div class="subtitle">REFERENCE LIBRARY</div>
+    
+    <div style="margin-bottom:25px;">
+        <div class="tool-header">REVERSE FORMULA LINKER</div>
+        <div style="font-size:10px; color:#666; margin-bottom:5px;">Type variables (e.g. "m v r") to find connecting formulas.</div>
+        <input type="text" class="search-box" id="link-in" placeholder="Enter variables..." onkeyup="Linker.search()">
+        <div id="link-res"></div>
+    </div>
+
+    <div class="tool-header">CHEAT MATRIX</div>
+    <div style="display:flex; gap:8px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px;">
+        <button class="tool-btn" style="width:auto; padding:8px 15px;" onclick="Cheat.filter('HIGH')">🔥 GOLD</button>
+        <button class="tool-btn" style="width:auto; padding:8px 15px;" onclick="Cheat.filter('MECH')">MECH</button>
+        <button class="tool-btn" style="width:auto; padding:8px 15px;" onclick="Cheat.filter('ELEC')">ELEC</button>
+        <button class="tool-btn" style="width:auto; padding:8px 15px;" onclick="Cheat.filter('MODERN')">MODERN</button>
+        <button class="tool-btn" style="width:auto; padding:8px 15px;" onclick="Cheat.filter('OPTICS')">OPTICS</button>
+    </div>
+    <div id="cheat-list"></div>
+</div>
+
+<div id="const" class="screen">
+    <h1>CONSTANTS</h1>
+    <div class="subtitle">SPEED VALUES</div>
+    <div class="tool-panel">
+        <table class="const-table">
+            <tr><td><span class="const-sym">hc</span></td><td><span class="const-val">12400 eV Å</span></td></tr>
+            <tr><td><span class="const-sym">1/e</span></td><td><span class="const-val">0.37</span></td></tr>
+            <tr><td><span class="const-sym">ln(2)</span></td><td><span class="const-val">0.693</span></td></tr>
+            <tr><td><span class="const-sym">&pi;<sup>2</sup></span></td><td><span class="const-val">~10</span></td></tr>
+            <tr><td><span class="const-sym">&radic;2</span></td><td><span class="const-val">1.414</span></td></tr>
+            <tr><td><span class="const-sym">&radic;3</span></td><td><span class="const-val">1.732</span></td></tr>
+            <tr><td><span class="const-sym">1/&radic;2</span></td><td><span class="const-val">0.707</span></td></tr>
+            <tr><td><span class="const-sym">1/4&pi;&epsilon;<sub>0</sub></span></td><td><span class="const-val">9 &times; 10<sup>9</sup></span></td></tr>
+            <tr><td><span class="const-sym">&mu;<sub>0</sub>/4&pi;</span></td><td><span class="const-val">10<sup>-7</sup></span></td></tr>
+            <tr><td><span class="const-sym">&radic;10</span></td><td><span class="const-val">3.16</span></td></tr>
+            <tr><td><span class="const-sym">g</span></td><td><span class="const-val">9.8 (Use 10 if &pi;<sup>2</sup> near)</span></td></tr>
+        </table>
+    </div>
+    
+    <div class="tool-header" style="margin-top:25px;">DIMENSION ASSASSIN</div>
+    <div style="font-size:10px; color:#888; margin-bottom:10px;">Enter powers for [M], [L], [T], [A].</div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+        <input type="number" id="d-m" class="search-box" style="margin:0; text-align:center;" placeholder="M">
+        <input type="number" id="d-l" class="search-box" style="margin:0; text-align:center;" placeholder="L">
+        <input type="number" id="d-t" class="search-box" style="margin:0; text-align:center;" placeholder="T">
+        <input type="number" id="d-a" class="search-box" style="margin:0; text-align:center;" placeholder="A">
+    </div>
+    <button class="tool-btn" style="margin-top:10px; width:100%;" onclick="Dim.check()">IDENTIFY QUANTITY</button>
+    <div id="dim-res" style="text-align:center; margin-top:15px; font-size:16px; color:var(--neon-blue); font-family:var(--font-code); font-weight:bold; height:20px;"></div>
+</div>
+
+<div id="flash" class="screen">
+    <h1>FLASH KILL</h1>
+    <div class="subtitle">ACTIVE RECALL SYSTEM</div>
+    
+    <div style="perspective:1000px; height:240px; margin-bottom:25px;" onclick="this.firstElementChild.classList.toggle('flipped')">
+        <div style="width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:0.6s;">
+            <div style="position:absolute; inset:0; backface-visibility:hidden; background:#0a0a0a; border:1px solid var(--gold); border-radius:8px; display:flex; flex-direction:column; justify-content:center; align-items:center; box-shadow:0 0 15px rgba(255,215,0,0.1);">
+                <div style="color:var(--gold); font-size:12px; margin-bottom:15px; letter-spacing:2px;">TOPIC</div>
+                <div style="font-size:20px; font-weight:bold; padding:20px; text-align:center;" id="f-q">?</div>
+                <div style="font-size:10px; color:#555; position:absolute; bottom:15px;">TAP TO REVEAL</div>
+            </div>
+            <div style="position:absolute; inset:0; backface-visibility:hidden; transform:rotateY(180deg); background:#111; border:1px solid var(--neon-blue); border-radius:8px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <div style="font-size:18px; font-weight:bold; color:var(--neon-blue); padding:20px; text-align:center; font-family:var(--font-code);" id="f-a">!</div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="tool-btn" style="width:100%; padding:15px; font-size:14px;" onclick="Flash.next()">NEXT CARD >></button>
+</div>
+
+<div id="graphs" class="screen">
+    <h1>GRAPH ENGINE</h1>
+    <div class="subtitle">VISUAL MEMORY BANK</div>
+    
+    <canvas id="graphCanvas" style="width:100%; height:250px; background:#000; border:1px solid #333; margin-bottom:15px; border-radius:4px;"></canvas>
+    
+    <div id="graph-btns" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:5px;"></div>
+    
+    <div id="graph-desc" style="font-size:12px; color:#aaa; margin-top:20px; padding:15px; background:#111; border-left:3px solid var(--neon-blue); line-height:1.5;"></div>
+</div>
+
+<div id="traps" class="screen">
+    <h1>TRAP DATABASE</h1>
+    <div class="subtitle">NEGATIVE MARKING SHIELD</div>
+    <div id="trap-list"></div>
+</div>
+
+<div id="shame" class="screen">
+    <h1>MISTAKE LOG</h1>
+    <div class="subtitle">PERSISTENT FAILURE TRACKER</div>
+    
+    <div style="margin-bottom:10px; color:#888; font-size:11px;">Tap to log a new failure. Be honest.</div>
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:25px;">
+        <button class="tool-btn" style="background:#111; border-color:var(--danger); color:var(--danger);" onclick="Shame.add('SILLY')">SILLY</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger); color:var(--danger);" onclick="Shame.add('CONCEPT')">CONCEPT</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger); color:var(--danger);" onclick="Shame.add('FORMULA')">FORMULA</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger); color:var(--danger);" onclick="Shame.add('PANIC')">PANIC</button>
+    </div>
+    
+    <div class="tool-header">RECENT LOGS</div>
+    <div id="shame-history" style="display:flex; flex-direction:column; gap:0px; border-top:1px solid #222;"></div>
+    
+    <button class="tool-btn" style="width:100%; margin-top:30px; background:#000; border:1px solid #333;" onclick="Shame.clear()">CLEAR HISTORY</button>
+</div>
+
+<script>
+    // --- 1. DATA: DOJO QUESTIONS (EXPANDED MERGE) ---
+    const DOJO_DB = {
+        'DIRTY': [
+            {q:"ln(2)",o:["0.693","0.37","1.414","2.71"],a:0},
+            {q:"1/sqrt(2)",o:["0.707","1.414","0.5","0.866"],a:0},
+            {q:"pi^2 approx",o:["10","9","6","3.14"],a:0},
+            {q:"sqrt(10)",o:["3.16","3","3.5","2.5"],a:0},
+            {q:"hc (eV A)",o:["12400","6.63","1.6","931"],a:0},
+            {q:"20/3 approx",o:["6.67","6.33","6.5","6.0"],a:0},
+            {q:"e (Euler)",o:["2.718","1.618","3.141","1.414"],a:0},
+            {q:"cos(60)",o:["0.5","0.866","1","0"],a:0},
+            {q:"sin(37)",o:["3/5","4/5","1/2","3/4"],a:0},
+            {q:"log(2) base 10",o:["0.3010","0.693","0.477","1"],a:0}
+        ],
+        'FACTOR': [
+            {q:"Wire stretched 2L. R?",o:["4R","2R","R/2","R/4"],a:0},
+            {q:"Radius r/2. R?",o:["16R","4R","8R","R/16"],a:0},
+            {q:"Adiabatic V->V/2. P?",o:["P(2^g)","2P","P/2","P"],a:0},
+            {q:"Earth shrinks R/2. g?",o:["4g","2g","g/4","g"],a:0},
+            {q:"Momentum doubled. KE?",o:["4x","2x","8x","Same"],a:0},
+            {q:"Capacitor plate dist d/2. C?",o:["2C","C/2","4C","C"],a:0},
+            {q:"Escape vel. Mass 4M. Ve?",o:["2Ve","4Ve","Ve/2","Ve"],a:0}
+        ],
+        'PROTO': [
+            {q:"Bullet hits hinge rod. Linear P conserved?",o:["NO","YES","Maybe","Depends"],a:0},
+            {q:"Bullet hits hinge rod. Angular P conserved?",o:["YES","NO","Maybe","Depends"],a:0},
+            {q:"Planet orbit. Angular P conserved?",o:["YES","NO","Perihelion only","Aphelion only"],a:0},
+            {q:"Work done by static friction?",o:["Can be +ve/-ve/0","Always -ve","Always 0","Always +ve"],a:0},
+            {q:"Conductor E-field inside?",o:["Zero","Non-zero","Infinite","Depends on Q"],a:0}
+        ],
+        'UNIT': [
+            {q:"Unit of RC?",o:["Time","Freq","Energy","Force"],a:0},
+            {q:"Unit of L/R?",o:["Time","Freq","Energy","Current"],a:0},
+            {q:"Unit of 1/sqrt(LC)?",o:["Frequency","Time","Wavelength","Velocity"],a:0}
+        ]
+    };
+
+    // --- 2. DATA: IMMORTAL TOPICS (EXPANDED) ---
+    const IMMORTALS = [
+        "Ratio of de-Broglie Wavelength", 
+        "Galvanometer to Ammeter Conv.", 
+        "Logic Gates (NAND/NOR/Truth Table)",
+        "Flux through Cube/Disc/Sphere", 
+        "Lens Maker Formula & Combination", 
+        "Young's Modulus & Elasticity",
+        "Carnot Engine Efficiency (n=1-T2/T1)", 
+        "Resonance Freq & Q-Factor (LCR)", 
+        "Escape Velocity & Orbital Velocity",
+        "Variation of g (Depth/Height)", 
+        "Work done in Adiabatic/Iso Process", 
+        "Binding Energy per Nucleon Curve",
+        "Photoelectric Graph Slope & Intercept", 
+        "Capacitor Dielectric Insertion (C=kC0)", 
+        "EM Wave E/B Ratio (c=E/B)",
+        "Moment of Inertia (Disc/Ring/Rod)",
+        "Doppler Effect (Sound)",
+        "YDSE Fringe Width",
+        "Projectile Motion Range Formula"
+    ];
+
+    // --- 3. DATA: FORMULA LINKER (EXPANDED) ---
+    const LINKS = [
+        {v:['m','v','r'],f:'F = mv²/r',n:'Centripetal Force'},
+        {v:['m','v','r'],f:'L = mvr',n:'Angular Momentum'},
+        {v:['m','v','q','b'],f:'r = mv/qB',n:'Cyclotron Radius'},
+        {v:['i','r'],f:'P = I²R',n:'Power Loss'},
+        {v:['v','r'],f:'P = V²/R',n:'Power'},
+        {v:['k','q','r'],f:'V = kQ/r',n:'Electrostatic Potential'},
+        {v:['k','q','r'],f:'E = kQ/r²',n:'Electric Field'},
+        {v:['l','g'],f:'T = 2π√(l/g)',n:'Simple Pendulum'},
+        {v:['h','mv'],f:'λ = h/mv',n:'De Broglie Wavelength'},
+        {v:['n','z'],f:'En = -13.6 Z²/n²',n:'Bohr Energy'},
+        {v:['mu','i','r'],f:'μ = sin i / sin r',n:'Snells Law'},
+        {v:['b','i','l'],f:'F = BIL sin(θ)',n:'Magnetic Force on Wire'},
+        {v:['q','v','b'],f:'F = qvB sin(θ)',n:'Lorentz Force'},
+        {v:['c','a','d'],f:'C = ε₀A/d',n:'Capacitance (Parallel)'},
+        {v:['y','stress','strain'],f:'Y = Stress/Strain',n:'Youngs Modulus'},
+        {v:['t','l','m'],f:'f = (1/2L)√(T/μ)',n:'String Wave Freq'}
+    ];
+
+    // --- 4. DATA: DIMENSIONS (EXPANDED) ---
+    const DIMS = [
+        {m:1,l:2,t:-2,a:0,n:"ENERGY / WORK / TORQUE"},
+        {m:1,l:1,t:-2,a:0,n:"FORCE"},
+        {m:1,l:2,t:-3,a:0,n:"POWER"},
+        {m:1,l:-1,t:-2,a:0,n:"PRESSURE / STRESS"},
+        {m:0,l:0,t:-1,a:0,n:"FREQUENCY / ANG VELOCITY"},
+        {m:1,l:1,t:-1,a:0,n:"MOMENTUM / IMPULSE"},
+        {m:1,l:2,t:-2,a:-1,n:"MAGNETIC FLUX"},
+        {m:1,l:0,t:-2,a:-1,n:"MAGNETIC FIELD (B)"},
+        {m:0,l:0,t:1,a:1,n:"CHARGE (Q)"},
+        {m:1,l:2,t:-3,a:-2,n:"RESISTANCE (R)"},
+        {m:1,l:2,t:-2,a:-2,n:"INDUCTANCE (L)"},
+        {m:1,l:-2,t:4,a:2,n:"CAPACITANCE (C)"},
+        {m:1,l:2,t:-2,a:-1,n:"PLANCK CONSTANT (h)"},
+        {m:1,l:2,t:-1,a:0,n:"PLANCK CONSTANT (h) / ANG MOMENTUM"}
+    ];
+
+    // --- 5. DATA: CHEATS (EXPANDED) ---
+    const CHEATS_DB = [
+        {c:'MECH',t:'Wedge Constraint',b:'Sigma(T.a)=0, Sigma(N.a)=0',p:'HIGH',e:'No FBD needed'},
+        {c:'MECH',t:'Lami Theorem',b:'F1/sinA = F2/sinB',p:'HIGH',e:'3 forces equilibrium only'},
+        {c:'MECH',t:'Range Trick',b:'R same for theta, 90-theta',p:'HIGH',e:'R = 1/2 g T1 T2'},
+        {c:'ELEC',t:'Earthing',b:'V = 0 at point',p:'HIGH',e:'Charge flows until V=0'},
+        {c:'ELEC',t:'Cube Res (Edge)',b:'7/12 R',p:'HIGH',e:'Current enters/exits adjacent corners'},
+        {c:'ELEC',t:'Cube Res (Face)',b:'3/4 R',p:'HIGH',e:'Diagonal of face'},
+        {c:'ELEC',t:'Cube Res (Body)',b:'5/6 R',p:'HIGH',e:'Main diagonal ends'},
+        {c:'ELEC',t:'Cavity Field',b:'E_in = 0',p:'HIGH',e:'Electrostatic Shielding'},
+        {c:'MODERN',t:'Bohr Radius',b:'r = 0.529 n²/Z Å',p:'HIGH',e:'Prop to n²'},
+        {c:'MODERN',t:'Bohr Energy',b:'E = -13.6 Z²/n² eV',p:'HIGH',e:'Prop to Z²'},
+        {c:'OPTICS',t:'Silver Lens',b:'P = 2Pl + Pm',p:'HIGH',e:'Behaves like a mirror'},
+        {c:'OPTICS',t:'YDSE Beta',b:'β = λD/d',p:'HIGH',e:'Fringe width'},
+        {c:'OPTICS',t:'Lens in Water',b:'f increases ~4x',p:'HIGH',e:'Power decreases'},
+        {c:'MECH',t:'Collision (e)',b:'v2-v1 = e(u1-u2)',p:'HIGH',e:'Newton restitution'},
+        {c:'THERMO',t:'Adiabatic Work',b:'(P1V1 - P2V2)/(γ-1)',p:'HIGH',e:'Faster than nRDeltaT sometimes'}
+    ];
+
+    // --- 6. DATA: TRAPS (EXPANDED) ---
+    const TRAPS_DB = [
+        {t:"Temperature Unit",d:"PV=nRT always uses KELVIN. (27°C = 300K). Do not use Celsius."},
+        {t:"Radius vs Diameter",d:"Question gave Diameter? Divide by 2 immediately. Don't use D as r."},
+        {t:"Work Sign Convention",d:"Physics: Work by gas is +ve (Expansion). Chemistry: Work by gas is -ve."},
+        {t:"Capacitance Prefix",d:"MicroFarad (µF) is 10^-6. Nano (n) is 10^-9. Don't miss the power."},
+        {t:"Graph Slope",d:"XT graph slope = V. VT graph slope = A. Area under VT = Displacement."},
+        {t:"g value",d:"Check if question says g=10 or 9.8. Using wrong one can kill integer type answers."},
+        {t:"Relative Velocity",d:"Cars moving opposite? Add speeds. Moving same direction? Subtract."},
+        {t:"Lens Formula Sign",d:"Lens: 1/v - 1/u = 1/f. Mirror: 1/v + 1/u = 1/f. u is usually negative."},
+        {t:"Effective Mass",d:"Reduced mass μ = m1m2/(m1+m2). Use in binary star/atomic collisions."}
+    ];
+
+    // --- 7. DATA: PROTOCOL (EXPANDED) ---
+    const PROTOCOL_DATA = [
+        {t:"Modern Physics",s:["Bohr Model","Photoelectric Effect","Binding Energy","Nuclei Decay","X-Rays"]},
+        {t:"Current Elec",s:["Instruments (Galvanometer)","Circuit Solving (Kvl/Kcl)","Color Code","Potentiometer"]},
+        {t:"Thermodynamics",s:["PV Graphs","Carnot Engine","KTG & Mean Free Path","Calorimetry"]},
+        {t:"Electrostatics",s:["Flux (Gauss Law)","Potential Energy","Dipole","Conductors"]},
+        {t:"Semiconductors",s:["Logic Gates (NAND/NOR)","Zener Diode","Transistor (CE Config)"]},
+        {t:"Mechanics 1",s:["Kinematics Graphs","Projectile","Relative Motion","Friction"]},
+        {t:"Mechanics 2",s:["COM & Collision","Rotation (MOI)","Rolling Motion","Gravitation"]}
+    ];
+
+    // --- 8. DATA: SNIPER (MASSIVE UPGRADE - GOD MODE) ---
+    // Rule: "Look-alikes" and "Radar" questions.
+    const SNIPER_DB = {
+        1: [ // CLEANER: Easy questions that look hard, or easy questions with "Silly" traps.
+            {q:"Ratio of de-Broglie lambda for p and alpha accelerated by same V.", t:"2025 JAN S1", type:"EASY", act:"KILL", r:"Formula: λ ~ 1/sqrt(mq). Answer is 2:1."},
+            {q:"Output of Logic Gate circuit (NAND+NOR).", t:"2025 APR S2", type:"EASY", act:"KILL", r:"Sitter. Draw truth table fast."},
+            {q:"Block slides down smooth incline. Work done by Normal force?", t:"Concept", type:"EASY", act:"KILL", r:"Zero. Normal is perpendicular to displacement."},
+            {q:"Momentum of photon with frequency v?", t:"Modern", type:"EASY", act:"KILL", r:"p = hν/c."},
+            {q:"Capacitance of Earth (R=6400km)?", t:"Formula", type:"EASY", act:"KILL", r:"C = 4πε₀R = 711 μF. Don't derive, memorize."},
+            {q:"Ideal Gas: CP - CV = R. For 2 moles?", t:"Trap", type:"EASY", act:"SKIP", r:"It's still R for specific heat difference, or 2R for heat capacity? Read carefully."},
+            {q:"Dimension of 1/sqrt(μ₀ε₀)?", t:"Unit", type:"EASY", act:"KILL", r:"Speed of light [LT⁻¹]."}
+        ],
+        2: [ // HUNTER: Traps, Statement I/II, and Conceptual Twists.
+            {q:"Current in branch of infinite ladder network.", t:"2024 S1", type:"MED", act:"KILL", r:"Standard Pattern. Assume equivalent R is x."},
+            {q:"Work done in cyclic process (Triangle Graph).", t:"2025 APR S1", type:"MED", act:"KILL", r:"Area of Triangle. Watch out for CCW direction (Negative Work)."},
+            {q:"Statement I: COM of ring is at center. Statement II: COM must lie on the body.", t:"Assertion", type:"MED", act:"KILL", r:"S1 True, S2 False (Ring COM is in hollow space)."},
+            {q:"Bullet fired from gun. Recoil KE ratio?", t:"Mech", type:"MED", act:"KILL", r:"KE ∝ 1/Mass. Gun has less KE than bullet."},
+            {q:"Lens immersed in water (n=1.33). Focal length?", t:"Optics", type:"MED", act:"KILL", r:"f increases (becomes 4 times). Power decreases."},
+            {q:"Disc rolling without slipping. Ratio of Rotational KE to Total KE?", t:"Rotation", type:"MED", act:"KILL", r:"For Disc: 1/3. (Kr = 1/4 Mv², Kt = 3/4 Mv²)."},
+            {q:"S1: Electric Potential is scalar. S2: Gradient of V is E (Vector).", t:"Electro", type:"MED", act:"KILL", r:"Both True. E = -dV/dr."}
+        ],
+        3: [ // SNIPER: "Rank Decider" questions. Hard to solve, Easy to Skip.
+            {q:"Find Moment of Inertia of frustum of cone about axis.", t:"2024 SHIFT 2", type:"HARD", act:"SKIP", r:"Calculus Heavy. Low ROI. Skip."},
+            {q:"Variable mass system integration (Rocket with drag).", t:"2025 JAN S2", type:"HARD", act:"SKIP", r:"Rank Killer. Time trap."},
+            {q:"Complex Rotational collision with angular momentum.", t:"2025 JAN S2", type:"HARD", act:"SKIP", r:"Too many variables. Skip unless expert."},
+            {q:"Gravitation potential of hollow sphere with cavity at offset.", t:"2023 S1", type:"HARD", act:"SKIP", r:"Superposition principle. Lengthy calculation."},
+            {q:"LC Oscillation with non-ideal resistance (Damped).", t:"AC", type:"HARD", act:"SKIP", r:"Differential equation required. Skip."},
+            {q:"YDSE with glass slab and liquid immersion simultaneously.", t:"Optics", type:"MED", act:"KILL", r:"Formula Based (Shift). Doable if you know shift = D(n-1)t/d."},
+            {q:"Identify the graph of Binding Energy/nucleon vs Mass Number.", t:"Modern", type:"EASY", act:"KILL", r:"Visual Memory. Peaks at Fe-56. Easy marks."}
+        ]
+    };
+
+    // --- 9. DATA: GRAPHS (FROM FILE 1 & 2 MERGED) ---
+    const GRAPHS = {
+        'PV': {name:'Iso vs Adia',desc:'PV Diagram: Adiabatic is steeper than Isothermal. Expansion: Adia is below.',draw:(ctx,w,h)=>{
+            ctx.strokeStyle='#0FF';ctx.lineWidth=2;ctx.beginPath();for(let x=20;x<w;x+=5)ctx.lineTo(x,h-4000/x);ctx.stroke();
+            ctx.strokeStyle='#F03';ctx.lineWidth=2;ctx.beginPath();for(let x=20;x<w;x+=5)ctx.lineTo(x,h-60000/Math.pow(x,1.4));ctx.stroke();
+            ctx.font="10px monospace";ctx.fillStyle="#0FF";ctx.fillText("ISO", w-40, h-40);ctx.fillStyle="#F03";ctx.fillText("ADIA", w-40, h-10);
+        }},
+        'BE': {name:'Binding E',desc:'Binding Energy per Nucleon: Peaks at Fe-56 (most stable). Fusion for low A, Fission for high A.',draw:(ctx,w,h)=>{
+            ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,h);
+            ctx.quadraticCurveTo(w/6, 10, w/3, 20); ctx.lineTo(w, h/2); ctx.stroke();
+            ctx.fillStyle="#FFD700";ctx.fillText("Fe-56", w/3, 30);
+        }},
+        'SHM': {name:'SHM Energy',desc:'PE U-shape, KE Inverted. TE is Constant.',draw:(ctx,w,h)=>{
+            let mid = w/2;
+            ctx.strokeStyle='#F03';ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=w;x++)ctx.lineTo(x,h-4*((x-mid)**2)/100);ctx.stroke();
+            ctx.strokeStyle='#0FF';ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=w;x++)ctx.lineTo(x,40+4*((x-mid)**2)/100);ctx.stroke();
+            ctx.strokeStyle='#FFD700';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(0,40);ctx.lineTo(w,40);ctx.stroke();ctx.setLineDash([]);
+        }},
+        'PHOTO': {name:'Photoelectric',desc:'KE vs Frequency: Straight line. Slope = h. Intercept = Threshold Freq.',draw:(ctx,w,h)=>{
+            ctx.strokeStyle='#00FF66';ctx.lineWidth=2;ctx.beginPath();
+            ctx.moveTo(w/4, h); ctx.lineTo(w, 20); ctx.stroke();
+            ctx.fillStyle="#00FF66";ctx.fillText("Slope = h", w/2, h/2);
+        }}
+    };
+
+    // --- ENGINES ---
+
+    const Audio = {
+        ctx: null, osc: null, gain: null,
+        toggle() {
+            const btn = document.getElementById('audio-btn');
+            const viz = document.getElementById('wave-viz');
+            
+            if (this.osc) {
+                // Stop
+                this.gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+                this.osc.stop(this.ctx.currentTime + 0.5);
+                this.osc = null;
+                btn.innerText = "ACTIVATE NEURAL SYNC";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#333";
+                viz.classList.remove('active');
+                return;
+            }
+
+            // Start
+            if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.osc = this.ctx.createOscillator();
+            this.gain = this.ctx.createGain();
+            
+            this.osc.type = 'sine';
+            this.osc.frequency.setValueAtTime(40, this.ctx.currentTime); // 40Hz Gamma
+            
+            this.osc.connect(this.gain);
+            this.gain.connect(this.ctx.destination);
+            
+            this.gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+            this.gain.gain.exponentialRampToValueAtTime(0.05, this.ctx.currentTime + 2); // Soft fade in
+            
+            this.osc.start();
+            btn.innerText = "SYNC ACTIVE (40Hz)";
+            btn.style.color = "var(--gold)";
+            btn.style.borderColor = "var(--gold)";
+            viz.classList.add('active');
+        }
+    };
+
+    const Dojo = {
+        mode: null, qIdx: 0, score: 0,
+        start(mode) {
+            this.mode = mode;
+            this.qIdx = 0;
+            this.score = 0;
+            document.querySelector('.dojo-grid').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            this.loadQ();
+        },
+        loadQ() {
+            if(!DOJO_DB[this.mode]) return;
+            const qData = DOJO_DB[this.mode][this.qIdx];
+            document.getElementById('g-q').innerText = qData.q;
+            document.getElementById('g-score').innerText = `STREAK: ${this.score}`;
+            
+            const grid = document.getElementById('g-opts');
+            grid.innerHTML = '';
+            
+            qData.o.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'game-btn';
+                btn.innerText = opt;
+                btn.onclick = () => this.check(i, btn);
+                grid.appendChild(btn);
+            });
+        },
+        check(i, btn) {
+            const correct = DOJO_DB[this.mode][this.qIdx].a;
+            if (i === correct) {
+                btn.classList.add('correct');
+                this.score++;
+                document.getElementById('g-score').innerText = `STREAK: ${this.score}`;
+                setTimeout(() => {
+                    this.qIdx = (this.qIdx + 1) % DOJO_DB[this.mode].length;
+                    this.loadQ();
+                }, 400);
+            } else {
+                btn.classList.add('wrong');
+                this.score = 0;
+                document.getElementById('g-score').innerText = `STREAK: 0`;
+                navigator.vibrate(200); 
+            }
+        },
+        exit() {
+            document.getElementById('game-area').style.display = 'none';
+            document.querySelector('.dojo-grid').style.display = 'grid';
+        }
+    };
+
+    const Sniper = {
+        lvl: 1, idx: 0, score: 0,
+        setLvl(l, el) {
+            this.lvl = l;
+            document.querySelectorAll('.sniper-lvl-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            this.load();
+        },
+        load() {
+            this.idx = Math.floor(Math.random() * SNIPER_DB[this.lvl].length);
+            this.render();
+        },
+        render() {
+            const d = SNIPER_DB[this.lvl][this.idx];
+            document.getElementById('s-tag').innerText = d.t;
+            document.getElementById('s-text').innerText = d.q;
+            document.getElementById('s-feed').style.display = 'none';
+            this.animTimer();
+        },
+        animTimer() {
+            const t = document.getElementById('s-timer');
+            t.style.width = '100%';
+            setTimeout(() => t.style.width = '0%', 10);
+        },
+        act(action) {
+            const d = SNIPER_DB[this.lvl][this.idx];
+            const isCorrect = d.act === action;
+            const feed = document.getElementById('s-feed');
+            const icon = document.getElementById('s-icon');
+            const msg = document.getElementById('s-msg');
+            feed.style.display = 'flex';
+            
+            if(isCorrect) {
+                icon.innerText = '✅';
+                msg.innerHTML = `<strong style="color:var(--success)">EXCELLENT JUDGEMENT.</strong><br><br>${d.r}`;
+                this.score += (action === 'KILL' ? 4 : 2);
+            } else {
+                icon.innerText = '❌';
+                msg.innerHTML = `<strong style="color:var(--danger)">POOR TACTICAL CHOICE.</strong><br><br>${d.r}`;
+                this.score -= 5;
+            }
+            document.getElementById('s-score').innerText = `SCORE: ${this.score}`;
+        },
+        next() {
+            this.load();
+        }
+    };
+
+    const Pace = {
+        timer: null, sec: 3600, total: 3600, active: false,
+        toggle() {
+            const btn = document.getElementById('p-btn');
+            if (this.active) {
+                clearInterval(this.timer);
+                this.active = false;
+                btn.innerText = "START PACEMAKER";
+                return;
+            }
+            this.active = true;
+            btn.innerText = "STOP PACEMAKER";
+            this.timer = setInterval(() => this.tick(), 1000);
+        },
+        tick() {
+            this.sec--;
+            const m = Math.floor(this.sec / 60);
+            const s = this.sec % 60;
+            document.getElementById('p-time').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            
+            const p = 1 - (this.sec / this.total);
+            const dial = document.getElementById('p-dial');
+            const ph = document.getElementById('p-phase');
+            
+            if (p < 0.25) {
+                dial.style.borderColor = 'var(--neon-blue)';
+                ph.innerText = 'PHASE 1: HUNT';
+                ph.style.color = 'var(--neon-blue)';
+            } else if (p < 0.75) {
+                dial.style.borderColor = 'var(--gold)';
+                ph.innerText = 'PHASE 2: EXECUTE';
+                ph.style.color = 'var(--gold)';
+            } else {
+                dial.style.borderColor = 'var(--danger)';
+                ph.innerText = 'PHASE 3: SURVIVE';
+                ph.style.color = 'var(--danger)';
+            }
+        }
+    };
+
+    const Strat = {
+        gen(sub) {
+            let s = "";
+            if (sub === 'P') s = "<strong>PHYSICS AGGRESSION:</strong><br>00-40m: CHEMISTRY (Speed Run)<br>40-100m: PHYSICS (Kill High Weightage)<br>100-150m: MATH (Survival Mode)";
+            if (sub === 'C') s = "<strong>CHEMISTRY DOMINANCE:</strong><br>00-45m: CHEMISTRY (Maximize Score)<br>45-105m: PHYSICS (Formula Based)<br>105-150m: MATH (Snipe Easy Qs)";
+            if (sub === 'M') s = "<strong>MATH WARLORD:</strong><br>00-40m: CHEMISTRY (Fast)<br>40-90m: MATH (Snipe & Solve)<br>90-140m: PHYSICS (Standard)";
+            
+            const div = document.getElementById('strat-res');
+            div.innerHTML = `<div style='margin-top:10px; padding:12px; background:#111; border:1px solid var(--gold); border-radius:4px; font-size:12px; line-height:1.5; color:#eee;'>${s}</div>`;
+        }
+    };
+
+    const Linker = {
+        search() {
+            const val = document.getElementById('link-in').value.toLowerCase();
+            const q = val.split(' ').filter(x => x);
+            const r = document.getElementById('link-res');
+            
+            if (q.length === 0) { r.innerHTML = ''; return; }
+            const m = LINKS.filter(l => q.every(t => l.v.includes(t)));
+            
+            if(m.length === 0) {
+                 r.innerHTML = `<div style="color:#666; font-size:10px; padding:10px;">No exact formula match found.</div>`;
+                 return;
+            }
+
+            r.innerHTML = m.map(x => `
+                <div class="formula-card">
+                    <div class="formula-eq">${x.f}</div>
+                    <div class="formula-name">${x.n}</div>
+                </div>
+            `).join('');
+        }
+    };
+
+    const Dim = {
+        check() {
+            const m = parseInt(document.getElementById('d-m').value) || 0;
+            const l = parseInt(document.getElementById('d-l').value) || 0;
+            const t = parseInt(document.getElementById('d-t').value) || 0;
+            const a = parseInt(document.getElementById('d-a').value) || 0;
+            const f = DIMS.find(d => d.m === m && d.l === l && d.t === t && d.a === a);
+            const resBox = document.getElementById('dim-res');
+            if(f) {
+                resBox.innerText = f.n;
+                resBox.style.color = "var(--neon-blue)";
+            } else {
+                resBox.innerText = "UNKNOWN QUANTITY";
+                resBox.style.color = "var(--danger)";
+            }
+        }
+    };
+
+    const Cheat = {
+        render(d) {
+            document.getElementById('cheat-list').innerHTML = d.map(i => `
+                <div class="cheat-card ${i.p === 'HIGH' ? 'high-yield' : ''}" onclick="this.classList.toggle('open')">
+                    <div class="c-header">
+                        <span class="c-title">${i.t}</span>
+                        <span class="c-tag">${i.c}</span>
+                    </div>
+                    <div class="c-body">${i.b}</div>
+                    <div class="c-extra">TIP: ${i.e}</div>
+                </div>
+            `).join('');
+        },
+        filter(q) {
+            const d = q === 'HIGH' 
+                ? CHEATS_DB.filter(x => x.p === 'HIGH') 
+                : CHEATS_DB.filter(x => JSON.stringify(x).toLowerCase().includes(q.toLowerCase()));
+            this.render(d);
+        }
+    };
+
+    const Graph = {
+        draw(k) {
+            const c = document.getElementById('graphCanvas');
+            const ctx = c.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = c.getBoundingClientRect();
+            c.width = rect.width * dpr;
+            c.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, rect.width, rect.height);
+            
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let i = 0; i < rect.width; i += 30) { ctx.moveTo(i, 0); ctx.lineTo(i, rect.height); }
+            for (let i = 0; i < rect.height; i += 30) { ctx.moveTo(0, i); ctx.lineTo(rect.width, i); }
+            ctx.stroke();
+            
+            GRAPHS[k].draw(ctx, rect.width, rect.height);
+            document.getElementById('graph-desc').innerText = GRAPHS[k].desc;
+        }
+    };
+
+    const Flash = {
+        idx: 0,
+        next() {
+            this.idx = (this.idx + 1) % CHEATS_DB.length;
+            document.getElementById('f-q').innerText = CHEATS_DB[this.idx].t;
+            document.getElementById('f-a').innerText = CHEATS_DB[this.idx].b;
+            const card = document.querySelector('.flipped');
+            if(card) card.classList.remove('flipped');
+        }
+    };
+
+    const Shame = {
+        log: JSON.parse(localStorage.getItem('shame')) || [],
+        add(t) {
+            this.log.unshift({ t, d: new Date().toLocaleTimeString() });
+            this.save();
+        },
+        save() {
+            localStorage.setItem('shame', JSON.stringify(this.log));
+            this.render();
+        },
+        clear() {
+            if(confirm("Clear failure history?")) {
+                this.log = [];
+                this.save();
+            }
+        },
+        render() {
+            document.getElementById('shame-history').innerHTML = this.log.map(x => `
+                <div class="autopsy-card">
+                    <span class="autopsy-type">${x.t}</span>
+                    <span class="autopsy-date">${x.d}</span>
+                </div>
+            `).join('');
+        }
+    };
+
+    // --- MAIN INITIALIZATION ---
+    const App = {
+        init() {
+            lucide.createIcons();
+            
+            // Render default cheats
+            Cheat.render(CHEATS_DB);
+            
+            // Render Protocol List
+            document.getElementById('protocol-container').innerHTML = PROTOCOL_DATA.map((p, i) => `
+                <div class="protocol-item" onclick="this.classList.toggle('expanded')">
+                    <div class="p-head">
+                        <span class="p-title">${i + 1}. ${p.t}</span>
+                        <i data-lucide="chevron-down" width="14"></i>
+                    </div>
+                    <div class="p-subs">
+                        ${p.s.map(s => `
+                            <div class="p-sub-item" onclick="event.stopPropagation();this.classList.toggle('done')">
+                                <i data-lucide="circle" width="10"></i> ${s}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Render Immortals
+            document.getElementById('immortal-list').innerHTML = IMMORTALS.map(x => `
+                <div class="immortal-item">
+                    <div class="immortal-check" onclick="this.classList.toggle('checked')">
+                        <i data-lucide="check" width="10"></i>
+                    </div>
+                    <div class="immortal-text">${x}</div>
+                </div>
+            `).join('');
+            
+            // Render Traps
+            document.getElementById('trap-list').innerHTML = TRAPS_DB.map(t => `
+                <div class="trap-card">
+                    <div class="trap-head">${t.t}</div>
+                    <div class="trap-body">${t.d}</div>
+                </div>
+            `).join('');
+            
+            // Render Graph Buttons
+            const gb = document.getElementById('graph-btns');
+            for (let k in GRAPHS) {
+                const b = document.createElement('button');
+                b.className = 'tool-btn';
+                b.style.width = 'auto';
+                b.style.padding = '8px 12px';
+                b.innerText = k;
+                b.onclick = () => Graph.draw(k);
+                gb.appendChild(b);
+            }
+            
+            // Initial calls
+            Graph.draw('PV');
+            Shame.render();
+            Flash.next();
+            Sniper.setLvl(1, document.querySelector('.sniper-lvl-btn'));
+            
+            // Countdown Timer (Hardcoded to 2026 Season for longevity)
+            const examDate = new Date("2026-01-24").getTime(); 
+            setInterval(() => {
+                const now = new Date().getTime();
+                const d = examDate - now;
+                document.getElementById('days').innerText = Math.max(0, Math.ceil(d / (1000 * 60 * 60 * 24)));
+            }, 1000);
+            
+            lucide.createIcons();
+        }
+    };
+
+    // Global Navigation Function
+    window.nav = (id, btn) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+    };
+
+    // Start
+    App.init();
+</script>
+</body>
+</html>

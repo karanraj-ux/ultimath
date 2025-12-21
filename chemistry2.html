@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CHEMISTRY GOD // FINAL EDITION</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            --bg: #000000;
+            --panel: #0a0a0a;
+            --text: #e5e5e5;
+            --infinity: #00ffaa;
+            --reaction: #d500f9;
+            --danger: #ff3333;
+            --gold: #ffcc00;
+            --physical: #00F3FF;
+            --hacker: #00ff41;
+            --locked: #555;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-code: 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: var(--font-main); margin: 0; height: 100vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 170, 0.03) 0%, transparent 50%),
+                linear-gradient(rgba(0, 255, 170, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 170, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        /* --- NAV BAR --- */
+        .nav-bar {
+            height: 75px; background: rgba(0,0,0,0.98); border-top: 2px solid var(--infinity);
+            display: flex; overflow-x: auto; align-items: center;
+            position: fixed; bottom: 0; width: 100%; z-index: 100;
+            backdrop-filter: blur(10px); padding-bottom: 5px;
+        }
+        .nav-bar::-webkit-scrollbar { height: 2px; }
+        .nav-bar::-webkit-scrollbar-thumb { background: var(--infinity); }
+        .nav-btn {
+            background: none; border: none; color: #666; font-size: 8px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
+            transition: 0.2s; font-family: var(--font-code); font-weight: bold; text-transform: uppercase;
+            min-width: 65px; flex-shrink: 0;
+        }
+        .nav-btn.active { color: var(--infinity); transform: translateY(-3px); text-shadow: 0 0 8px rgba(0, 255, 170, 0.5); }
+        .nav-btn.active svg { stroke: var(--infinity); }
+        .nav-btn.inf-mode.active { color: var(--hacker); text-shadow: 0 0 10px var(--hacker); }
+        .nav-btn.inf-mode.active svg { stroke: var(--hacker); }
+
+        .screen {
+            flex: 1; display: none; flex-direction: column; padding: 15px;
+            overflow-y: auto; padding-bottom: 120px; scrollbar-width: none;
+        }
+        .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { margin: 0; color: var(--infinity); font-weight: 900; letter-spacing: -1px; font-size: 26px; text-transform: uppercase; text-shadow: 0 0 10px rgba(0,255,170,0.2); }
+        .subtitle { font-size: 10px; color: #888; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        /* --- UI COMPONENTS --- */
+        .tool-panel { background: #0c0c0c; padding: 15px; margin-bottom: 10px; border: 1px solid #222; border-radius: 6px; }
+        .tool-header { display: flex; align-items: center; gap: 8px; color: var(--infinity); font-weight: bold; font-size: 12px; margin-bottom: 10px; }
+        .tool-btn { width: 100%; background: var(--infinity); color: black; border: none; padding: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 12px; font-family: var(--font-code); }
+        
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: #0e0e0e; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #222; }
+
+        /* --- LAB (DOJO) --- */
+        .lab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .lab-card { background: #111; border: 1px solid #333; padding: 15px; text-align: center; cursor: pointer; border-radius: 6px; transition: 0.2s; position: relative; overflow: hidden; }
+        .lab-card:hover { border-color: var(--infinity); background: #161616; }
+        .lab-icon { color: var(--infinity); margin-bottom: 8px; }
+        .lab-tag { font-size: 9px; color: #666; margin-top: 5px; text-transform: uppercase; }
+
+        /* --- REACTOR (LINKER) --- */
+        .reaction-box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 3px solid var(--reaction); }
+        .reaction-step { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-family: var(--font-code); font-size: 12px; flex-wrap: wrap; }
+        .arrow { color: var(--reaction); font-weight: bold; }
+        .reagent { color: #888; font-size: 10px; }
+        .product { color: var(--infinity); font-weight: bold; }
+
+        /* --- SNIPER --- */
+        .sniper-hud { border: 1px solid var(--infinity); padding: 5px; margin-bottom: 15px; background: #050505; }
+        .sniper-level-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        .sniper-lvl-btn { flex: 1; background: #111; border: 1px solid #333; color: #666; font-size: 10px; padding: 10px; cursor: pointer; text-align: center; font-family: var(--font-code); }
+        .sniper-lvl-btn.active { background: var(--infinity); color: black; font-weight: bold; border-color: var(--infinity); }
+        
+        /* THE PUNISHMENT OVERLAY */
+        .lockdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 20; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .lock-icon { color: var(--danger); margin-bottom: 15px; animation: pulse 2s infinite; }
+        
+        .sniper-scope { height: 260px; background: #000; border: 1px solid #333; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; overflow: hidden; }
+        .sniper-timer { position: absolute; top: 0; left: 0; height: 4px; background: var(--danger); width: 100%; transition: width 1s linear; }
+        .sniper-q-tag { font-size: 9px; color: var(--reaction); margin-bottom: 15px; border: 1px solid var(--reaction); padding: 4px 8px; background: black; z-index: 2; }
+        .sniper-q-text { font-size: 14px; color: #fff; line-height: 1.5; font-family: var(--font-main); z-index: 2; }
+        .sniper-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .sniper-btn { padding: 15px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; font-family: var(--font-code); }
+        .btn-kill { background: #0a1a0a; color: var(--infinity); border: 1px solid var(--infinity); }
+        .btn-skip { background: #1a0505; color: var(--danger); border: 1px solid var(--danger); }
+
+        /* --- ARCHIVE (VAULT) --- */
+        .exception-card { background: #0e0e0e; border-left: 3px solid var(--danger); padding: 10px; margin-bottom: 5px; }
+        .exc-rule { color: #888; font-size: 10px; text-decoration: line-through; }
+        .exc-fact { color: var(--text); font-size: 12px; font-weight: bold; margin-top: 2px; }
+        .exc-reason { color: var(--reaction); font-size: 10px; margin-top: 4px; font-style: italic; }
+
+        /* --- INTEL --- */
+        .roi-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .roi-table td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
+        .tier-badge { padding: 2px 6px; border-radius: 2px; font-weight: bold; font-size: 9px; color: #000; }
+        .tier-s { background: var(--infinity); }
+        .tier-a { background: var(--physical); }
+        .tier-f { background: var(--danger); color: white; }
+
+        /* --- COMMON GAME UI --- */
+        .game-ui { background: #0c0c0c; border: 1px solid #333; padding: 20px; text-align: center; border-radius: 8px; display: none; }
+        .game-q { font-size: 20px; font-weight: bold; color: var(--physical); margin-bottom: 20px; font-family: var(--font-code); }
+        .game-btn { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 15px; width: 100%; margin-bottom: 5px; cursor: pointer; font-family: var(--font-code); }
+        .game-btn.correct { background: var(--infinity); color: black; border-color: var(--infinity); }
+        .game-btn.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* --- SORTER UI --- */
+        .sorter-container { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .sort-item { background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .sort-item.selected { border-color: var(--gold); background: #1a1500; }
+        .sort-val { font-family: var(--font-code); font-weight: bold; color: #fff; }
+        .sort-rank { font-size: 10px; color: #666; }
+
+        /* --- CHAIN UI --- */
+        .chain-step-box { display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .chain-node { background: #000; border: 1px solid var(--reaction); padding: 8px 12px; border-radius: 4px; font-size: 11px; color: #fff; font-weight: bold; }
+        .chain-slot { background: #111; border: 1px dashed #555; padding: 8px 20px; border-radius: 4px; color: var(--gold); cursor: pointer; font-family: var(--font-code); font-size: 11px; min-width: 60px; text-align: center; }
+        .chain-slot:active { background: #222; }
+
+        /* --- INFINITY MODULE --- */
+        .infinity-wrapper { text-align: center; padding: 20px; background: #050505; border: 1px solid var(--hacker); border-radius: 8px; }
+        .infinity-btn-large {
+            background: #000; color: var(--hacker); border: 2px solid var(--hacker);
+            padding: 20px; font-size: 18px; font-family: var(--font-code);
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            width: 100%; margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 65, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); } }
+        .exam-paper { background: #111; padding: 15px; margin-top: 20px; border: 1px solid #333; text-align: left; font-family: var(--font-code); }
+        .exam-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dotted #444; }
+        .exam-section h3 { color: var(--hacker); font-size: 14px; margin-bottom: 10px; }
+        .exam-q { margin-bottom: 10px; font-size: 12px; line-height: 1.4; color: #ddd; }
+        .reveal-btn { background: #222; border: 1px solid #444; color: #888; padding: 5px 10px; font-size: 10px; cursor: pointer; margin-top: 5px; }
+
+        /* --- VISUAL BENCH --- */
+        .visual-bench { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .test-tube { height: 80px; border: 1px solid #444; border-radius: 0 0 20px 20px; position: relative; cursor: pointer; transition: 0.2s; background: #111; }
+        .test-tube-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; border-radius: 0 0 18px 18px; opacity: 0.8; }
+        .test-tube:hover { transform: translateY(-5px); border-color: var(--hacker); }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <button class="nav-btn active" onclick="nav('dash', this)"><i data-lucide="layout-dashboard" width="18"></i> WAR ROOM</button>
+    <button class="nav-btn inf-mode" onclick="nav('infinity', this)"><i data-lucide="infinity" width="18"></i> INFINITY</button>
+    <button class="nav-btn" onclick="nav('intel', this)"><i data-lucide="brain" width="18"></i> INTEL</button>
+    <button class="nav-btn" onclick="nav('lab', this)"><i data-lucide="flask-conical" width="18"></i> LAB</button>
+    <button class="nav-btn" onclick="nav('sorter', this)"><i data-lucide="arrow-up-down" width="18"></i> SORTER</button>
+    <button class="nav-btn" onclick="nav('reactor', this)"><i data-lucide="atom" width="18"></i> REACTOR</button>
+    <button class="nav-btn" onclick="nav('sniper', this)"><i data-lucide="crosshair" width="18"></i> SNIPER</button>
+    <button class="nav-btn" onclick="nav('archive', this)"><i data-lucide="library" width="18"></i> ARCHIVE</button>
+    <button class="nav-btn" onclick="nav('hazmat', this)"><i data-lucide="radiation" width="18"></i> HAZMAT</button>
+    <button class="nav-btn" onclick="nav('shame', this)"><i data-lucide="skull" width="18"></i> SHAME</button>
+    <button class="nav-btn" onclick="nav('guide', this)"><i data-lucide="book" width="18"></i> GUIDE</button>
+</div>
+
+<div id="dash" class="screen active">
+    <h1>WAR ROOM</h1>
+    <div class="subtitle">CHEMISTRY GOD // EXECUTION DASHBOARD</div>
+
+    <div class="stat-grid">
+        <div class="stat-box" style="border-top: 2px solid var(--danger);">
+            <div style="font-size:32px; font-weight:bold; color:var(--danger)" id="days">0</div>
+            <div style="font-size:9px; color:#888">DAYS LEFT</div>
+        </div>
+        <div class="stat-box" style="border-top: 2px solid var(--infinity);">
+            <div style="font-size:32px; font-weight:bold; color:var(--infinity)">95+</div>
+            <div style="font-size:9px; color:#888">TARGET MARKS</div>
+        </div>
+    </div>
+
+    <div class="tool-panel" style="border-color: var(--danger);">
+        <div class="tool-header" style="color:var(--danger)"><i data-lucide="ban"></i> GHOST PROTOCOL (DELETED)</div>
+        <div style="font-size:11px; color:#ccc; line-height:1.5;">
+            <strong>WARNING:</strong> The following topics are DEAD in 2025. DO NOT STUDY:
+            <ul style="margin:5px 0; padding-left:20px; color:#888;">
+                <li>Solid State</li>
+                <li>Surface Chemistry</li>
+                <li>Polymers & Chem in Everyday Life</li>
+                <li>Metallurgy (General Principles)</li>
+                <li>P-Block (Compounds only, Trends remain)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header"><i data-lucide="play-circle"></i> ATTACK STRATEGY</div>
+        <div style="font-size:10px; color:#aaa; margin-bottom:10px;">Select your Weakest Section:</div>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="tool-btn" style="padding:8px; background:#111; border:1px solid #333; color:#fff;" onclick="Strat.gen('O')">ORGANIC</button>
+            <button class="tool-btn" style="padding:8px; background:#111; border:1px solid #333; color:#fff;" onclick="Strat.gen('I')">INORGANIC</button>
+            <button class="tool-btn" style="padding:8px; background:#111; border:1px solid #333; color:#fff;" onclick="Strat.gen('P')">PHYSICAL</button>
+        </div>
+        <div id="strat-res"></div>
+    </div>
+
+    <div class="subtitle" style="margin-top:20px; color:var(--infinity);">SYLLABUS TRACKER</div>
+    <div id="protocol-container"></div>
+</div>
+
+<div id="infinity" class="screen">
+    <h1 style="color:var(--hacker)">INFINITY ENGINE</h1>
+    <div class="subtitle">PROCEDURAL MOCK GENERATOR</div>
+    
+    <div id="inf-dash" class="infinity-wrapper">
+        <div style="font-size:12px; color:#aaa; margin-bottom:10px;">
+            Constructs a unique exam paper from the merged databases of Catalyst and Ultimate editions.
+        </div>
+        <div class="stat-grid">
+            <div class="stat-box" style="border-color:var(--hacker)">
+                <div style="color:var(--hacker); font-weight:bold;">RANDOMIZED</div>
+                <div style="font-size:9px; color:#666">STRUCTURE</div>
+            </div>
+            <div class="stat-box" style="border-color:var(--hacker)">
+                <div style="color:var(--hacker); font-weight:bold;">FULL SYLLABUS</div>
+                <div style="font-size:9px; color:#666">COVERAGE</div>
+            </div>
+        </div>
+        <button class="infinity-btn-large" onclick="InfinityEngine.generate()">[ GENERATE EXAM ]</button>
+    </div>
+
+    <div id="inf-paper" class="exam-paper" style="display:none;"></div>
+    <button id="inf-reset" class="tool-btn" style="background:#222; margin-top:10px; display:none;" onclick="InfinityEngine.reset()">CLOSE EXAM</button>
+</div>
+
+<div id="intel" class="screen">
+    <h1>ORACLE INTEL</h1>
+    <div class="subtitle">2025 JAN/APRIL ANALYSIS</div>
+
+    <div class="tool-panel">
+        <div class="tool-header">2025 SHIFT DECODER</div>
+        <div style="font-size:11px; color:#ccc; line-height:1.6;">
+            <p><strong style="color:var(--physical)">PHYSICAL:</strong> 80% questions in <strong>SECTION B</strong> (Integer). MCQs were theory-based. <em>Strategy: Study for Accuracy, not Speed.</em></p>
+            <p><strong style="color:var(--infinity)">INORGANIC:</strong> Huge spike in <strong>Salt Analysis</strong> (Colors) and <strong>Coordination Compounds</strong>. NCERT tables are God.</p>
+            <p><strong style="color:var(--reaction)">ORGANIC:</strong> Assertion-Reason increased. "Reagent Functions" > "Mechanisms".</p>
+        </div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header">GOLD MINE (ROI HEATMAP)</div>
+        <table class="roi-table">
+            <tr><td><span class="tier-badge tier-s">TIER S+</span></td><td>Coordination Compounds</td><td style="color:var(--gold)">12-16 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-s">TIER S+</span></td><td>Electrochemistry</td><td style="color:var(--gold)">10-12 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-s">TIER S</span></td><td>G.O.C.</td><td style="color:var(--infinity)">8-12 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-s">TIER S</span></td><td>Amines</td><td style="color:var(--infinity)">8 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-a">TIER A</span></td><td>Chemical Bonding</td><td style="color:var(--physical)">8 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-a">TIER A</span></td><td>Solutions / Kinetics</td><td style="color:var(--physical)">8 Marks</td></tr>
+            <tr><td><span class="tier-badge tier-f">TIER F</span></td><td>Ionic Equilibrium</td><td style="color:#666">Low ROI</td></tr>
+        </table>
+    </div>
+    <div class="tool-panel">
+        <div class="tool-header">THE 35 IMMORTALS</div>
+        <div style="font-size:10px; color:#666; margin-bottom:10px;">Topics repeated in >80% shifts.</div>
+        <div id="immortal-list"></div>
+    </div>
+</div>
+
+<div id="lab" class="screen">
+    <h1>THE LAB</h1>
+    <div class="subtitle">TRAINING MODULES</div>
+    
+    <div class="lab-grid">
+        <div class="lab-card" onclick="Lab.start('REAGENT')">
+            <div class="lab-icon"><i data-lucide="flask-conical"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--reaction)">REAGENT ROULETTE</div>
+            <div class="lab-tag">ORGANIC MEMORY</div>
+        </div>
+        <div class="lab-card" onclick="Lab.start('COLOR')">
+            <div class="lab-icon"><i data-lucide="palette"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--infinity)">COLOR MATRIX</div>
+            <div class="lab-tag">SALT ANALYSIS</div>
+        </div>
+        <div class="lab-card" onclick="Lab.start('TITRATE')">
+            <div class="lab-icon"><i data-lucide="droplets"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--gold)">TITRATION SIM</div>
+            <div class="lab-tag">VISUAL INDICATORS</div>
+        </div>
+        <div class="lab-card" onclick="Lab.start('LOG')">
+            <div class="lab-icon"><i data-lucide="calculator"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--physical)">LOG LOGIC</div>
+            <div class="lab-tag">PHYSICAL CALC</div>
+        </div>
+        <div class="lab-card" style="border-color:var(--hacker)" onclick="Lab.startVisual()">
+            <div class="lab-icon" style="color:var(--hacker)"><i data-lucide="eye"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--hacker)">VISUAL BENCH</div>
+            <div class="lab-tag">IDENTIFY BY SIGHT</div>
+        </div>
+        <div class="lab-card" onclick="Lab.start('BOND')">
+            <div class="lab-icon"><i data-lucide="link-2"></i></div>
+            <div style="font-weight:bold; font-size:12px; color:var(--gold)">BOND BREAKER</div>
+            <div class="lab-tag">HYBRIDIZATION</div>
+        </div>
+    </div>
+
+    <div id="lab-game" class="game-ui">
+        <div id="l-score" style="text-align:right; font-size:10px; color:#666;">STREAK: 0</div>
+        <div id="l-q" class="game-q"></div>
+        <div id="l-visual" style="height:50px; width:50px; margin:0 auto 15px auto; border-radius:50%; display:none; border:2px solid #fff;"></div>
+        <div id="l-opts" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        <div id="l-bench" class="visual-bench" style="display:none;"></div>
+        <button class="tool-btn" style="margin-top:15px; background:#222;" onclick="Lab.exit()">EXIT LAB</button>
+    </div>
+</div>
+
+<div id="sorter" class="screen">
+    <h1>THE SORTER</h1>
+    <div class="subtitle">TREND ARRANGEMENT ENGINE</div>
+    <div class="tool-panel">
+        <div class="tool-header">INORGANIC ORDERS</div>
+        <div style="font-size:11px; color:#888; margin-bottom:15px;">Tap items in Correct Order (Lowest to Highest).</div>
+        <div id="sorter-game-area">
+            <div id="s-q" style="font-size:14px; color:var(--infinity); font-weight:bold; margin-bottom:10px;">Loading Order...</div>
+            <div id="sorter-list" class="sorter-container"></div>
+            <button class="tool-btn" style="margin-top:20px; background:var(--gold); color:black;" onclick="Sorter.check()">CHECK ORDER</button>
+            <div id="sorter-msg" style="margin-top:10px; font-size:12px;"></div>
+        </div>
+        <button class="tool-btn" style="margin-top:10px; background:#222;" onclick="Sorter.load()">NEXT TREND</button>
+    </div>
+</div>
+
+<div id="reactor" class="screen">
+    <h1>THE REACTOR</h1>
+    <div class="subtitle">ORGANIC ROADMAP ENGINE</div>
+
+    <div class="tool-panel" style="border-color:var(--reaction);">
+        <div class="tool-header" style="color:var(--reaction);">CHAIN REACTION GAME</div>
+        <div style="font-size:11px; color:#aaa; margin-bottom:15px;">Identify the missing Reagent/Product.</div>
+        
+        <div id="chain-game-area">
+            <div id="chain-display" class="chain-step-box"></div>
+            <div id="chain-opts" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+            <div id="chain-input-area" style="display:none; margin-top:10px;">
+                <input type="text" id="chain-type-in" placeholder="Type Reagent/Product Name..." style="width:100%; padding:10px; background:#000; border:1px solid var(--reaction); color:#fff; font-family:var(--font-code);">
+                <button class="tool-btn" onclick="Chain.checkInput()">SYNTHESIZE</button>
+            </div>
+            <div id="chain-msg" style="margin-top:10px; font-size:12px; color:var(--infinity);"></div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px;">
+            <button class="tool-btn" style="margin-top:0; background:#222;" onclick="Chain.load()">NEXT CHAIN</button>
+            <button class="tool-btn" style="margin-top:0; background:#111; border:1px solid var(--reaction);" onclick="Chain.toggleMode()">TOGGLE HARD MODE</button>
+        </div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header">CONVERSION WIZARD</div>
+        <input type="text" class="search-box" id="react-in" placeholder="e.g. Benzene to Phenol" style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;" onkeyup="Reactor.search()">
+        <div id="react-res"></div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header">NAME REACTION VAULT</div>
+        <input type="text" class="search-box" placeholder="Search (e.g. Aldol)..." style="width:100%; padding:10px; background:#111; border:1px solid #333; color:white;" onkeyup="Reactor.filterNames(this.value)">
+        <div id="name-react-list"></div>
+    </div>
+</div>
+
+<div id="sniper" class="screen">
+    <h1>SNIPER SCOPE</h1>
+    <div class="subtitle">JUDGEMENT TRAINER</div>
+
+    <div class="sniper-hud">
+        <div class="sniper-level-row">
+            <div class="sniper-lvl-btn active" onclick="Sniper.setLvl(1, this)">LVL 1: BLITZ<br>(Inorganic)</div>
+            <div class="sniper-lvl-btn" onclick="Sniper.setLvl(2, this)">LVL 2: TRAP<br>(Physical)</div>
+            <div class="sniper-lvl-btn" onclick="Sniper.setLvl(3, this)">LVL 3: STEREO<br>(Organic)</div>
+        </div>
+        <div style="text-align:right; font-size:10px; color:var(--infinity); font-weight:bold;" id="s-score">SCORE: 0</div>
+    </div>
+
+    <div id="sniper-game" style="position:relative;">
+        <div class="lockdown-overlay" id="s-lockdown">
+            <div class="lock-icon"><i data-lucide="lock" width="48" height="48"></i></div>
+            <div style="color:var(--danger); font-weight:bold; font-size:14px; margin-bottom:10px;">PUNISHMENT PROTOCOL ACTIVATED</div>
+            <div style="color:#aaa; font-size:11px; max-width:200px; line-height:1.5;">You failed too many times. Go read NCERT. Return in:</div>
+            <div id="s-lock-timer" style="font-family:var(--font-code); font-size:24px; color:white; margin-top:10px;">05:00</div>
+        </div>
+
+        <div class="sniper-scope">
+            <div class="sniper-timer" id="s-timer"></div>
+            <div class="sniper-q-tag" id="s-tag">2025 JAN S1</div>
+            <div class="sniper-q-text" id="s-text">Loading...</div>
+            <div class="sniper-feedback" id="s-feed" style="position:absolute; inset:0; background:rgba(0,0,0,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:10;">
+                <div style="font-size:30px; margin-bottom:10px;" id="s-icon"></div>
+                <div style="color:white; font-size:12px; text-align:center; padding:10px;" id="s-msg"></div>
+                <div style="color:var(--hacker); font-size:9px; font-family:var(--font-code); margin-top:5px; border:1px dashed var(--hacker); padding:4px;" id="s-ref">REF: NCERT</div>
+                <button class="tool-btn" style="width:auto; margin-top:10px;" onclick="Sniper.next()">NEXT TARGET</button>
+            </div>
+        </div>
+        <div class="sniper-controls">
+            <button class="sniper-btn btn-kill" onclick="Sniper.act('KILL')">KILL (ATTEMPT)</button>
+            <button class="sniper-btn btn-skip" onclick="Sniper.act('SKIP')">SKIP (LEAVE)</button>
+        </div>
+    </div>
+</div>
+
+<div id="archive" class="screen">
+    <h1>THE ARCHIVE</h1>
+    <div class="subtitle">EXCEPTIONS & DATA</div>
+
+    <div class="tool-panel">
+        <div class="tool-header">EXCEPTION VAULT</div>
+        <div id="exception-list"></div>
+    </div>
+
+    <div class="tool-panel">
+        <div class="tool-header">CONSTANTS TABLE</div>
+        <table class="roi-table" style="font-family:var(--font-code);">
+            <tr><td>R (Gas Const)</td><td style="color:var(--physical)">0.0821 (L.atm) / 8.314 (J)</td></tr>
+            <tr><td>F (Faraday)</td><td style="color:var(--physical)">96500 C</td></tr>
+            <tr><td>Na (Avogadro)</td><td style="color:var(--physical)">6.022 x 10^23</td></tr>
+            <tr><td>h (Planck)</td><td style="color:var(--physical)">6.626 x 10^-34</td></tr>
+            <tr><td>V (STP)</td><td style="color:var(--physical)">22.4 L (Old) / 22.7 L (Bar)</td></tr>
+        </table>
+    </div>
+</div>
+
+<div id="hazmat" class="screen">
+    <h1>HAZMAT ZONE</h1>
+    <div class="subtitle">TRAP DATABASE</div>
+    <div id="trap-list"></div>
+</div>
+
+<div id="shame" class="screen">
+    <h1>MISTAKE LOG</h1>
+    <div class="subtitle">FAILURE TRACKER</div>
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin-bottom:20px;">
+        <button class="tool-btn" style="background:#111; border-color:var(--danger);" onclick="Shame.add('CALC')">CALC</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger);" onclick="Shame.add('REAGENT')">REAGENT</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger);" onclick="Shame.add('EXCEPT')">EXCEPTION</button>
+        <button class="tool-btn" style="background:#111; border-color:var(--danger);" onclick="Shame.add('SILENT')">SILLY</button>
+    </div>
+    <div id="shame-history" style="display:flex; flex-direction:column; gap:5px;"></div>
+    <button class="tool-btn" style="width:100%; margin-top:20px; background:#000;" onclick="Shame.clear()">CLEAR HISTORY</button>
+    <button class="tool-btn" style="width:100%; margin-top:10px; background:var(--hacker); color:black;" onclick="Shame.export()">EXPORT LOG TO CLIPBOARD</button>
+</div>
+
+<div id="guide" class="screen">
+    <h1>THE CODEX</h1>
+    <div class="subtitle">OPERATIONAL MANUAL</div>
+    <div class="tool-panel">
+        <div class="tool-header">DAILY ALCHEMY LOOP</div>
+        <div class="guide-step"><div class="guide-time">08:00 AM</div><div class="guide-action">INORGANIC BLITZ</div><div class="guide-desc">Spend 20 mins in "The Lab" (Color Matrix) & "Sorter". Memorize 5 Exceptions.</div></div>
+        <div class="guide-step"><div class="guide-time">12:00 PM</div><div class="guide-action">ORGANIC MAPPING</div><div class="guide-desc">Use "Reactor" Chain Game. Trace 3 conversion paths. Don't just read; map it.</div></div>
+        <div class="guide-step"><div class="guide-time">04:00 PM</div><div class="guide-action">SNIPER DRILL</div><div class="guide-desc">Level 2 (Physical Trap). Learn to skip the math-heavy questions.</div></div>
+        <div class="guide-step"><div class="guide-time">09:00 PM</div><div class="guide-action">INFINITY MOCK</div><div class="guide-desc">Generate 1 exam in Infinity Tab. Review mistakes in Shame tab.</div></div>
+    </div>
+</div>
+
+<script>
+    // --- MERGED DATABASES (FINAL GOD MODE EXPANSION) ---
+    // Added 'ref' tags for authenticity.
+
+    const LAB_DB = {
+        'REAGENT': [
+            {q:"PCC (Pyridinium Chlorochromate)",o:["1° Alcohol -> Aldehyde","1° Alcohol -> Acid","Alkene -> Alcohol","Ketone -> Alcohol"],a:0},
+            {q:"LiAlH4 (Lithium Aluminium Hydride)",o:["Strong Oxidizing Agent","Strong Reducing Agent","Dehydrating Agent","Weak Reducing Agent"],a:1},
+            {q:"O3 / Zn, H2O (Ozonolysis)",o:["Break Double Bond (Reductive)","Break Double Bond (Oxidative)","Add OH groups","Remove CO2"],a:0},
+            {q:"Lucas Reagent (Conc HCl + ZnCl2)",o:["Distinguish Alcohols","Distinguish Amines","Reduce Aldehydes","Oxidize Ketones"],a:0},
+            {q:"KMnO4 (Acidic)",o:["Strong Oxidizer","Weak Oxidizer","Reducing Agent","Dehydrating Agent"],a:0},
+            {q:"Grignard Reagent (R-Mg-X)",o:["Nucleophile","Electrophile","Acid","Base"],a:0},
+            {q:"HBr / Peroxide (Anti-Markovnikov)",o:["Free Radical Add.","Electrophilic Add.","Nucleophilic Sub.","Elimination"],a:0},
+            {q:"Tollens Reagent (Ammonical AgNO3)",o:["Oxidize Aldehydes","Oxidize Ketones","Reduce Alcohols","Test for Unsaturation"],a:0},
+            {q:"Fehling Solution (A+B)",o:["Test for Aliphatic Aldehyde","Test for Aromatic Aldehyde","Test for Ketones","Test for Alcohols"],a:0},
+            {q:"2,4-DNP Test",o:["Carbonyl Group Test","Alcohol Test","Amine Test","Carboxylic Acid Test"],a:0},
+            {q:"Iodoform Test (I2 + NaOH)",o:["Methyl Ketone / Methyl Carbinol","Any Alcohol","Any Ketone","Carboxylic Acid"],a:0},
+            {q:"Hinsberg Reagent (Ph-SO2Cl)",o:["Distinguish Amines (1/2/3)","Distinguish Alcohols","Test for Phenol","Test for Nitro"],a:0},
+            {q:"Br2 / Water (Bromine Water)",o:["Test for Unsaturation / Phenol","Test for Alcohol","Test for Acid","Test for Ketone"],a:0},
+            {q:"NaNO2 + HCl (0-5°C)",o:["Diazotization (Amines)","Reduction","Oxidation","Hydrolysis"],a:0},
+            {q:"Neutral FeCl3",o:["Test for Phenol (Violet)","Test for Alcohol","Test for Acid","Test for Amine"],a:0},
+            {q:"Ceric Ammonium Nitrate",o:["Test for Alcohol (Red)","Test for Phenol","Test for Acid","Test for Amine"],a:0},
+            {q:"Bayer's Reagent (Alk KMnO4)",o:["Test for Unsaturation","Oxidizing Agent","Reducing Agent","Dehydrating Agent"],a:0},
+            {q:"Chloroform + KOH (Carbylamine)",o:["Test for 1° Amine (Foul Smell)","Test for 2° Amine","Test for 3° Amine","Test for Amide"],a:0},
+            {q:"Sodium Bicarbonate (NaHCO3)",o:["Test for -COOH (Effervescence)","Test for Phenol","Test for Alcohol","Test for Ketone"],a:0},
+            {q:"Sodalime (NaOH + CaO)",o:["Decarboxylation (-CO2)","Dehydration","Oxidation","Reduction"],a:0}
+        ],
+        'COLOR': [
+            {q:"Fe3+ + SCN-",o:["BLOOD RED","DEEP BLUE","GREEN","YELLOW"],a:0},
+            {q:"Cu2+ in Excess NH3",o:["DEEP BLUE","GREEN","WHITE PPT","CHOCOLATE"],a:0},
+            {q:"Flame Test: Strontium (Sr)",o:["CRIMSON RED","APPLE GREEN","GOLDEN YELLOW","VIOLET"],a:0},
+            {q:"Flame Test: Barium (Ba)",o:["APPLE GREEN","BRICK RED","LILAC","BLUE"],a:0},
+            {q:"[Ni(H2O)6]2+",o:["GREEN","BLUE","PINK","COLORLESS"],a:0},
+            {q:"Flame Test: Ca",o:["BRICK RED","GREEN","BLUE","VIOLET"],a:0},
+            {q:"Fe3+ (FeCl3)",o:["YELLOW","GREEN","BLUE","PINK"],a:0},
+            {q:"Co2+ (Pink) -> Heating -> ?",o:["BLUE (Anhydrous)","GREEN","YELLOW","BLACK"],a:0},
+            {q:"Lead Iodide (PbI2) Precipitate",o:["YELLOW PPT","RED PPT","WHITE PPT","BLACK PPT"],a:0},
+            {q:"Nesler's Reagent + NH4+",o:["BROWN PPT","YELLOW","WHITE","BLUE"],a:0},
+            {q:"AgCl Precipitate",o:["WHITE","YELLOW","RED","BLACK"],a:0},
+            {q:"AgBr Precipitate",o:["PALE YELLOW","WHITE","RED","BLACK"],a:0},
+            {q:"AgI Precipitate",o:["YELLOW","WHITE","RED","BLACK"],a:0},
+            {q:"Cu2+ Flame Test",o:["BLUISH GREEN","CRIMSON","GOLDEN","LILAC"],a:0},
+            {q:"PbS Precipitate",o:["BLACK","WHITE","YELLOW","RED"],a:0},
+            {q:"CdS Precipitate",o:["YELLOW","BLACK","WHITE","RED"],a:0},
+            {q:"Bi2S3 Precipitate",o:["BLACK","BROWN","YELLOW","WHITE"],a:0},
+            {q:"Ni-DMG Complex",o:["ROSY RED","BLUE","GREEN","YELLOW"],a:0},
+            {q:"Prussian Blue",o:["Fe4[Fe(CN)6]3","Fe3[Fe(CN)6]2","KFe[Fe(CN)6]","None"],a:0},
+            {q:"Turnbull's Blue",o:["Fe3[Fe(CN)6]2","Fe4[Fe(CN)6]3","KFe[Fe(CN)6]","None"],a:0}
+        ],
+        'TITRATE': [ 
+            {q:"Phenolphthalein in Base (pH > 10)", o:["PINK","COLORLESS","RED","YELLOW"], a:0, c:"#FF69B4"},
+            {q:"Methyl Orange in Acid", o:["RED/PINK","YELLOW","BLUE","GREEN"], a:0, c:"#FF4500"},
+            {q:"Methyl Orange in Base", o:["YELLOW","RED","COLORLESS","BLUE"], a:0, c:"#FFD700"},
+            {q:"KMnO4 Self Indicator (Endpoint)", o:["LIGHT PINK","DARK PURPLE","BROWN","COLORLESS"], a:0, c:"#FFB6C1"},
+            {q:"Starch + Iodine", o:["DEEP BLUE/BLACK","YELLOW","RED","WHITE"], a:0, c:"#00008B"}
+        ],
+        'LOG': [
+            {q:"log(2)",o:["0.301","0.477","0.699","0.602"],a:0},
+            {q:"log(3)",o:["0.477","0.301","0.845","0.954"],a:0},
+            {q:"ln(10) to log(10) factor",o:["2.303","0.693","1.414","3.14"],a:0},
+            {q:"log(5)",o:["0.699","0.5","0.3","0.9"],a:0},
+            {q:"0.059 / 2 (Nernst)",o:["0.0295","0.03","0.015","0.045"],a:0},
+            {q:"-log(10^-7)",o:["7","1","0","-7"],a:0},
+            {q:"log(4)",o:["0.602","0.301","0.477","0.9"],a:0}
+        ],
+        'UNIT': [ 
+            {q:"Pressure: atm, Volume: L", o:["R = 0.0821","R = 8.314","R = 0.083","R = 2"], a:0},
+            {q:"Energy: Joules", o:["R = 8.314","R = 0.0821","R = 0.083","R = 2"], a:0},
+            {q:"Pressure: Bar, Volume: L", o:["R = 0.083","R = 0.0821","R = 8.314","R = 1.98"], a:0},
+            {q:"Energy: Calories", o:["R = 2","R = 8.314","R = 4.18","R = 0.0821"], a:0},
+            {q:"Standard Pressure (STP) for 22.7L", o:["1 bar","1 atm","760 mmHg","1 Pa"], a:0}
+        ],
+        'BOND': [
+            {q:"SF4 (Hybridization)",o:["sp3d","sp3","sp3d2","dsp2"],a:0},
+            {q:"XeF4 (Shape)",o:["Square Planar","Tetrahedral","See-Saw","Octahedral"],a:0},
+            {q:"PCl5 (Solid State)",o:["[PCl4]+ [PCl6]-","PCl5 Molecules","[PCl4]+ Cl-","Dimer"],a:0},
+            {q:"NO2 (Paramagnetic?)",o:["YES (Odd Electron)","NO","Only at low temp","Depends"],a:0},
+            {q:"Bond Order: O2",o:["2.0","1.5","2.5","1.0"],a:0},
+            {q:"XeF2 (Shape)",o:["Linear","Bent","Trigonal Planar","See-Saw"],a:0},
+            {q:"I3- (Shape)",o:["Linear","Bent","Trigonal","T-Shape"],a:0},
+            {q:"NH3 vs NF3 Dipole Moment",o:["NH3 > NF3","NF3 > NH3","Equal","Zero"],a:0},
+            {q:"BF3 (Dipole Moment)",o:["Zero","Non-Zero","Depends","High"],a:0},
+            {q:"ClF3 (Shape)",o:["T-Shape","Trigonal Planar","Pyramidal","Linear"],a:0}
+        ]
+    };
+
+    // VISUAL DATA FROM CHEM 3 (Expanded)
+    const VISUAL_DB = [
+        { ion: "Cu2+", color: "#0000FF", name: "Deep Blue (in excess NH3)" },
+        { ion: "Ni2+", color: "#00FF00", name: "Green" },
+        { ion: "Co2+", color: "#FF69B4", name: "Pink" },
+        { ion: "Fe3+", color: "#FFFF00", name: "Yellow (FeCl3)" },
+        { ion: "Ba2+", color: "#ADFF2F", name: "Apple Green (Flame)" },
+        { ion: "Sr2+", color: "#DC143C", name: "Crimson Red (Flame)" },
+        { ion: "Ca2+", color: "#B22222", name: "Brick Red (Flame)" },
+        { ion: "Na+", color: "#FFD700", name: "Golden Yellow (Flame)" },
+        { ion: "K+", color: "#EE82EE", name: "Lilac (Flame)" },
+        { ion: "Cr3+", color: "#008000", name: "Green (Solution)" },
+        { ion: "Mn2+", color: "#FFC0CB", name: "Flesh / Light Pink" }
+    ];
+
+    // --- 2. SNIPER DATA (STATEMENT/ASSERTION WITH REFS) ---
+    const SNIPER_DB = {
+        1: [ // INORGANIC BLITZ
+            {q:"Statement I: F2 has higher Bond Dissociation Enthalpy than Cl2.\nStatement II: F is smaller than Cl.", t:"Trend Trap", type:"INORG", act:"KILL", r:"S1 False (F-F repulsion makes F2 weaker), S2 True.", ref:"NCERT XII Pt 1, p.197"},
+            {q:"Identify the correct order of acidic strength: HF < HCl < HBr < HI", t:"Acid Strength", type:"INORG", act:"KILL", r:"Correct. Bond length increases, bond strength decreases, H+ release easier.", ref:"NCERT XII Pt 1, p.201"},
+            {q:"Does White Phosphorus dissolve in water?", t:"General", type:"INORG", act:"SKIP", r:"No, insoluble in water, soluble in CS2.", ref:"NCERT XII Pt 1, p.179"},
+            {q:"Is bond order of O2+ greater than O2?", t:"Concept", type:"INORG", act:"KILL", r:"Yes. O2+ (2.5) > O2 (2.0). Electron removed from Antibonding.", ref:"NCERT XI Pt 1, MOT"},
+            {q:"Statement I: N has higher IE than O.\nStatement II: N has stable half-filled p-orbital.", t:"IE Trend", type:"INORG", act:"KILL", r:"Both True. S2 explains S1.", ref:"NCERT XI Pt 1, Periodicity"},
+            {q:"Which is more soluble in water: Be(OH)2 or Ba(OH)2?", t:"Solubility", type:"INORG", act:"KILL", r:"Ba(OH)2. Solubility of hydroxides increases down the group.", ref:"NCERT XI Pt 2, s-Block"},
+            {q:"Shape of XeOF4?", t:"VSEPR", type:"INORG", act:"KILL", r:"Square Pyramidal.", ref:"NCERT XII Pt 1, p.211"},
+            {q:"Statement I: Pb4+ is oxidizing agent.\nStatement II: Inert pair effect makes Pb2+ more stable.", t:"p-Block", type:"INORG", act:"KILL", r:"Both True. Pb wants to go to +2.", ref:"NCERT XI Pt 2, p-Block"},
+            {q:"Correct order of Ionic Radius: Al3+ < Mg2+ < Na+ < F-", t:"Isoelectronic", type:"INORG", act:"KILL", r:"Correct. Higher +ve charge pulls shell closer.", ref:"NCERT XI Pt 1, p.87"},
+            {q:"Does hydrolysis of NCl3 give HOCl?", t:"Hydrolysis", type:"INORG", act:"KILL", r:"Yes. NCl3 + 3H2O -> NH3 + 3HOCl.", ref:"PYQ 2023"}
+        ],
+        2: [ // PHYSICAL TRAP
+            {q:"Statement I: For Adiabatic expansion of ideal gas, cooling occurs.\nStatement II: Work is done at expense of Internal Energy.", t:"Thermo", type:"PHYS", act:"KILL", r:"Both True. S2 explains S1.", ref:"NCERT XI Pt 1, Thermo"},
+            {q:"Calculate Osmotic Pressure of 5% urea solution at 300K...", t:"Formula", type:"PHYS", act:"KILL", r:"Formula Application: pi = CRT. C = (5/60)/0.1 L.", ref:"NCERT XII Pt 1, Solutions"},
+            {q:"For First Order reaction, t(99.9%) is approx 10 times t(50%)?", t:"Kinetics", type:"PHYS", act:"KILL", r:"True. t(99.9%) = 10 * t(1/2). Memorize this.", ref:"NCERT XII Pt 1, Kinetics"},
+            {q:"Is work done in free expansion of ideal gas zero?", t:"Thermo Trap", type:"PHYS", act:"KILL", r:"Yes. P_ext = 0, so W = 0.", ref:"NCERT XI Pt 1, p.167"},
+            {q:"Silver crystallizes in FCC. Density is 10.5. Calculate atomic mass...", t:"Calc Heavy", type:"PHYS", act:"SKIP", r:"Calculation Heavy (Trap). Mark for review.", ref:"PYQ 2021"},
+            {q:"Unit of Rate Constant for Zero Order?", t:"Units", type:"PHYS", act:"KILL", r:"Mol L^-1 s^-1.", ref:"NCERT XII Pt 1, p.107"},
+            {q:"Statement I: E_cell is an intensive property.\nStatement II: Delta G is an extensive property.", t:"Electro", type:"PHYS", act:"KILL", r:"Both True.", ref:"NCERT XII Pt 1, Electro"},
+            {q:"Can physisorption be reversed?", t:"Surface", type:"PHYS", act:"KILL", r:"Yes. Chemisorption is irreversible.", ref:"NCERT XII Pt 1, Surface"},
+            {q:"Van't Hoff factor 'i' for K4[Fe(CN)6] (100% diss)?", t:"Solutions", type:"PHYS", act:"KILL", r:"i = 5. (4K+ and 1 Complex ion).", ref:"NCERT XII Pt 1, Solutions"},
+            {q:"pH of 10^-8 M HCl?", t:"Ionic Eq", type:"PHYS", act:"KILL", r:"Between 6 and 7 (approx 6.98). Common ion effect from water.", ref:"Common Trap"}
+        ],
+        3: [ // ORGANIC STEREO & MECH
+            {q:"Statement I: SN1 involves formation of carbocation.\nStatement II: SN1 gives 100% retention of configuration.", t:"Mechanism", type:"ORG", act:"KILL", r:"S1 True, S2 False (SN1 gives Racemization).", ref:"NCERT XII Pt 2, Haloalkanes"},
+            {q:"Find TOTAL number of Stereoisomers for 2,3-dichlorobutane.", t:"Isomerism", type:"ORG", act:"KILL", r:"3 (Meso + Enantiomeric Pair). Formula: 2^(n-1) + 2^(n/2-1).", ref:"General Org Chem"},
+            {q:"Major Product of Dehydration of 2-butanol.", t:"Reagent", type:"ORG", act:"KILL", r:"But-2-ene (Saytzeff Product - More substituted).", ref:"NCERT XII Pt 2, Alcohols"},
+            {q:"Is Glucose a reducing sugar?", t:"Bio", type:"ORG", act:"KILL", r:"Yes, free aldehyde group.", ref:"NCERT XII Pt 2, Biomolecules"},
+            {q:"Gabriel Phthalimide synthesis is used for...", t:"Name Rxn", type:"ORG", act:"KILL", r:"Primary Aliphatic Amines only.", ref:"NCERT XII Pt 2, Amines"},
+            {q:"Which is more acidic: Phenol or Ethanol?", t:"Acidity", type:"ORG", act:"KILL", r:"Phenol (Resonance stabilized phenoxide ion).", ref:"NCERT XII Pt 2, Alcohols"},
+            {q:"Reactant for Cannizzaro: HCHO or CH3CHO?", t:"Name Rxn", type:"ORG", act:"KILL", r:"HCHO (No alpha hydrogen).", ref:"NCERT XII Pt 2, Aldehydes"},
+            {q:"Statement I: Aniline does not undergo Friedel Crafts.\nStatement II: NH2 group forms salt with AlCl3.", t:"Reagent", type:"ORG", act:"KILL", r:"Both True. S2 explains S1.", ref:"NCERT XII Pt 2, Amines"},
+            {q:"Product of Ozonolysis of Benzene?", t:"Reaction", type:"ORG", act:"KILL", r:"Glyoxal (CHO-CHO).", ref:"NCERT XI Pt 2, Hydrocarbons"},
+            {q:"Does Lucas Test work for 1° Alcohols at room temp?", t:"Lab Test", type:"ORG", act:"KILL", r:"No. Requires heating. 3° is instant.", ref:"NCERT XII Pt 2, Alcohols"}
+        ]
+    };
+
+    // --- 3. ROADMAP ENGINE (25+ CHAINS) ---
+    const ROADMAP_DB = [
+        {i:"Benzene", o:"Phenol", p:"1. Chlorination -> Dow's Process OR 2. Sulphonation -> Fusion"},
+        {i:"Ethanol", o:"Acetic Acid", p:"KMnO4 / H+ (Strong Oxidation)"},
+        {i:"Aniline", o:"Fluorobenzene", p:"Diazotization (NaNO2/HCl) -> HBF4 -> Heat (Balz Schiemann)"},
+        {i:"Phenol", o:"Salicylaldehyde", p:"Reimer Tiemann (CHCl3 + NaOH)"},
+        {i:"Acetone", o:"Propane", p:"Clemensen (Zn-Hg/HCl) OR Wolff-Kishner"},
+        {i:"Nitrobenzene", o:"Aniline", p:"Sn/HCl or Fe/HCl (Reduction)"},
+        {i:"Benzene", o:"Toluene", p:"Friedel Crafts Alkylation (CH3Cl / AlCl3)"},
+        {i:"Toluene", o:"Benzoic Acid", p:"KMnO4 / KOH / Heat (Side Chain Oxidation)"},
+        {i:"Ethyne", o:"Benzene", p:"Red Hot Iron Tube / 873K (Polymerization)"},
+        {i:"Propan-2-ol", o:"Propanone", p:"Cu / 573K (Dehydrogenation)"},
+        {i:"Phenol", o:"Benzene", p:"Zn Dust / Heat (Reduction)"},
+        {i:"Chlorobenzene", o:"Phenol", p:"NaOH / 623K / 300atm (Dow's Process)"},
+        {i:"Ethanol", o:"Ethene", p:"Conc H2SO4 / 443K (Dehydration)"},
+        {i:"Ethene", o:"Ethanol", p:"H2O / H+ (Hydration)"},
+        {i:"Benzoic Acid", o:"Benzamide", p:"NH3 / Heat"},
+        {i:"Benzamide", o:"Aniline", p:"Br2 + KOH (Hoffmann Bromamide)"},
+        {i:"Aniline", o:"Phenol", p:"NaNO2/HCl (0-5C) -> Warm H2O"},
+        {i:"Phenol", o:"Picric Acid", p:"Conc HNO3 + Conc H2SO4"},
+        {i:"Benzene", o:"Acetophenone", p:"CH3COCl / Anhyd AlCl3 (Friedel Crafts Acylation)"},
+        {i:"Aniline", o:"Acetanilide", p:"Acetic Anhydride / Pyridine"},
+        {i:"Benzene Diazo Chloride", o:"Chlorobenzene", p:"Cu2Cl2/HCl (Sandmeyer) OR Cu/HCl (Gattermann)"},
+        {i:"Ethyl Chloride", o:"Butane", p:"Na / Dry Ether (Wurtz)"},
+        {i:"Methyl Bromide", o:"Methyl Iodide", p:"NaI / Acetone (Finkelstein)"},
+        {i:"Silver Propanoate", o:"Bromoethane", p:"Br2 / CCl4 (Hunsdiecker)"},
+        {i:"Cumene", o:"Phenol + Acetone", p:"O2 -> H3O+"}
+    ];
+
+    const NAMED_RXN = [
+        {n:"Aldol Condensation", d:"Alpha-H Aldehyde/Ketone + Dil Base -> Beta-Hydroxy Aldehyde"},
+        {n:"Cannizzaro", d:"No Alpha-H Aldehyde + Conc Base -> Alcohol + Salt of Acid (Disproportionation)"},
+        {n:"Hoffmann Bromamide", d:"Amide + Br2 + 4KOH -> Primary Amine (1 C less)"},
+        {n:"Sandmeyer", d:"Diazonium Salt + Cu2X2/HX -> Haloarene"},
+        {n:"Gabriel Phthalimide", d:"Phthalimide -> 1* Amine (Aliphatic Only)"},
+        {n:"Reimer-Tiemann", d:"Phenol + CHCl3 + NaOH -> Salicylaldehyde"},
+        {n:"Kolbe's Reaction", d:"Phenol + NaOH + CO2 -> Salicylic Acid"},
+        {n:"Rosenmund Reduction", d:"Acid Chloride + H2/Pd-BaSO4 -> Aldehyde"},
+        {n:"Stephen Reduction", d:"Nitrile + SnCl2/HCl -> Aldehyde"},
+        {n:"Clemmensen Reduction", d:"Carbonyl + Zn-Hg/HCl -> Alkane"},
+        {n:"Wolff-Kishner", d:"Carbonyl + NH2NH2/KOH/Glycol -> Alkane"},
+        {n:"Hell-Volhard-Zelinsky", d:"Carboxylic Acid (alpha-H) + X2/Red P -> Alpha-Halo Acid"},
+        {n:"Wurtz Reaction", d:"2RX + 2Na -> R-R (Alkanes)"},
+        {n:"Finkelstein", d:"RX + NaI -> RI (Acetone solvent)"},
+        {n:"Swarts", d:"RX + AgF/Hg2F2 -> RF"},
+        {n:"Friedel Crafts Alkylation", d:"Benzene + RX + AlCl3 -> Alkylbenzene"},
+        {n:"Friedel Crafts Acylation", d:"Benzene + RCOCl + AlCl3 -> Acylbenzene"},
+        {n:"Etard Reaction", d:"Toluene + CrO2Cl2 -> Benzaldehyde"},
+        {n:"Gattermann-Koch", d:"Benzene + CO + HCl + AlCl3 -> Benzaldehyde"},
+        {n:"Iodoform Reaction", d:"Methyl Ketone/Alcohol + I2 + NaOH -> CHI3 (Yellow PPT)"}
+    ];
+
+    // --- 4. SORTER DATA (EXCEPTION TRENDS) ---
+    const SORTER_DB = [
+        {t: "Acidic Strength (Hydrides)", items: ["H2O", "H2S", "H2Se", "H2Te"]},
+        {t: "Bond Dissociation Energy (Halogens)", items: ["I2", "F2", "Br2", "Cl2"]}, // Exception: F2 < Cl2
+        {t: "Ionization Energy (Period 2)", items: ["B", "Be", "O", "N"]}, // Exception Be>B, N>O
+        {t: "Ionic Radius (Isoelectronic)", items: ["Al3+", "Mg2+", "Na+", "F-"]},
+        {t: "Boiling Point (Hydrides 15)", items: ["PH3", "AsH3", "NH3", "SbH3", "BiH3"]}, // NH3 exception
+        {t: "Basic Strength (Aq. Phase)", items: ["NH3", "1° Amine", "3° Amine", "2° Amine"]}, // 2>1>3 or 2>3>1
+        {t: "Thermal Stability (Carbonates)", items: ["BeCO3", "MgCO3", "CaCO3", "BaCO3"]}, // Increases down
+        {t: "Acidic Strength (Haloacids)", items: ["HF", "HCl", "HBr", "HI"]},
+        {t: "Electron Gain Enthalpy (-ve)", items: ["O", "S", "Se", "Te"]}, // S > Se > Te > O (Exception)
+        {t: "Bond Angle (Hydrides 16)", items: ["H2Te", "H2Se", "H2S", "H2O"]},
+        {t: "Solubility (Hydroxides II)", items: ["Be(OH)2", "Mg(OH)2", "Ca(OH)2", "Ba(OH)2"]}, // Increases down
+        {t: "Solubility (Sulphates II)", items: ["BaSO4", "CaSO4", "MgSO4", "BeSO4"]}, // Decreases down
+        {t: "Hydration Enthalpy (Group 1)", items: ["Cs+", "Rb+", "K+", "Na+", "Li+"]}, // Li > Na > K ...
+        {t: "Ionic Mobility (Aq)", items: ["Li+", "Na+", "K+", "Rb+", "Cs+"]}, // Li smallest but largest hydrated -> Slowest
+        {t: "Dipole Moment (Methyl Halides)", items: ["CH3I", "CH3Br", "CH3F", "CH3Cl"]}, // CH3Cl > CH3F
+        {t: "Boiling Point (Noble Gases)", items: ["He", "Ne", "Ar", "Kr", "Xe"]},
+        {t: "Oxidizing Power (Halogens)", items: ["I2", "Br2", "Cl2", "F2"]},
+        {t: "Reducing Power (Halides)", items: ["F-", "Cl-", "Br-", "I-"]},
+        {t: "Lewis Acid Strength (Boron)", items: ["BF3", "BCl3", "BBr3", "BI3"]}, // Backbonding makes BF3 weakest
+        {t: "C-X Bond Length", items: ["C-F", "C-Cl", "C-Br", "C-I"]}
+    ];
+
+    // --- 5. CHAIN ENGINE (ROADMAP LOGIC) ---
+    const CHAIN_DB = [
+        {start: "Benzene", end: "Nitrobenzene", reagent: "Conc HNO3 + H2SO4", opts: ["Conc HNO3 + H2SO4", "Cl2 / AlCl3", "CH3Cl / AlCl3", "KMnO4"]},
+        {start: "Phenol", end: "Salicylic Acid", reagent: "CO2 / NaOH (Kolbe)", opts: ["CHCl3 / NaOH", "CO2 / NaOH (Kolbe)", "H2 / Ni", "Br2 / Water"]},
+        {start: "Ethanol", end: "Ethene", reagent: "Conc H2SO4 (443K)", opts: ["Conc H2SO4 (443K)", "PCC", "Na / Dry Ether", "LiAlH4"]},
+        {start: "Aniline", end: "BDC", reagent: "NaNO2 + HCl (0-5°C)", opts: ["NaNO2 + HCl (0-5°C)", "Cu / HCl", "Sn / HCl", "NH3 / Heat"]},
+        {start: "Acetone", end: "Pinacol", reagent: "Mg-Hg / H2O", opts: ["LiAlH4", "Mg-Hg / H2O", "Zn-Hg / HCl", "SeO2"]},
+        {start: "Toluene", end: "Benzoic Acid", reagent: "KMnO4 / KOH / Heat", opts: ["KMnO4 / KOH / Heat", "PCC", "CrO2Cl2", "Cl2 / hv"]},
+        {start: "Benzene -> X -> Phenol", end: "Phenol (from Cumene)", reagent: "O2 then H3O+", opts: ["O2 then H3O+", "NaOH / 623K", "Zn Dust", "Water"]},
+        {start: "Ethyne -> X -> Benzene", end: "Benzene", reagent: "Red Hot Iron Tube", opts: ["Red Hot Iron Tube", "Conc H2SO4", "AlCl3", "Na / Liq NH3"]},
+        {start: "R-CN -> X -> R-CHO", end: "Aldehyde (Stephen)", reagent: "SnCl2 / HCl", opts: ["SnCl2 / HCl", "LiAlH4", "H2 / Ni", "KMnO4"]},
+        {start: "Benzene -> X -> Acetophenone", end: "Acetophenone", reagent: "CH3COCl / AlCl3", opts: ["CH3COCl / AlCl3", "CH3Cl / AlCl3", "Zn-Hg / HCl", "PCC"]},
+        {start: "Benzoic Acid -> X -> Benzamide", end: "Benzamide", reagent: "NH3 / Heat", opts: ["NH3 / Heat", "P2O5", "LiAlH4", "SOCl2"]}
+    ];
+
+    const EXCEPTIONS = [
+        {r:"IE Increases across period", f:"N > O and Be > B", reason:"Half/Full filled stability"},
+        {r:"EA becomes more -ve down group", f:"Cl > F and S > O", reason:"Small size of 2p elements (Repulsion)"},
+        {r:"Bond Angle decreases down group", f:"NH3 > PH3 approx AsH3 (Drago)", reason:"Drago's Rule (No hybridization)"},
+        {r:"Oxidation State Stability", f:"Pb+2 > Pb+4", reason:"Inert Pair Effect"},
+        {r:"Radius Order", f:"Al approx Ga", reason:"Poor shielding of d-electrons"},
+        {r:"Bond Dissociation Energy", f:"Cl2 > Br2 > F2 > I2", reason:"F-F repulsion due to small size"},
+        {r:"Dipole Moment", f:"CH3Cl > CH3F > CH3Br > CH3I", reason:"Bond length factor dominates over electronegativity in Cl vs F"},
+        {r:"Boiling Point (Hydrides)", f:"H2O >>> H2Te > H2Se > H2S", reason:"H-Bonding in Water"},
+        {r:"Basicity (Aq)", f:"2° > 1° > 3° (Methyl)", reason:"Steric + Solvation + Inductive trade-off"},
+        {r:"Basicity (Aq)", f:"2° > 3° > 1° (Ethyl)", reason:"Inductive dominates slightly more"}
+    ];
+
+    const TRAPS_DB = [
+        {t:"Delta G Units", d:"Formula -nFE gives Joules. Options often in kJ. Divide by 1000."},
+        {t:"Electrode Potential", d:"Standard Reduction Potential is standard. If Oxidation given, flip sign."},
+        {t:"Isomers vs Products", d:"'Number of Products' includes stereoisomers only if specified. Usually excludes enantiomers."},
+        {t:"Dilute vs Conc", d:"Zn + Dil HNO3 = N2O. Zn + Conc HNO3 = NO2. Memorize trends."},
+        {t:"Kinetics Units", d:"Rate Constant k units depend on Order. Mol L-1 s-1 (Zero) vs s-1 (First)."},
+        {t:"Equilibrium Const", d:"K only changes with Temperature. Not pressure, not conc, not catalyst."},
+        {t:"Solid State Density", d:"Ensure Edge length 'a' is in cm if density is g/cm3. Convert pm to cm (x 10^-10)."},
+        {t:"Work Done Sign", d:"Chemistry: Work on system (+ve). Physics: Work by system (+ve). Be careful."},
+        {t:"Molality vs Molarity", d:"Molality is temp independent (mass/mass). Molarity changes with Temp (vol)."},
+        {t:"Coordination Number", d:"C.N. of bidentate ligand is 2x. E.g., [Co(en)3]3+ has C.N. 6, not 3."}
+    ];
+
+    const IMMORTALS = [
+        "Spin Only Magnetic Moment", "Hybridization & Shape (VSEPR)", "MOT (Bond Order/Para-Dia)",
+        "Nernst Equation (Ecell)", "First Order Kinetics (Graphs)", "Colligative Properties (i factor)",
+        "Aldol & Cannizzaro", "SN1 vs SN2 Order", "Acidic/Basic Strength Order",
+        "Coordination Isomerism", "Salt Analysis (Group Reagents)", "Biomolecules (Glucose Structure)",
+        "Kmno4/K2Cr2O7 Reactions", "Electrochemistry (Faraday Law)", "Solutions (Raoult Law)",
+        "Amines (Hinsberg/Carbylamine)", "Reimer Tiemann / Kolbe", "Ideal Gas / Real Gas (Z)",
+        "Atomic Structure (Quantum Nos)", "Equilibrium (Le Chatelier)"
+    ];
+
+    const PROTOCOL_DATA = [
+        {t:"Physical Chem", s:["Mole Concept","Solutions","Electrochemistry","Kinetics","Thermodynamics"]},
+        {t:"Inorganic Chem", s:["Periodic Table","Bonding","Coordination","d & f Block","Salt Analysis"]},
+        {t:"Organic Chem", s:["GOC","Hydrocarbons","Haloalkanes","Aldehydes/Ketones","Amines","Biomolecules"]}
+    ];
+
+    // --- ENGINES ---
+
+    // 1. LAB ENGINE (Includes Visual Bench from Chem 3)
+    const Lab={mode:null,qIdx:0,score:0,
+        start(mode){
+            this.mode=mode;this.qIdx=0;this.score=0;
+            document.querySelector('.lab-grid').style.display='none';
+            document.getElementById('lab-game').style.display='block';
+            document.getElementById('l-bench').style.display='none'; // Hide visual bench
+            document.getElementById('l-opts').style.display='grid'; // Show buttons
+            this.loadQ();
+        },
+        startVisual(){
+            this.mode='VISUAL'; this.score=0;
+            document.querySelector('.lab-grid').style.display='none';
+            document.getElementById('lab-game').style.display='block';
+            document.getElementById('l-q').innerText = "Identify the Ion/Test:";
+            document.getElementById('l-visual').style.display='none';
+            document.getElementById('l-opts').style.display='none'; // Hide standard buttons
+            
+            const bench = document.getElementById('l-bench');
+            bench.innerHTML = '';
+            bench.style.display = 'grid';
+            
+            // Pick a random target
+            const target = VISUAL_DB[Math.floor(Math.random() * VISUAL_DB.length)];
+            document.getElementById('l-q').innerHTML = `Select sample matching: <br><span style="color:var(--hacker)">${target.name}</span>`;
+
+            // Shuffle and show tubes
+            const shuffled = [...VISUAL_DB].sort(()=>Math.random()-0.5);
+            shuffled.forEach(item => {
+                const tube = document.createElement('div');
+                tube.className = 'test-tube';
+                tube.innerHTML = `<div class="test-tube-liquid" style="background:${item.color}"></div>`;
+                tube.onclick = () => {
+                    if(item.ion === target.ion) {
+                        tube.style.borderColor = "var(--hacker)";
+                        document.getElementById('l-q').innerText = "CORRECT! +1 Streak";
+                        setTimeout(()=>this.startVisual(), 1000);
+                    } else {
+                        tube.style.borderColor = "var(--danger)";
+                        document.getElementById('l-q').innerText = "WRONG. RESET.";
+                    }
+                };
+                bench.appendChild(tube);
+            });
+        },
+        loadQ(){
+            const qData=LAB_DB[this.mode][this.qIdx];
+            document.getElementById('l-q').innerText=qData.q;
+            document.getElementById('l-score').innerText=`STREAK: ${this.score}`;
+            const viz=document.getElementById('l-visual');
+            if(qData.c){viz.style.display='block'; viz.style.backgroundColor=qData.c;} else {viz.style.display='none';}
+            const grid=document.getElementById('l-opts');grid.innerHTML='';
+            qData.o.forEach((opt,i)=>{
+                const btn=document.createElement('button');btn.className='game-btn';btn.innerText=opt;
+                btn.onclick=()=>this.check(i,btn);grid.appendChild(btn);
+            });
+        },
+        check(i,btn){
+            const correct=LAB_DB[this.mode][this.qIdx].a;
+            if(i===correct){
+                btn.classList.add('correct');this.score++;
+                setTimeout(()=>{this.qIdx=(this.qIdx+1)%LAB_DB[this.mode].length;this.loadQ();},500);
+            } else { btn.classList.add('wrong');this.score=0; }
+        },
+        exit(){
+            document.getElementById('lab-game').style.display='none';
+            document.querySelector('.lab-grid').style.display='grid';
+        }
+    };
+
+    const Reactor={
+        search(){
+            const q=document.getElementById('react-in').value.toLowerCase();
+            const r=document.getElementById('react-res');
+            if(q.length<3){r.innerHTML='';return;}
+            const m=ROADMAP_DB.filter(x=>x.i.toLowerCase().includes(q)||x.o.toLowerCase().includes(q));
+            r.innerHTML=m.map(x=>`<div class="reaction-box"><div class="reaction-step"><span class="reagent">${x.i}</span> <span class="arrow">---></span> <span class="product">${x.o}</span></div><div style="font-size:10px; color:#aaa;">${x.p}</div></div>`).join('');
+        },
+        filterNames(q){
+            const r=document.getElementById('name-react-list');
+            if(q.length<2){r.innerHTML='';return;}
+            const m=NAMED_RXN.filter(x=>x.n.toLowerCase().includes(q.toLowerCase()));
+            r.innerHTML=m.map(x=>`<div class="reaction-box"><div style="color:var(--reaction);font-weight:bold;margin-bottom:5px;">${x.n}</div><div style="font-size:10px; color:#ccc;">${x.d}</div></div>`).join('');
+        }
+    };
+
+    const Sorter = {
+        data: [], idx: 0,
+        load(){
+            this.idx = Math.floor(Math.random() * SORTER_DB.length);
+            this.data = [...SORTER_DB[this.idx].items];
+            this.data.sort(() => Math.random() - 0.5);
+            this.render();
+            document.getElementById('s-q').innerText = SORTER_DB[this.idx].t;
+            document.getElementById('sorter-msg').innerText = "";
+        },
+        render(){
+            const c = document.getElementById('sorter-list');
+            c.innerHTML = this.data.map((item, i) => `
+                <div class="sort-item" onclick="Sorter.select(${i}, this)">
+                    <span class="sort-val">${item}</span>
+                    <span class="sort-rank">${i+1}</span>
+                </div>
+            `).join('');
+        },
+        selIdx: -1,
+        select(i, el){
+            if(this.selIdx === -1) {
+                this.selIdx = i; el.classList.add('selected');
+            } else {
+                [this.data[this.selIdx], this.data[i]] = [this.data[i], this.data[this.selIdx]];
+                this.selIdx = -1;
+                this.render();
+            }
+        },
+        check(){
+            const correct = JSON.stringify(this.data) === JSON.stringify(SORTER_DB[this.idx].items);
+            const msg = document.getElementById('sorter-msg');
+            if(correct) { msg.innerText = "✅ CORRECT! TREND MASTERED."; msg.style.color="var(--infinity)"; }
+            else { msg.innerText = "❌ INCORRECT. TRY AGAIN."; msg.style.color="var(--danger)"; }
+        }
+    };
+
+    // CHAIN ENGINE (Modified to include Hard Mode)
+    const Chain = {
+        idx: 0, hardMode: false,
+        load(){
+            this.idx = Math.floor(Math.random() * CHAIN_DB.length);
+            const d = CHAIN_DB[this.idx];
+            document.getElementById('chain-display').innerHTML = `
+                <div class="chain-node">${d.start}</div>
+                <div class="arrow">→</div>
+                <div class="chain-slot">?</div>
+                <div class="arrow">→</div>
+                <div class="chain-node">${d.end}</div>
+            `;
+            document.getElementById('chain-msg').innerText = "";
+            document.getElementById('chain-type-in').value = "";
+            
+            if(this.hardMode) {
+                document.getElementById('chain-opts').style.display = 'none';
+                document.getElementById('chain-input-area').style.display = 'block';
+            } else {
+                document.getElementById('chain-input-area').style.display = 'none';
+                const optsDiv = document.getElementById('chain-opts');
+                optsDiv.style.display = 'grid';
+                optsDiv.innerHTML = d.opts.map(o => `<button class="game-btn" onclick="Chain.check('${o}', this)">${o}</button>`).join('');
+            }
+        },
+        toggleMode() {
+            this.hardMode = !this.hardMode;
+            this.load();
+        },
+        check(val, btn){
+            const correct = CHAIN_DB[this.idx].reagent;
+            const msg = document.getElementById('chain-msg');
+            if(val === correct){
+                btn.classList.add('correct');
+                msg.innerText = "LINK ESTABLISHED.";
+                document.querySelector('.chain-slot').innerText = val;
+            } else {
+                btn.classList.add('wrong');
+                msg.innerText = "REACTION FAILED.";
+            }
+        },
+        checkInput() {
+            const val = document.getElementById('chain-type-in').value.trim();
+            const correct = CHAIN_DB[this.idx].reagent;
+            const msg = document.getElementById('chain-msg');
+            // Loose checking for typing
+            if(val.toLowerCase() === correct.toLowerCase() || correct.toLowerCase().includes(val.toLowerCase())) {
+                msg.innerText = "HARD MODE: SUCCESS.";
+                msg.style.color = "var(--infinity)";
+                document.querySelector('.chain-slot').innerText = correct;
+            } else {
+                msg.innerText = "WRONG REAGENT.";
+                msg.style.color = "var(--danger)";
+            }
+        }
+    };
+
+    // SNIPER ENGINE UPGRADED (Timer Death & Punishment)
+    const Sniper={lvl:1,idx:0,score:0,timerInterval:null,
+        setLvl(l,el){this.lvl=l;document.querySelectorAll('.sniper-lvl-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');this.load();},
+        load(){
+            // Check punishment lock
+            const lockTime = localStorage.getItem('sniper_lock');
+            if(lockTime && Date.now() < parseInt(lockTime)){
+                this.showLockdown(parseInt(lockTime));
+                return;
+            } else {
+                document.getElementById('s-lockdown').style.display = 'none';
+            }
+
+            this.idx=Math.floor(Math.random()*SNIPER_DB[this.lvl].length);
+            this.render();
+        },
+        render(){
+            const d=SNIPER_DB[this.lvl][this.idx];
+            document.getElementById('s-tag').innerText=d.t;
+            document.getElementById('s-text').innerText=d.q;
+            document.getElementById('s-ref').innerText = "REF: " + (d.ref || "NCERT");
+            document.getElementById('s-feed').style.display='none';
+            this.startTimer();
+        },
+        startTimer(){
+            const t=document.getElementById('s-timer');
+            t.style.width='100%';
+            if(this.timerInterval) clearInterval(this.timerInterval);
+            let w=100;
+            this.timerInterval = setInterval(()=>{
+                w -= 0.5; // Decrement
+                t.style.width = w + '%';
+                if(w <= 0) {
+                    clearInterval(this.timerInterval);
+                    this.act('TIMEOUT'); // Auto fail
+                }
+            }, 50); // Speed: 10s total approx
+        },
+        act(action){
+            clearInterval(this.timerInterval);
+            const d=SNIPER_DB[this.lvl][this.idx];
+            let isCorrect = false;
+            let msgText = "";
+
+            if(action === 'TIMEOUT'){
+                isCorrect = false;
+                msgText = "TOO SLOW. LETHAL TIMEOUT.";
+            } else {
+                isCorrect = d.act===action;
+                msgText = isCorrect ? "EXCELLENT." : "WRONG JUDGEMENT.";
+            }
+
+            const feed=document.getElementById('s-feed');
+            const icon=document.getElementById('s-icon');
+            const msg=document.getElementById('s-msg');
+            
+            feed.style.display='flex';
+            
+            if(isCorrect){
+                icon.innerText='✅';
+                msg.innerHTML=`<strong style="color:var(--infinity)">${msgText}</strong><br>${d.r}`;
+                this.score+=(action==='KILL'?4:2);
+            } else {
+                icon.innerText='❌';
+                msg.innerHTML=`<strong style="color:var(--danger)">${msgText}</strong><br>${d.r}`;
+                this.score-=5;
+                // Punishment Check
+                if(this.score < -10) this.triggerLockdown();
+            }
+            document.getElementById('s-score').innerText=`SCORE: ${this.score}`;
+        },
+        triggerLockdown(){
+            const release = Date.now() + 300000; // 5 mins
+            localStorage.setItem('sniper_lock', release);
+            this.showLockdown(release);
+        },
+        showLockdown(release){
+            document.getElementById('s-lockdown').style.display = 'flex';
+            setInterval(()=>{
+                const left = Math.ceil((release - Date.now())/1000);
+                if(left <= 0) {
+                    document.getElementById('s-lockdown').style.display = 'none';
+                    localStorage.removeItem('sniper_lock');
+                    this.score = 0; // Reset score on unlock
+                } else {
+                    const m = Math.floor(left/60);
+                    const s = left%60;
+                    document.getElementById('s-lock-timer').innerText = `${m}:${s<10?'0':''}${s}`;
+                }
+            }, 1000);
+        },
+        next(){this.load();}
+    };
+
+    // --- NEW: INFINITY ENGINE (PORTED FROM CHEM 3) ---
+    const InfinityEngine = {
+        generate() {
+            const paper = document.getElementById('inf-paper');
+            const dash = document.getElementById('inf-dash');
+            const btn = document.getElementById('inf-reset');
+            
+            dash.style.display = 'none';
+            paper.style.display = 'block';
+            btn.style.display = 'block';
+            paper.innerHTML = '';
+
+            let html = `<div style="text-align:center; margin-bottom:20px; color:var(--hacker);">GENERATED MOCK EXAM</div>`;
+
+            // PART 1: SNIPER (3 Questions)
+            html += `<div class="exam-section"><h3>PART A: RAPID FIRE</h3>`;
+            const sPool = [...SNIPER_DB[1], ...SNIPER_DB[2], ...SNIPER_DB[3]].sort(()=>Math.random()-0.5).slice(0,3);
+            sPool.forEach((q,i) => {
+                html += `<div class="exam-q"><strong>Q${i+1}:</strong> ${q.q}</div><button class="reveal-btn" onclick="this.innerText='${q.act} (${q.r})'; this.style.color='var(--hacker)'">REVEAL</button><br><br>`;
+            });
+            html += `</div>`;
+
+            // PART 2: SORTER (1 Trend)
+            const sorterQ = SORTER_DB[Math.floor(Math.random()*SORTER_DB.length)];
+            const shuffled = [...sorterQ.items].sort(()=>Math.random()-0.5);
+            html += `<div class="exam-section"><h3>PART B: TRENDS</h3><div class="exam-q"><strong>Arrange:</strong> ${shuffled.join(" , ")}<br><strong>Trend:</strong> ${sorterQ.t}</div><button class="reveal-btn" onclick="this.innerText='${sorterQ.items.join(' < ')}'; this.style.color='var(--hacker)'">REVEAL ORDER</button></div>`;
+
+            // PART 3: REACTOR (2 Chains)
+            html += `<div class="exam-section"><h3>PART C: SYNTHESIS</h3>`;
+            const rPool = [...CHAIN_DB].sort(()=>Math.random()-0.5).slice(0,2);
+            rPool.forEach((r,i) => {
+                html += `<div class="exam-q"><strong>Q${i+1}:</strong> ${r.start} &rarr; [ ? ] &rarr; ${r.end}</div><button class="reveal-btn" onclick="this.innerText='Reagent: ${r.reagent}'; this.style.color='var(--hacker)'">REVEAL</button><br><br>`;
+            });
+            html += `</div>`;
+
+            paper.innerHTML += html;
+        },
+        reset() {
+            document.getElementById('inf-dash').style.display = 'block';
+            document.getElementById('inf-paper').style.display = 'none';
+            document.getElementById('inf-reset').style.display = 'none';
+        }
+    };
+
+    const Shame={
+        log:JSON.parse(localStorage.getItem('chem_shame'))||[],
+        add(t){this.log.unshift({t,d:new Date().toLocaleTimeString()});this.save();},
+        save(){localStorage.setItem('chem_shame',JSON.stringify(this.log));this.render();},
+        clear(){this.log=[];this.save();},
+        export(){
+            const text = this.log.map(e => `[${e.d}] ${e.t}`).join('\n');
+            navigator.clipboard.writeText(text).then(() => alert("LOG COPIED TO CLIPBOARD"));
+        },
+        render(){document.getElementById('shame-history').innerHTML=this.log.map(x=>`<div class="exception-card"><span style="color:var(--danger);font-weight:bold;font-size:10px;">${x.t}</span> <span style="color:#555;font-size:9px;">${x.d}</span></div>`).join('');}
+    };
+
+    const Strat={gen(sub){let s="";if(sub==='O')s="1. GOC (Daily)<br>2. Name Rxns (Write)<br>3. Reagents (Lab)";if(sub==='I')s="1. NCERT Tables<br>2. Coordination<br>3. Bonding (VSEPR)";if(sub==='P')s="1. Formula Sheet<br>2. PYQ (Integer Only)<br>3. Electro/Kinetics";document.getElementById('strat-res').innerHTML=`<div style='margin-top:10px;padding:10px;background:#111;border:1px solid var(--infinity);font-size:11px;'>${s}</div>`;}};
+
+    const App={init(){
+        lucide.createIcons();Shame.render();Sniper.setLvl(1, document.querySelector('.sniper-lvl-btn'));
+        document.getElementById('protocol-container').innerHTML=PROTOCOL_DATA.map((p,i)=>`<div class="protocol-item" style="background:#0e0e0e;border:1px solid #222;padding:10px;margin-bottom:5px;border-radius:4px;" onclick="this.classList.toggle('expanded')"><div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;"><span style="font-weight:bold;font-size:12px;color:white;">${i+1}. ${p.t}</span><i data-lucide="chevron-down" width="14"></i></div><div style="margin-top:10px;display:none;padding-top:5px;border-top:1px dashed #222;" class="p-subs">${p.s.map(s=>`<div style="font-size:11px;color:#888;padding:4px 0;cursor:pointer;" onclick="event.stopPropagation();this.style.textDecoration='line-through';this.style.color='var(--infinity)'"><i data-lucide="circle" width="8"></i> ${s}</div>`).join('')}</div></div>`).join('');
+        document.getElementById('immortal-list').innerHTML=IMMORTALS.map(x=>`<div style="display:flex;gap:10px;align-items:center;padding:8px;background:#0a0a0a;border:1px solid #222;margin-bottom:5px;"><div style="width:15px;height:15px;border:1px solid #444;border-radius:50%;cursor:pointer;" onclick="this.style.background='var(--infinity)'"></div><div style="font-size:11px;color:#bbb;">${x}</div></div>`).join('');
+        document.getElementById('exception-list').innerHTML=EXCEPTIONS.map(x=>`<div class="exception-card"><div class="exc-rule">${x.r}</div><div class="exc-fact">${x.f}</div><div class="exc-reason">${x.reason}</div></div>`).join('');
+        document.getElementById('trap-list').innerHTML=TRAPS_DB.map(t=>`<div class="exception-card" style="border-left-color:var(--gold);"><div style="font-weight:bold;color:var(--gold);font-size:11px;">${t.t}</div><div style="font-size:10px;color:#aaa;">${t.d}</div></div>`).join('');
+        setInterval(()=>{const d=new Date("2026-01-24").getTime()-Date.now();document.getElementById('days').innerText=Math.max(0,Math.ceil(d/86400000));},1000);
+        Sorter.load(); Chain.load();
+    }};
+
+    window.nav=(id,btn)=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');};
+    
+    App.init();
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOCOL: SURVIVAL // 145+ TARGET</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- TACTICAL THEME (VERIFIED) --- */
+        :root {
+            --bg: #000000;
+            --panel: #0d0d0d;
+            --text: #c0c0c0;
+            --chem-win: #00ff41;  /* Green for Strength */
+            --math-tax: #ff3333;  /* Red for Tax */
+            --phy-grind: #ffcc00; /* Yellow for Grind */
+            --locked: #1a1a1a;
+            --font-code: 'Courier New', monospace;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- SCOREBOARD (TOP - FIXED) --- */
+        .hud-display {
+            flex-shrink: 0;
+            padding: 15px;
+            background: #080808;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .target-box { text-align: center; }
+        .target-label { font-size: 9px; color: #666; letter-spacing: 1px; text-transform: uppercase; }
+        .target-val { font-size: 24px; font-weight: 900; color: #fff; font-family: var(--font-code); }
+        .projected { color: var(--chem-win); text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+
+        .progress-bar {
+            height: 4px; background: #222; width: 100%; position: absolute; bottom: 0; left: 0;
+        }
+        .progress-fill { height: 100%; background: var(--chem-win); width: 0%; transition: 0.5s; }
+
+        /* --- MAIN MISSION AREA (SCROLLABLE) --- */
+        #mission-control {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            /* CRITICAL FIX: Huge bottom padding to clear the fixed footer */
+            padding-bottom: 180px; 
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
+        }
+
+        .task-card {
+            background: var(--panel);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            position: relative;
+            transition: 0.3s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        /* LOCKED STATE LOGIC */
+        .task-card.locked {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(1);
+            border-style: dashed;
+        }
+        .task-card.locked::after {
+            content: "LOCKED: FINISH PREVIOUS TASK";
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 10px; font-weight: bold; color: #fff; background: #000; padding: 5px;
+            white-space: nowrap; border: 1px solid #333; z-index: 5;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .t-tag { font-size: 9px; font-weight: bold; padding: 3px 6px; border-radius: 3px; color: #000; }
+        .tag-chem { background: var(--chem-win); }
+        .tag-math { background: var(--math-tax); }
+        .tag-phy { background: var(--phy-grind); }
+
+        .t-title { font-size: 16px; font-weight: bold; color: #fff; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .t-desc { font-size: 12px; color: #888; line-height: 1.4; margin-bottom: 15px; }
+        
+        .tool-instruction {
+            background: #111; border-left: 2px solid #555; padding: 12px;
+            font-size: 11px; color: #ccc; font-family: var(--font-code);
+            margin-bottom: 15px; line-height: 1.6;
+            white-space: normal;
+        }
+        .tool-instruction b { color: #fff; text-decoration: underline; }
+        .tool-instruction span { color: var(--chem-win); font-weight: bold; }
+
+        /* BREAK TIME TIP */
+        .break-tip {
+            margin-top: 10px; padding: 8px; border: 1px dashed #333; border-radius: 4px;
+            font-size: 10px; color: #666; display: flex; align-items: center; gap: 8px;
+        }
+        .break-tip i { color: var(--phy-grind); }
+
+        /* INPUT FIELD */
+        .input-area {
+            display: flex; gap: 10px; margin-top: auto;
+        }
+        .score-input {
+            flex: 1; background: #000; border: 1px solid #444; color: #fff;
+            padding: 12px; font-family: var(--font-code); font-size: 14px; text-align: center;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background: #222; border: 1px solid #444; color: #fff; padding: 0 20px;
+            font-weight: bold; cursor: pointer; font-size: 12px; border-radius: 4px;
+        }
+        .submit-btn:active { background: #fff; color: #000; }
+
+        /* COMPLETED STATE */
+        .task-card.done { border-color: var(--chem-win); opacity: 0.6; }
+        .task-card.done .score-input { border-color: var(--chem-win); color: var(--chem-win); }
+        .task-card.done .submit-btn { background: var(--chem-win); color: #000; }
+
+        /* --- BOTTOM CONTROLS (FIXED) --- */
+        .bottom-panel {
+            flex-shrink: 0;
+            padding: 15px;
+            background: #080808;
+            border-top: 1px solid #222;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            position: fixed; bottom: 0; width: 100%;
+            z-index: 20;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+        }
+
+        .action-btn {
+            padding: 15px; background: #111; border: 1px solid #333; color: #888;
+            font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase;
+            border-radius: 4px;
+        }
+        
+        .btn-audit { border-color: var(--chem-win); color: var(--chem-win); }
+        .btn-reset { border-color: var(--math-tax); color: var(--math-tax); }
+
+        /* --- REPORT CARD MODAL (SCROLLABLE) --- */
+        #report-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 100;
+            display: none; flex-direction: column; padding: 20px;
+            align-items: center; justify-content: center;
+        }
+        .report-card {
+            border: 2px solid var(--chem-win); padding: 25px; width: 100%; max-width: 400px;
+            background: #0a0a0a; text-align: center; border-radius: 8px;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .rpt-title { font-size: 20px; font-weight: 900; color: var(--chem-win); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .rpt-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #333; padding-bottom: 8px; }
+        .rpt-sub { color: #888; font-size: 12px; text-align: left; }
+        .rpt-val { color: #fff; font-weight: bold; font-family: var(--font-code); }
+        
+        .close-rpt { margin-top: 20px; padding: 15px 30px; background: #222; color: #fff; border: 1px solid #444; width: 100%; font-weight: bold; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <div class="hud-display">
+        <div class="target-box">
+            <div class="target-label">CURRENT SCORE</div>
+            <div class="target-val" id="score-current">85</div>
+        </div>
+        <div class="target-box">
+            <div class="target-label">TARGET JAN</div>
+            <div class="target-val projected">145+</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="p-bar"></div></div>
+    </div>
+
+    <div id="mission-control">
+        <div style="text-align:center; color:#444; font-size:10px; margin-bottom:10px; font-family:var(--font-code);">-- TACTICAL SCHEDULE LOADED (v6.0) --</div>
+        </div>
+
+    <div style="height: 50px;"></div>
+
+    <div class="bottom-panel">
+        <button class="action-btn btn-reset" onclick="App.resetDay()">FORCE RESET</button>
+        <button class="action-btn btn-audit" onclick="App.generateReport()">PARENT REPORT</button>
+    </div>
+
+    <div id="report-modal">
+        <div class="report-card">
+            <div class="rpt-title">DAILY AUDIT REPORT</div>
+            <div style="font-size:10px; color:#555; margin-bottom:20px; font-family:var(--font-code);">DATE: <span id="rpt-date"></span></div>
+            
+            <div class="rpt-row">
+                <span class="rpt-sub">CHEMISTRY (Target: 25 Qs)</span>
+                <span class="rpt-val" id="rpt-chem">0% Acc</span>
+            </div>
+            <div class="rpt-row">
+                <span class="rpt-sub">MATH (Target: 6 Qs)</span>
+                <span class="rpt-val" id="rpt-math">0 Solved</span>
+            </div>
+            <div class="rpt-row">
+                <span class="rpt-sub">PHYSICS (Target: 15 Qs)</span>
+                <span class="rpt-val" id="rpt-phy">0% Acc</span>
+            </div>
+            <div class="rpt-row" style="margin-top:20px; border:none;">
+                <span class="rpt-sub" style="color:var(--chem-win)">NET MARKS SECURED</span>
+                <span class="rpt-val" style="color:var(--chem-win); font-size:24px;" id="rpt-total">+0</span>
+            </div>
+            <div style="font-size:10px; color:#444; margin-top:10px; line-height:1.4;">
+                System generated report based on verified inputs.
+                <br>Strategy: 145+ Marks (NIT Secure).
+                <br>Verified Sources: 2023, 2024, 2025 PYQs.
+            </div>
+        </div>
+        <button class="close-rpt" onclick="document.getElementById('report-modal').style.display='none'">CLOSE REPORT</button>
+    </div>
+
+<script>
+    // --- STRATEGY DATABASE (UPDATED 80% PREP LIST) ---
+    // Expanded Chemistry list because he is "80% Done".
+    // Added "EM Waves" & "AC" to Physics.
+    
+    const SYLLABUS = {
+        CHEM: [
+            "Coordination Compounds", "Electrochemistry", "Chemical Kinetics", 
+            "Solutions", "Periodic Table", "Bonding", "Biomolecules", 
+            "GOC", "Amines", "d & f Block", "Atomic Structure",
+            "Aldehydes & Ketones", "Alcohols Phenols", "Thermodynamics"
+        ],
+        MATH: [
+            "Vectors", "3D Geometry", "Statistics", 
+            "Matrices & Determinants", "Sets & Relations", "Sequence & Series"
+        ],
+        PHY: [
+            "Modern Physics", "Current Electricity", "Gravitation", 
+            "Semiconductors", "Units & Dimensions", "KTG & Thermo", 
+            "Electrostatics", "EM Waves", "Alternating Current"
+        ]
+    };
+
+    // --- STATE MANAGEMENT ---
+    let progress = JSON.parse(localStorage.getItem('proto_145_prog')) || {
+        chem: 0, math: 0, phy: 0, score: 85
+    };
+
+    // --- DAILY MISSION GENERATOR ---
+    const App = {
+        init() {
+            lucide.createIcons();
+            this.renderTasks();
+            this.updateHUD();
+            this.checkDate();
+        },
+
+        checkDate() {
+            const lastDate = localStorage.getItem('proto_date');
+            const today = new Date().toDateString();
+            if(lastDate !== today) {
+                localStorage.setItem('proto_date', today);
+            }
+        },
+
+        getDailyTopics() {
+            const day = new Date().getDate();
+            return {
+                c: SYLLABUS.CHEM[day % SYLLABUS.CHEM.length],
+                m: SYLLABUS.MATH[day % SYLLABUS.MATH.length],
+                p: SYLLABUS.PHY[day % SYLLABUS.PHY.length]
+            };
+        },
+
+        renderTasks() {
+            const t = this.getDailyTopics();
+            const container = document.getElementById('mission-control');
+            
+            // TASK 1: CHEMISTRY
+            // ADDED: App Usage Mandatory for Warmup
+            const html1 = `
+                <div class="task-card" id="task-1">
+                    <div class="task-header">
+                        <span class="t-tag tag-chem">08:00 - 11:00</span>
+                        <i data-lucide="zap" width="16" color="#00ff41"></i>
+                    </div>
+                    <div class="t-title">CHEM: ${t.c}</div>
+                    <div class="t-desc">GOAL: 25 Correct Answers. High Speed.</div>
+                    
+                    <div class="tool-instruction">
+                        1. <b>OPEN CHEMISTRY APP</b> -> Play 'Reactor' or 'Sorter' (15 Mins).<br>
+                        2. <b>READ SHORT NOTES</b> (20 Mins). No Videos.<br>
+                        3. Open <b>MARKS APP</b> -> Chapter: <b>${t.c}</b>.<br>
+                        4. Filter: <span>2023, 2024, 2025 PYQs</span>.<br>
+                    </div>
+                    
+                    <div class="break-tip">
+                        <i data-lucide="coffee" width="12"></i>
+                        <span>Eating Breakfast? Use 'The Lab' tab in Chem App.</span>
+                    </div>
+
+                    <div class="input-area">
+                        <input type="text" class="score-input" id="in-1" placeholder="Score (e.g. 28/35)">
+                        <button class="submit-btn" onclick="App.complete(1, 'CHEM')">CONFIRM</button>
+                    </div>
+                </div>
+            `;
+
+            // TASK 2: MATH (The Tax)
+            const html2 = `
+                <div class="task-card locked" id="task-2">
+                    <div class="task-header">
+                        <span class="t-tag tag-math">12:00 - 02:00</span>
+                        <i data-lucide="shield-alert" width="16" color="#ff3333"></i>
+                    </div>
+                    <div class="t-title">MATH: ${t.m}</div>
+                    <div class="t-desc">SURVIVAL TARGET: 6 Correct Answers.</div>
+                    
+                    <div class="tool-instruction">
+                        1. Open <b>MARKS APP</b> -> Chapter: <b>${t.m}</b>.<br>
+                        2. Filter: <span>2023, 2024, 2025 PYQs ONLY</span>.<br>
+                        3. <b>PICK EASY ONES.</b> Skip lengthy calculations.<br>
+                        4. Do not guess. Accuracy is key.
+                    </div>
+
+                    <div class="input-area">
+                        <input type="text" class="score-input" id="in-2" placeholder="Solved (e.g. 5/6)">
+                        <button class="submit-btn" onclick="App.complete(2, 'MATH')">PAY TAX</button>
+                    </div>
+                </div>
+            `;
+
+            // TASK 3: PHYSICS
+            // ADDED: App Usage Mandatory for Warmup
+            const html3 = `
+                <div class="task-card locked" id="task-3">
+                    <div class="task-header">
+                        <span class="t-tag tag-phy">04:00 - 07:00</span>
+                        <i data-lucide="cpu" width="16" color="#ffcc00"></i>
+                    </div>
+                    <div class="t-title">PHY: ${t.p}</div>
+                    <div class="t-desc">GOAL: 15 Correct Answers. Formula Based.</div>
+                    
+                    <div class="tool-instruction">
+                        1. <b>OPEN PHYSICS APP</b> -> Play 'Dojo' (Dirty Math) for 5 Mins.<br>
+                        2. <b>READ SHORT NOTES</b> (Formula Revision).<br>
+                        3. Open <b>MARKS APP</b> -> Chapter: <b>${t.p}</b>.<br>
+                        4. Filter: <span>2023, 2024, 2025 PYQs</span>.<br>
+                    </div>
+
+                    <div class="break-tip">
+                        <i data-lucide="coffee" width="12"></i>
+                        <span>Taking a break? Use 'Sniper' Mode in Physics App.</span>
+                    </div>
+
+                    <div class="input-area">
+                        <input type="text" class="score-input" id="in-3" placeholder="Score (e.g. 14/20)">
+                        <button class="submit-btn" onclick="App.complete(3, 'PHY')">SECURE</button>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html1 + html2 + html3;
+            lucide.createIcons();
+            this.restoreState();
+        },
+
+        complete(id, sub) {
+            const input = document.getElementById(`in-${id}`).value;
+            
+            if(!input.includes('/') || input.length < 3) {
+                alert("SENIOR PROTOCOL: Invalid Format.\nYou must enter 'Correct/Total' (e.g., 18/20).");
+                return;
+            }
+
+            const [correct, total] = input.split('/').map(Number);
+            if(isNaN(correct) || isNaN(total) || correct > total) {
+                alert("Invalid numbers. Stop faking.");
+                return;
+            }
+
+            if(sub === 'CHEM') progress.chem = Math.round((correct/total)*100);
+            if(sub === 'MATH') progress.math = correct; 
+            if(sub === 'PHY') progress.phy = Math.round((correct/total)*100);
+            
+            let gain = 0;
+            if(sub === 'CHEM') gain = 5; 
+            if(sub === 'MATH') gain = 4; 
+            if(sub === 'PHY') gain = 4; 
+            
+            progress.score += gain; 
+            this.save();
+
+            const card = document.getElementById(`task-${id}`);
+            card.classList.add('done');
+            card.querySelector('.submit-btn').innerText = "KILLED";
+            card.querySelector('.submit-btn').disabled = true;
+            document.getElementById(`in-${id}`).disabled = true;
+
+            if(id < 3) {
+                const next = document.getElementById(`task-${id+1}`);
+                next.classList.remove('locked');
+            }
+
+            this.updateHUD();
+        },
+
+        restoreState() {
+            // Logic to restore state would be here
+        },
+
+        save() {
+            localStorage.setItem('proto_145_prog', JSON.stringify(progress));
+        },
+
+        updateHUD() {
+            document.getElementById('score-current').innerText = progress.score;
+            const pct = ((progress.score - 85) / (145 - 85)) * 100;
+            document.getElementById('p-bar').style.width = Math.max(0, Math.min(100, pct)) + "%";
+        },
+
+        resetDay() {
+            if(confirm("SENIOR ALERT: Resetting implies you failed the day's protocol. Confirm?")) {
+                location.reload();
+            }
+        },
+
+        generateReport() {
+            document.getElementById('rpt-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('rpt-chem').innerText = progress.chem + "% Accuracy";
+            document.getElementById('rpt-math').innerText = progress.math + " Qs Solved";
+            document.getElementById('rpt-phy').innerText = progress.phy + "% Accuracy";
+            
+            let marksSecured = 0;
+            marksSecured += Math.round(30 * 4 * (progress.chem / 100));
+            marksSecured += Math.round(20 * 4 * (progress.phy / 100));
+            marksSecured += (progress.math * 4);
+            
+            document.getElementById('rpt-total').innerText = "+" + marksSecured + " Marks";
+            document.getElementById('report-modal').style.display = 'flex';
+        }
+    };
+
+    App.init();
+
+</script>
+</body>
+</html>
