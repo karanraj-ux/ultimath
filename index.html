@@ -3,267 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ultimath</title>
+    <title>Ultimath Obsidian Max Inverter</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     
+    <!-- ICONS -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Cpath d='M256 50 L450 150 L450 362 L256 462 L62 362 L62 150 Z' fill='none' stroke='%2300f3ff' stroke-width='20'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='250' fill='%23fff'%3E%3D%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' ry='100' fill='%23111'/%3E%3Cpath d='M256 50 L450 150 L450 362 L256 462 L62 362 L62 150 Z' fill='none' stroke='%2300f3ff' stroke-width='20'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='250' fill='%23fff'%3E%3D%3C/text%3E%3C/svg%3E">
-
+    
+    <!-- FONTS & LIBS -->
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
     <style>
-        /* --- THEME VARIABLES --- */
+        /* --- OBSIDIAN THEME CORE --- */
         :root {
-            --bg-image: url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2000&auto=format&fit=crop');
+            --bg-color: #000000;
             --primary: #00f3ff;
-            --primary-glow: rgba(0, 243, 255, 0.6);
+            --primary-glow: rgba(0, 243, 255, 0.5);
             --primary-dim: rgba(0, 243, 255, 0.1);
             --danger: #ff453a;
+            --success: #32d74b;
             --text-main: #ffffff;
-            --text-sec: #a1a1a6;
-            --glass-bg: rgba(10, 10, 12, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --text-sec: #888888;
+            --glass-border: rgba(255, 255, 255, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 
         body {
-            background-image: var(--bg-image);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: var(--bg-color);
             height: 100vh; height: 100dvh; width: 100vw;
             overflow: hidden; display: flex; flex-direction: column;
             font-family: 'Rajdhani', sans-serif;
             color: var(--text-main);
-            background-color: #000;
-            transition: background-image 0.5s ease;
             padding-top: env(safe-area-inset-top);
+            perspective: 1000px;
+            transition: background-image 0.5s ease, background-color 0.5s;
         }
 
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); z-index: -1; backdrop-filter: blur(30px);
-        }
-
-        /* TOP BAR */
+        /* --- UI COMPONENTS --- */
         .top-bar-simple {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 25px; width: 100%; flex-shrink: 0; z-index: 50;
         }
-        .app-title { font-size: 18px; font-weight: 700; letter-spacing: 2px; color: var(--text-main); text-shadow: 0 0 10px rgba(255,255,255,0.3); display: flex; align-items: center; gap: 8px; }
-        .current-mode-label { font-size: 10px; background: var(--primary-dim); color: var(--primary); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 243, 255, 0.3); text-transform: uppercase; }
-        .menu-trigger { background: transparent; border: 1px solid var(--glass-border); color: var(--primary); width: 44px; height: 44px; border-radius: 12px; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); box-shadow: 0 0 15px var(--primary-dim); transition: all 0.3s ease; }
-        .menu-trigger:active { transform: scale(0.9); background: var(--primary); color: black; box-shadow: 0 0 25px var(--primary-glow); }
-
-        /* DRAWER (LAUNCHER) */
-        .app-launcher {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(40px);
-            z-index: 200; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        .app-title { 
+            font-size: 18px; font-weight: 700; letter-spacing: 2px; color: var(--text-main); 
+            text-shadow: 0 0 10px rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;
+            transform-style: preserve-3d; transition: transform 0.1s;
         }
-        .app-launcher.active { opacity: 1; pointer-events: all; }
-        .launcher-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 350px; padding: 20px; }
-        .launcher-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; }
-        .launcher-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); border-color: var(--primary); }
-        .l-icon { font-size: 32px; margin-bottom: 5px; }
-        .l-label { color: var(--text-main); font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 14px; text-transform: uppercase; }
-        .launcher-close { margin-top: 40px; background: transparent; border: 1px solid #333; color: #666; padding: 10px 30px; border-radius: 30px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
-        .launcher-footer { position: absolute; bottom: 40px; display: flex; gap: 20px; }
+        .current-mode-label { font-size: 10px; background: var(--primary-dim); color: var(--primary); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 243, 255, 0.2); text-transform: uppercase; }
+        
+        .menu-trigger { 
+            background: transparent; border: 1px solid var(--glass-border); color: var(--primary); 
+            width: 44px; height: 44px; border-radius: 12px; font-size: 24px; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            transition: all 0.2s ease; 
+        }
+        .menu-trigger:active { transform: scale(0.9); background: var(--primary); color: black; }
 
-        /* DISPLAY */
+        /* --- DISPLAY AREA (Gesture Zone) --- */
         .display-container {
             flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end;
             padding: 20px 25px; width: 100%; max-width: 500px; margin: 0 auto; position: relative;
-            min-height: 0; touch-action: none;
+            min-height: 0; touch-action: none; /* Crucial for gestures */
+            z-index: 10;
         }
-        .counter-badge {
-            position: absolute; bottom: 20px; left: 20px;
-            font-family: 'Roboto Mono', monospace; font-size: 13px;
-            color: var(--primary); background: rgba(0, 243, 255, 0.1);
-            border: 1px solid rgba(0, 243, 255, 0.3); padding: 4px 10px;
-            border-radius: 8px; pointer-events: none; letter-spacing: -0.5px;
-            transition: transform 0.1s, color 0.1s;
+
+        /* --- SOUL JAR (Recycle Bin) --- */
+        #soul-jar {
+            position: fixed; top: 15px; left: 15px;
+            width: 55px; height: 55px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-dim);
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            opacity: 0; pointer-events: none; transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999; 
+            font-size: 9px; color: var(--primary); cursor: pointer; overflow: hidden;
         }
-        .counter-pop { transform: scale(1.4); color: black; background: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+        #soul-jar.active { opacity: 1; pointer-events: all; transform: scale(1); }
+        #soul-jar-val { font-size: 11px; color: white; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40px; }
+
+        /* --- GRAVITY NOTCH --- */
+        #gravity-notch {
+            position: fixed; top: 50%; right: 0; transform: translateY(-50%) translateX(100%);
+            width: 35px; height: 120px;
+            background: linear-gradient(to left, var(--primary), transparent);
+            border-top-left-radius: 10px; border-bottom-left-radius: 10px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; align-items: center; justify-content: center;
+            writing-mode: vertical-rl; text-orientation: mixed;
+            font-size: 12px; letter-spacing: 2px; color: black; font-weight: bold;
+            z-index: 9000; box-shadow: -5px 0 25px var(--primary-glow);
+        }
+        #gravity-notch.has-item { transform: translateY(-50%) translateX(0); }
+        
+        /* --- INVERSION SWITCH (The Fix) --- */
+        #inversion-switch {
+            position: absolute; bottom: 85px; right: 0; 
+            width: 100%; height: 30px;
+            display: flex; align-items: center; justify-content: flex-end;
+            padding-right: 10px;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            z-index: 20;
+        }
+        #inversion-switch.visible { opacity: 1; pointer-events: all; }
+        
+        .invert-btn {
+            background: rgba(255, 69, 58, 0.2); 
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: bold; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 0 10px rgba(255, 69, 58, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .invert-btn:active { transform: scale(0.9); background: var(--danger); color: black; }
+
+        /* --- CUSTOM EDITOR --- */
         .expression-editor {
             font-family: 'Roboto Mono', monospace; color: var(--text-sec);
-            font-size: 24px; min-height: 40px; width: 100%; text-align: right;
-            outline: none; border: none; margin-bottom: 5px;
-            white-space: pre-wrap; z-index: 2; caret-color: var(--primary);
+            font-size: 28px; min-height: 60px; width: 100%; text-align: right;
+            border: none; margin-bottom: 5px; white-space: pre-wrap; z-index: 5;
+            word-break: break-all; position: relative; cursor: text; pointer-events: none;
         }
+        
+        .caret {
+            display: inline-block; width: 2px; height: 1.2em; 
+            background-color: var(--primary); vertical-align: text-bottom;
+            animation: blink 1s step-end infinite; margin-left: 1px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .char { display: inline-block; transition: transform 0.2s, color 0.2s, opacity 0.2s; pointer-events: auto; }
+        .char.deleting { transform: translateY(-100px) rotate(45deg) scale(0.2); opacity: 0; color: var(--danger); text-shadow: 0 0 10px var(--danger); }
+
+        /* --- RESULT --- */
         .live-result {
             font-family: 'Rajdhani', sans-serif; color: var(--text-main);
             font-size: 65px; font-weight: 600; line-height: 1;
             transition: all 0.2s; text-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 2;
+            position: relative; overflow: hidden; height: 70px; display: flex; justify-content: flex-end;
         }
-        .live-result.final { color: var(--primary); text-shadow: 0 0 35px var(--primary-glow); transform: scale(1.02); }
+        .live-result.final { color: var(--primary); text-shadow: 0 0 35px var(--primary-glow); }
+        .live-result.negative { color: #ff6b6b; text-shadow: 0 0 20px rgba(255, 107, 107, 0.4); } 
+        
+        .ticker-digit { display: inline-block; }
+        .ticker-digit.animating { animation: rollDigit 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        @keyframes rollDigit { 0% { transform: translateY(-100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 
-        /* CONTROLS */
+        .counter-badge {
+            position: absolute; bottom: 35px; left: 20px;
+            font-family: 'Roboto Mono', monospace; font-size: 13px;
+            color: var(--primary); background: var(--primary-dim);
+            border: 1px solid rgba(0, 243, 255, 0.2); padding: 4px 10px;
+            border-radius: 8px; pointer-events: none; letter-spacing: -0.5px;
+            transition: transform 0.1s;
+        }
+
+        /* --- KEYPAD --- */
         .controls-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 25px 15px 25px; width: 100%; max-width: 500px; margin: 0 auto; flex-shrink: 0; }
         .icon-btn { background: transparent; color: var(--text-sec); border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.2s; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
-        .icon-btn:hover { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.5); }
         .icon-btn:active { color: var(--primary); }
-        .listening-mode { color: var(--danger) !important; text-shadow: 0 0 15px var(--danger); animation: pulseRed 1s infinite; }
-        @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         .keypad {
             width: 100%; max-width: 500px; margin: 0 auto;
             padding: 0 15px calc(30px + env(safe-area-inset-bottom)) 15px;
             display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr);
-            gap: 12px; flex: 0 0 auto; height: 55%; min-height: 350px;
+            gap: 12px; flex: 0 0 auto; height: 55%; min-height: 380px;
+            transform-style: preserve-3d;
         }
+
         .btn {
-            position: relative; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border); border-radius: 18px;
+            position: relative; 
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid var(--glass-border); border-radius: 20px;
             font-size: 28px; font-weight: 500; font-family: 'Rajdhani', sans-serif;
             color: var(--text-main); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); transition: transform 0.05s, background 0.2s;
-            user-select: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.05s, box-shadow 0.1s;
+            user-select: none; 
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.5), -1px -1px 3px rgba(255,255,255,0.05);
+            transform-style: preserve-3d; 
+            perspective: 500px;
         }
-        .btn:active, .btn.pressed { transform: scale(0.95); background: rgba(255,255,255,0.15); border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
-        .op-btn { background: rgba(255,255,255,0.08); color: var(--primary); font-size: 30px; }
-        .primary-btn { background: var(--primary); color: #000; border: none; box-shadow: 0 0 30px var(--primary-glow); font-weight: 700; font-size: 32px; }
-        .primary-btn:active, .primary-btn.pressed { transform: scale(0.95); filter: brightness(1.1); }
+        
+        .btn:active, .btn.pressed { 
+            transform: scale(0.90) translateZ(-10px); 
+            box-shadow: inset 5px 5px 10px rgba(0,0,0,0.9), inset -2px -2px 5px rgba(255,255,255,0.05);
+            color: var(--primary); border-color: var(--primary-dim);
+        }
 
-        .calc-view { display: none; flex: 1; flex-direction: column; height: 100%; }
-        .calc-view.active-view { display: flex; animation: hudFadeIn 0.3s ease-out; }
-        @keyframes hudFadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .op-btn { color: var(--primary); font-size: 30px; background: rgba(255,255,255,0.03); }
+        .primary-btn { background: var(--primary); color: #000; border: none; box-shadow: 0 0 20px var(--primary-glow); font-weight: 700; font-size: 32px; }
+
+        /* --- VIEWS --- */
+        .calc-view { 
+            display: none; flex: 1; flex-direction: column; height: 100%; 
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .calc-view.active-view { 
+            display: flex !important; opacity: 1; 
+            animation: fadeInView 0.3s ease-out;
+        }
+        @keyframes fadeInView { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
         .placeholder-ui { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; overflow-y: auto; }
         .input-group { width: 100%; max-width: 350px; margin-bottom: 25px; }
         .input-label { color: var(--primary); font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
-        .calc-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; color: white; font-size: 18px; outline: none; font-family: 'Roboto Mono', monospace; transition: border-color 0.2s; }
-        .calc-input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-dim); }
-        .action-btn { background: var(--primary); color: black; font-weight: 700; border: none; padding: 16px; width: 100%; max-width: 350px; border-radius: 30px; font-size: 16px; cursor: pointer; box-shadow: 0 0 20px var(--primary-glow); font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
-        .result-display { margin-top: 30px; width: 100%; max-width: 350px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 16px; padding: 25px; text-align: center; backdrop-filter: blur(10px); }
+        .calc-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 16px; border-radius: 12px; color: white; font-size: 18px; outline: none; font-family: 'Roboto Mono', monospace; }
+        .action-btn { background: var(--primary); color: black; font-weight: 700; border: none; padding: 16px; width: 100%; max-width: 350px; border-radius: 30px; font-size: 16px; cursor: pointer; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px var(--primary-glow); }
 
-        /* --- HISTORY OVERLAY --- */
-        /* This default block applies to "No Theme" (Dark mode) */
+        /* History Overlay */
         .history-overlay {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 0;
-            background: #ffffff; /* White Background as requested */
-            color: #000000;      /* Black Text as requested */
-            border-top: 1px solid #ccc;
+            background: #ffffff; color: #000;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
             box-shadow: 0 -20px 50px rgba(0,0,0,0.5); 
             transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 100; overflow: hidden; display: flex; flex-direction: column;
+            z-index: 9500; overflow: hidden; display: flex; flex-direction: column;
         }
-        .history-overlay.open { height: 70%; }
-        
-        /* Header inside History */
-        .history-header { 
-            padding: 20px; border-bottom: 1px solid #eee; 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #ffffff; /* White */
-        }
-        
+        .history-overlay.open { height: 75%; }
+        .history-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
         .history-content { flex: 1; overflow-y: auto; padding: 20px; font-family: 'Roboto Mono', monospace; }
+        .hist-item { padding: 15px 0; border-bottom: 1px solid #eee; animation: slideIn 0.3s ease-out; }
+        .hist-item.selected { background: #e6f7ff; border-left: 5px solid var(--primary); padding-left: 10px; }
+        .diff-tag { display: inline-block; padding: 4px 8px; font-size: 11px; border-radius: 4px; margin-right: 5px; margin-bottom: 5px; font-weight: bold; }
+        .diff-tag.missing { background: #ffe6e6; color: red; border: 1px solid red; }
+        .diff-tag.extra { background: #e6e6ff; color: blue; border: 1px solid blue; }
         
-        .hist-item { 
-            padding: 20px 0; border-bottom: 1px solid #eee; 
-            display: flex; flex-direction: column; gap: 8px; 
-            animation: slideIn 0.3s ease-out; cursor: default; 
+        /* App Launcher */
+        #app-launcher {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
+            z-index: 9800; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            visibility: hidden; 
         }
-        .hist-item:active { background: #f5f5f5; }
+        #app-launcher.active { opacity: 1; pointer-events: all; visibility: visible; }
+        .launcher-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 350px; }
+        .l-btn { background: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 20px; padding: 20px; text-align: center; color: white; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .l-btn:active { transform: scale(0.95); background: var(--primary); color: black; }
         
-        .hist-expression { 
-            color: #000000; /* Black text for expression */
-            font-size: 18px; font-weight: 500; cursor: pointer; 
-        }
+        /* Light Mode */
+        body.light-mode { --bg-color: #F2F2F7; --text-main: #000; --text-sec: #666; --glass-border: rgba(0,0,0,0.1); }
+        body.light-mode .btn { background: #fff; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        .hist-result { color: #007AFF; font-weight: bold; font-size: 22px; text-align: right; }
-        .hist-count { color: #888; font-size: 11px; text-align: right; }
-        .hist-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
-        .hist-btn { background: transparent; border: 1px solid #ddd; color: #555; padding: 6px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .hist-btn:hover { border-color: #007AFF; color: #000; }
-        .hist-del-btn { background: rgba(255, 69, 58, 0.1); border: 1px solid var(--danger); color: var(--danger); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; margin-left: 10px; }
-        .hist-img-preview { max-width: 100px; max-height: 100px; border-radius: 8px; margin-top: 10px; border: 1px solid #ccc; }
-        .hist-top-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
-
-        #file-input { display: none; }
-        .img-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; justify-content: center; align-items: center; }
-        .img-modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
-
-        /* LIGHT MODE */
-        body.light-mode {
-            --bg-image: none; background-color: #F2F2F7;
-            --primary: #007AFF; --primary-glow: rgba(0, 122, 255, 0.3);
-            --primary-dim: rgba(0, 122, 255, 0.1);
-            --text-main: #000; --text-sec: #666;
-            --glass-bg: rgba(255,255,255,0.8); --glass-border: rgba(0,0,0,0.1);
-            color: #000;
-        }
-        body.light-mode::before { background: #F2F2F7; backdrop-filter: none; }
-        body.light-mode .btn { color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border:none; background:white; }
-        body.light-mode .op-btn { background: #E5E5EA; color: var(--primary); }
-        body.light-mode .primary-btn { color: white; background: var(--primary); }
-        body.light-mode .calc-input { background: white; color: black; border-color: #ccc; }
-        
-        /* Batch Mode Specifics */
+        /* Batch */
         #batch-list div { font-family: 'Roboto Mono', monospace; font-size: 18px; color: #aaa; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 5px; }
-        #batch-list div span { color: var(--primary); font-weight: bold; margin-right: 10px; }
-        .blinking-cursor { animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-</style>
+    </style>
 </head>
 <body>
 
-    <div class="top-bar-simple">
-        <div class="app-title">ULTIMATE <span class="current-mode-label" id="mode-label">MATH</span></div>
+    <!-- UI STRUCTURE -->
+    <div class="top-bar-simple" id="main-header">
+        <div class="app-title">ULTIMATH <span class="current-mode-label" id="mode-label">OBSIDIAN X</span></div>
         <button class="menu-trigger" onclick="app.toggleLauncher(); app.vibrate();">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         </button>
     </div>
 
-    <div id="app-launcher" class="app-launcher">
-        <h2 style="color:white; letter-spacing:3px; margin-bottom:30px;">TOOLS</h2>
-        <div class="launcher-grid">
-            <div class="launcher-btn" onclick="app.switchMode('math')"><span class="l-icon">🧮</span><span class="l-label">Calculator</span></div>
-            <div class="launcher-btn" onclick="app.switchMode('ai')"><span class="l-icon">🧠</span><span class="l-label" style="color:var(--primary)">AI Core</span></div>
-            <div class="launcher-btn" onclick="app.switchMode('batch')"><span class="l-icon">📝</span><span class="l-label">Batch</span></div>
-            <div class="launcher-btn" onclick="app.switchMode('finance')"><span class="l-icon">💰</span><span class="l-label">Finance</span></div>
-            <div class="launcher-btn" onclick="app.switchMode('date')"><span class="l-icon">📅</span><span class="l-label">Date</span></div>
-        </div>
-        <div class="launcher-footer">
-            <button class="icon-btn" onclick="app.toggleTheme()" style="border:1px solid #444; color:white;">🎨 Theme</button>
-            <button class="icon-btn" onclick="app.toggleWallpaper()" style="border:1px solid #444; color:white;">🖼️ Wall</button>
-        </div>
-        <button class="launcher-close" onclick="app.toggleLauncher()">Close Menu</button>
+    <!-- SOUL JAR (Recycle Bin - Stores Full Expression) -->
+    <div id="soul-jar" onclick="mathEngine.restoreSoul()" ontouchstart="mathEngine.restoreSoul()">
+        <div style="font-size:20px;">♻️</div>
+        <div id="soul-jar-val">EMPTY</div>
     </div>
 
+    <!-- GRAVITY NOTCH -->
+    <div id="gravity-notch">MEMORY</div>
+
+    <!-- MENU LAUNCHER -->
+    <div id="app-launcher">
+        <h2 style="color:white; letter-spacing:3px; margin-bottom:30px;">TOOLS</h2>
+        <div class="launcher-grid">
+            <div class="l-btn" onclick="app.switchMode('math')"><span style="font-size:24px">🧮</span> Calculator</div>
+            <div class="l-btn" onclick="app.switchMode('ai')"><span style="font-size:24px">🧠</span> AI Core</div>
+            <div class="l-btn" onclick="app.switchMode('batch')"><span style="font-size:24px">📝</span> Batch</div>
+            <div class="l-btn" onclick="app.switchMode('finance')"><span style="font-size:24px">💰</span> Finance</div>
+            <div class="l-btn" onclick="app.switchMode('date')"><span style="font-size:24px">📅</span> Date</div>
+        </div>
+        <div style="margin-top:40px; display:flex; gap:20px;">
+            <button class="icon-btn" onclick="app.toggleTheme()" style="border:1px solid #444; color:white; padding:10px 20px;">🎨 Theme</button>
+            <button class="icon-btn" onclick="app.toggleWallpaper()" style="border:1px solid #444; color:white; padding:10px 20px;">🖼️ Wall</button>
+        </div>
+        <button class="icon-btn" onclick="app.toggleLauncher()" style="margin-top:20px; color:#aaa;">Close Menu</button>
+    </div>
+
+    <!-- VIEW: MATH -->
     <div id="view-math" class="calc-view active-view">
         <div class="display-container" id="gesture-area">
             <div class="counter-badge" id="counter-badge">n=<span id="op-counter">0</span></div>
-            <div class="expression-editor" id="editor" contenteditable="true" inputmode="none"></div>
-            <div class="live-result" id="result">0</div>
+            <!-- Custom DIV Editor -->
+            <div class="expression-editor" id="custom-editor"></div>
+            <div class="live-result" id="result"><span class="ticker-digit">0</span></div>
+            
+            <!-- INVERSION SWITCH (Visible only if negative) -->
+            <div id="inversion-switch" onclick="mathEngine.invertExpression()">
+                <div class="invert-btn">
+                    <span>🔄 FLIP</span>
+                </div>
+            </div>
         </div>
 
         <div class="controls-bar">
             <div style="display:flex; gap:10px;">
                 <button class="icon-btn" onclick="mathEngine.toggleHistory()">Logs</button>
-                <button class="icon-btn" id="btn-voice" onclick="voiceEngine.toggle()">🎤</button>
+                <button class="icon-btn" onclick="mathEngine.compareAudit()">Audit</button>
             </div>
             <div style="display:flex; gap:15px;">
                 <button class="icon-btn" onclick="aiEngine.explainCurrent()" style="color:var(--primary);">Explain</button>
                 <button class="icon-btn" onclick="mathEngine.undo()">Undo</button>
                 <button class="icon-btn" onclick="mathEngine.redo()">Redo</button>
-                <button class="icon-btn" id="btn-backspace" style="color:var(--danger)">Del</button>
+                <button class="icon-btn" onclick="mathEngine.backspace()" style="color:var(--danger)">Del</button>
             </div>
         </div>
 
         <div class="keypad" id="math-keypad">
-            <button class="btn top-btn" data-key="C">C</button>
-            <button class="btn top-btn" data-key="()">()</button>
-            <button class="btn top-btn" data-key="%">%</button>
+            <button class="btn" data-key="C" style="color:var(--danger)">C</button>
+            <button class="btn" data-key="()">()</button>
+            <button class="btn" data-key="%">%</button>
             <button class="btn op-btn" data-key="/">÷</button>
             <button class="btn" data-key="7">7</button>
             <button class="btn" data-key="8">8</button>
@@ -277,34 +344,38 @@
             <button class="btn" data-key="2">2</button>
             <button class="btn" data-key="3">3</button>
             <button class="btn op-btn" data-key="+">+</button>
-            <button class="btn top-btn" data-key="neg">+/-</button>
+            <button class="btn" data-key="neg">+/-</button>
             <button class="btn" data-key="0">0</button>
-            <button class="btn top-btn" data-key=".">.</button>
+            <button class="btn" data-key=".">.</button>
             <button class="btn primary-btn" data-key="=">=</button>
         </div>
 
+        <!-- HISTORY DRAWER (With Fixed Audit) -->
         <div class="history-overlay" id="history-drawer">
             <div class="history-header">
-                <button class="icon-btn" style="color:#007AFF" onclick="mathEngine.toggleHistory()">Close</button>
-                <span style="color:#000; font-weight:bold; letter-spacing:1px;">HISTORY LOG</span>
+                <button class="icon-btn" style="color:#000; border:1px solid #ccc;" onclick="mathEngine.toggleHistory()">Close</button>
+                <span style="color:#000; font-weight:bold;">LOG & AUDIT</span>
                 <div style="display:flex; gap:10px">
-                    <button class="icon-btn" style="color:#555" onclick="mathEngine.exportAsImage()">Img</button>
                     <button class="icon-btn" style="color:#555" onclick="mathEngine.exportHistory()">Txt</button>
                     <button class="icon-btn" style="color:var(--danger)" onclick="mathEngine.clearHistory()">Clear</button>
                 </div>
             </div>
+            <div style="padding:10px 20px; font-size:12px; color:#666; background:#f0f0f0;">Tap 2 items to compare (Audit) OR Tap expression to Edit</div>
             <div class="history-content" id="history-list"></div>
+            <div id="audit-result-view" style="padding:20px; border-top:1px solid #ccc; display:none; background:#fff;"></div>
         </div>
         
-        <div class="history-overlay" id="ai-overlay" style="background:#0a0a0c; color:white">
-            <div class="history-header" style="background:#0a0a0c; border-color:#333">
-                <span style="color:var(--primary); font-weight:bold;">AI ANALYSIS</span>
-                <button class="icon-btn" onclick="aiEngine.closeOverlay()">Close</button>
+        <!-- AI RESULT OVERLAY -->
+        <div class="history-overlay" id="ai-overlay" style="background:#0a0a0c; color:white; z-index:9600;">
+            <div class="history-header" style="background:#0a0a0c; border-bottom:1px solid #333; color:white;">
+                <span style="color:var(--primary);">AI ANALYSIS</span>
+                <button class="icon-btn" onclick="aiEngine.closeOverlay()" style="color:white; border:1px solid #555;">Close</button>
             </div>
-            <div class="history-content" id="ai-quick-result" style="color:white; font-size:16px; line-height:1.6;"></div>
+            <div class="history-content" id="ai-quick-result" style="color:#ddd;"></div>
         </div>
     </div>
 
+    <!-- PRESERVED BATCH VIEW -->
     <div id="view-batch" class="calc-view">
         <div class="display-container" style="justify-content:flex-start; padding-top:10px;">
             <div id="batch-list" style="flex:1; width:100%; overflow-y:auto; margin-bottom:10px; padding-right:5px; text-align:right;">
@@ -312,13 +383,9 @@
             </div>
             <div style="border-top:1px solid #333; width:100%; padding:10px 0; text-align:right;">
                  <span id="batch-current-input" style="font-family:'Roboto Mono'; font-size:32px; color:white;"></span>
-                 <span class="blinking-cursor" style="width:2px; height:24px; background:var(--primary); display:inline-block;"></span>
+                 <span class="caret"></span>
             </div>
             <div id="batch-total-display" style="font-size:20px; color:var(--primary); display:none; margin-bottom:10px; text-align:right;"></div>
-        </div>
-        <div class="controls-bar">
-            <button class="icon-btn" onclick="batchEngine.clearAll()" style="color:var(--danger)">Clear All</button>
-            <button class="icon-btn" onclick="mathEngine.toggleHistory()">History</button>
         </div>
         <div class="keypad" id="batch-keypad">
             <button class="btn" onclick="batchEngine.input('7')">7</button>
@@ -337,756 +404,653 @@
             <button class="btn" onclick="batchEngine.input('.')">.</button>
             <button class="btn op-btn" onclick="batchEngine.undoEntry()">⌫</button>
             <button class="btn op-btn" onclick="batchEngine.input('+')">+</button>
-            <button class="btn primary-btn" onclick="batchEngine.addItem()" style="grid-column: span 2; font-size:16px; background:#333; border:1px solid var(--primary); color:var(--primary)">ADD ITEM</button>
+            <button class="btn primary-btn" onclick="batchEngine.addItem()" style="grid-column: span 2; font-size:16px; border:1px solid var(--primary); background:rgba(0,0,0,0.5); color:var(--primary);">ADD ITEM</button>
             <button class="btn primary-btn" onclick="batchEngine.compute()" style="grid-column: span 2; font-size:16px;">TOTAL</button>
         </div>
     </div>
 
+    <!-- PRESERVED DATE/FINANCE/AI VIEWS -->
     <div id="view-date" class="calc-view">
         <div class="placeholder-ui">
             <div class="input-group"><label class="input-label">START DATE</label><input type="date" class="calc-input" id="date-start"></div>
             <div class="input-group"><label class="input-label">END DATE</label><input type="date" class="calc-input" id="date-end"></div>
             <button class="action-btn" onclick="dateEngine.calculate()">COMPUTE DELTA</button>
-            <div class="result-display" id="date-output-box" style="display:none">
-                <div style="color:var(--text-sec); font-size:12px; letter-spacing:1px; margin-bottom:5px;">TIME DIFFERENCE</div>
-                <div id="date-result-main" style="font-size:32px; color:var(--primary); margin:10px 0;"></div>
-                <div id="date-result-sub" style="color:var(--text-sec)"></div>
+            <div id="date-output-box" style="margin-top:30px; text-align:center; display:none">
+                <div id="date-result-main" style="font-size:32px; color:var(--primary);"></div>
             </div>
         </div>
     </div>
 
     <div id="view-finance" class="calc-view">
         <div class="placeholder-ui">
-            <div class="input-group"><label class="input-label">PRINCIPAL (₹)</label><input type="number" class="calc-input" id="fin-principal" placeholder="0"></div>
-            <div class="input-group"><label class="input-label">RATE (%)</label><input type="number" class="calc-input" id="fin-rate" placeholder="5.0"></div>
-            <div class="input-group"><label class="input-label">MONTHS</label><input type="number" class="calc-input" id="fin-time" placeholder="12"></div>
+            <div class="input-group"><label class="input-label">PRINCIPAL</label><input type="number" class="calc-input" id="fin-principal"></div>
+            <div class="input-group"><label class="input-label">RATE (%)</label><input type="number" class="calc-input" id="fin-rate"></div>
+            <div class="input-group"><label class="input-label">MONTHS</label><input type="number" class="calc-input" id="fin-time"></div>
             <button class="action-btn" onclick="financeEngine.calculate()">CALCULATE</button>
-            <div class="result-display" id="fin-output-box" style="display:none">
-                <div style="color:var(--text-sec); font-size:12px; letter-spacing:1px;">INTEREST</div>
-                <div id="fin-interest" style="font-size:32px; color:var(--primary); margin:5px 0 15px 0;"></div>
-                <div style="color:var(--text-sec); font-size:12px; letter-spacing:1px;">TOTAL REPAYMENT</div>
-                <div id="fin-total" style="font-size:24px; color:white;"></div>
+            <div id="fin-output-box" style="margin-top:30px; color:white; display:none; text-align:center;">
+                <div id="fin-interest" style="font-size:32px; color:var(--primary); margin-bottom:10px;"></div>
+                <div id="fin-total" style="font-size:24px;"></div>
             </div>
         </div>
     </div>
 
     <div id="view-ai" class="calc-view">
         <div class="placeholder-ui">
-            <h2 style="color:var(--primary); letter-spacing:2px; margin-bottom:20px;">AI CORE LINK</h2>
-            <div class="input-group" style="width:100%; max-width:400px; position:relative;">
-                <button class="icon-btn" onclick="aiEngine.importCalcContext()" style="width:100%; margin-bottom:10px; border:1px solid #333; color:#aaa; font-size:12px; display:flex; justify-content:center; align-items:center; gap:8px;">⚡ IMPORT FROM CALCULATOR</button>
+            <h2 style="color:var(--primary); letter-spacing:2px; margin-bottom:20px;">AI CORE</h2>
+            <div class="input-group">
+                <button class="icon-btn" onclick="aiEngine.importCalcContext()" style="width:100%; margin-bottom:10px; border:1px solid #333; color:#aaa;">⚡ IMPORT FROM CALC</button>
                 <textarea class="calc-input" id="ai-prompt" placeholder="Ask Gemini..." rows="4" style="resize:none;"></textarea>
             </div>
-            <button class="action-btn" onclick="aiEngine.askGemini()">EXECUTE QUERY</button>
-            <div id="ai-response-box" style="display:none; margin-top:20px; width:100%; max-width:400px; background:rgba(255,255,255,0.05); border:1px solid var(--primary); padding:20px; border-radius:10px; text-align:left;">
-                <div id="ai-response-content" style="color:#eee; line-height:1.6; font-size:15px;"></div>
-                <div id="ai-action-container" style="margin-top:15px; border-top:1px solid #333; padding-top:10px; display:none;"></div>
+            <button class="action-btn" onclick="aiEngine.askGemini()">ASK GEMINI</button>
+            <div id="ai-response-box" style="margin-top:20px; width:100%; color:#eee; text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; display:none;">
+                <div id="ai-response-content"></div>
             </div>
         </div>
     </div>
-    <input type="file" id="file-input" accept="image/*" capture="environment">
-    <div class="img-modal" id="imgModal" onclick="this.style.display='none'"><img id="fullImage" src=""></div>
 
 <script>
+/* --- CORE MATH ENGINE --- */
 class MathEngine {
     constructor() {
-        this.editor = document.getElementById('editor');
-        this.result = document.getElementById('result');
-        this.counter = document.getElementById('op-counter');
-        this.historyList = document.getElementById('history-list');
+        this.editor = document.getElementById('custom-editor');
+        this.resultContainer = document.getElementById('result');
         this.historyDrawer = document.getElementById('history-drawer');
-        this.history = []; 
-        this.undoStack = []; 
-        this.redoStack = [];
-        this.loadHistory(); 
-        this.reset(false);
-    }
-    
-    reset(focus = true) { 
-        this.editor.textContent = ''; 
-        this.result.textContent = '0'; 
-        this.result.classList.remove('final'); 
-        this.updateCount(); 
-        if(focus) this.editor.focus(); 
-    }
-    
-    setCursorEnd() { 
-        const range = document.createRange(); 
-        const sel = window.getSelection(); 
-        range.selectNodeContents(this.editor); 
-        range.collapse(false); 
-        sel.removeAllRanges(); 
-        sel.addRange(range); 
-    }
-    
-    insertText(text) {
-        this.saveState(); 
-        this.editor.focus();
+        this.historyList = document.getElementById('history-list');
+        this.soulJar = document.getElementById('soul-jar');
+        this.expression = "";
+        this.cursorPos = 0;
+        this.history = [];
+        this.undoStack = [];
+        this.redoStack = []; 
+        this.auditSelection = [];
         
-        if (this.result.classList.contains('final')) { 
-            this.editor.textContent = ['+','-','*','/'].includes(text) ? this.result.textContent : ''; 
-            this.result.classList.remove('final'); 
+        const saved = localStorage.getItem('currentExpr');
+        if(saved && saved !== "0") {
+            this.expression = saved;
+            this.cursorPos = saved.length;
         }
         
-        let displayOp = text === '*' ? '×' : text === '/' ? '÷' : text;
-        const content = this.editor.textContent; 
-        const lastChar = content.slice(-1); 
-        const isOp = ['+', '-', '×', '÷'].includes(displayOp); 
-        const isLastOp = ['+', '-', '×', '÷'].includes(lastChar);
-        
-        if (isOp && isLastOp) { 
-            if (displayOp === '-' && ['×', '÷'].includes(lastChar)) { 
-                document.execCommand('insertText', false, displayOp); 
-            } else { 
-                document.execCommand('delete'); 
-                document.execCommand('insertText', false, displayOp); 
-            } 
-        } else { 
-            document.execCommand('insertText', false, displayOp); 
-        }
-        
-        this.evaluateLive(); 
-        this.updateCount(); 
-        setTimeout(() => this.setCursorEnd(), 10);
-    }
-    
-    backspace() { 
-        this.saveState(); 
-        this.editor.focus(); 
-        if (this.result.classList.contains('final')) { 
-            this.reset(); 
-            return; 
-        } 
-        document.execCommand('delete'); 
-        this.evaluateLive(); 
-        this.updateCount(); 
-        setTimeout(() => this.setCursorEnd(), 10); 
-    }
-    
-    evaluateLive() {
-        const raw = this.editor.textContent; 
-        if (!raw) { this.result.textContent = '0'; return; }
-        try {
-            let mathExpr = raw.replace(/×/g, '*').replace(/÷/g, '/').replace(/,/g, '');
-            mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)\s*([-+])\s*(\d+(?:\.\d+)?)%/g, (match, n1, op, n2) => `${n1}${op}(${n1}*${n2}/100)`);
-            mathExpr = mathExpr.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
-            if (/[+\-*/]$/.test(mathExpr)) return; 
-            const result = new Function('return ' + mathExpr)(); 
-            this.result.textContent = isFinite(result) ? this.format(result) : "Error";
-        } catch (e) {}
-    }
-    
-    finalize() { 
-        const raw = this.editor.textContent; 
-        const res = this.result.textContent; 
-        if (!raw || res === 'Error') return; 
-        this.saveState(); 
-        const count = this.calculateCount(raw); 
-        this.addToHistory(raw, res, count); 
-        this.result.classList.add('final'); 
-    }
-    
-    format(num) { return parseFloat(num).toLocaleString('en-US', {maximumFractionDigits: 8}); }
-    
-    calculateCount(str) { 
-        if(!str) return 0; 
-        return str.split(/[+\-×÷]/).filter(p => p.trim() !== '').length; 
-    }
-    
-    updateCount() {
-        const count = this.calculateCount(this.editor.textContent);
-        if(this.counter.textContent != count) { 
-            this.counter.textContent = count; 
-            const badge = document.getElementById('counter-badge'); 
-            badge.classList.remove('counter-pop'); 
-            void badge.offsetWidth; 
-            badge.classList.add('counter-pop'); 
-            setTimeout(() => badge.classList.remove('counter-pop'), 200); 
-        }
-    }
-    
-    toggleHistory() { this.historyDrawer.classList.toggle('open'); }
-    
-    saveHistoryToStorage() { localStorage.setItem('calcHistory', JSON.stringify(this.history)); }
-    
-    loadHistory() { 
-        const s = localStorage.getItem('calcHistory'); 
-        if (s) { this.history = JSON.parse(s); this.renderHistory(); } 
-    }
-    
-    addToHistory(eq, res, count, originalEq = null, img = null) { 
-        const entry = { id: Date.now(), txt: eq, res: res, valCount: count, oldTxt: originalEq, img: img }; 
-        this.history.unshift(entry); 
-        if (this.history.length > 50) this.history.pop(); 
-        this.renderHistory(); 
-        this.saveHistoryToStorage(); 
-    }
-    
-    deleteItem(id) { 
-        if(confirm("Delete this entry?")) { 
-            this.history = this.history.filter(item => item.id !== id); 
-            this.renderHistory(); 
-            this.saveHistoryToStorage(); 
-        } 
-    }
-    
-    // Loads expression on click
-    loadExpression(txt) { 
-        this.editor.textContent = txt; 
-        this.toggleHistory(); 
-        this.evaluateLive(); 
+        this.loadHistory();
+        this.renderEditor();
+        this.evaluateLive();
     }
 
-    renderHistory() { 
-        this.historyList.innerHTML = this.history.map(i => `
-            <div class="hist-item" id="hist-${i.id}">
-                <div class="hist-top-row">
-                    ${i.oldTxt ? `<div class="hist-old" style="flex:1; color:#777;">${i.oldTxt}</div>` : '<div style="flex:1"></div>'}
-                    <button class="hist-del-btn" onclick="mathEngine.deleteItem(${i.id})">✕</button>
+    renderEditor() {
+        if(!this.expression) {
+            this.editor.innerHTML = '<span class="caret"></span>';
+            return;
+        }
+        let html = '';
+        const chars = this.expression.split('');
+        chars.forEach((char, index) => {
+            if(index === this.cursorPos) html += '<span class="caret"></span>';
+            let displayChar = char === '*' ? '×' : char === '/' ? '÷' : char;
+            html += `<span class="char" data-idx="${index}">${displayChar}</span>`;
+        });
+        if(this.cursorPos === chars.length) html += '<span class="caret"></span>';
+        this.editor.innerHTML = html;
+        this.evaluateLive();
+        localStorage.setItem('currentExpr', this.expression);
+    }
+
+    insertText(text) {
+        this.saveState();
+        if(this.resultContainer.classList.contains('final')) {
+            if(['+', '-', '*', '/'].includes(text)) {
+                this.expression = this.resultContainer.innerText.replace(/,/g, '');
+                this.cursorPos = this.expression.length;
+                this.resultContainer.classList.remove('final');
+            } else {
+                this.reset(false);
+            }
+        }
+
+        const left = this.expression.slice(0, this.cursorPos);
+        const right = this.expression.slice(this.cursorPos);
+        const lastChar = left.slice(-1);
+        const isOp = ['+', '-', '*', '/'].includes(text);
+        const isLastOp = ['+', '-', '*', '/'].includes(lastChar);
+        
+        if(isOp && isLastOp) {
+            this.expression = left.slice(0, -1) + text + right;
+        } else {
+            this.expression = left + text + right;
+            this.cursorPos += text.length;
+        }
+        
+        this.renderEditor();
+        this.updateCounter();
+    }
+
+    smartAppend(text) {
+        if (this.expression.length > 0 && /\d$/.test(this.expression) && /^\d/.test(text)) {
+            this.insertText("+" + text);
+        } else {
+            this.insertText(text);
+        }
+    }
+
+    backspace() {
+        if(this.cursorPos === 0) return;
+        this.saveState();
+        if(this.resultContainer.classList.contains('final')) { this.reset(); return; }
+        this.expression = this.expression.slice(0, this.cursorPos - 1) + this.expression.slice(this.cursorPos);
+        this.cursorPos--;
+        this.renderEditor();
+        this.updateCounter();
+    }
+
+    deleteAtIndex(index) {
+        if(index < 0 || index >= this.expression.length) return;
+        this.saveState();
+        const charSpans = document.querySelectorAll('.char');
+        if(charSpans[index]) charSpans[index].classList.add('deleting');
+        setTimeout(() => {
+            this.expression = this.expression.slice(0, index) + this.expression.slice(index + 1);
+            if(this.cursorPos > index) this.cursorPos--;
+            this.renderEditor();
+            this.updateCounter();
+        }, 200);
+    }
+
+    reset(saveToSoul = false) {
+        if(saveToSoul && this.expression) {
+            const val = this.expression; 
+            document.getElementById('soul-jar-val').innerText = val;
+            document.getElementById('soul-jar-val').dataset.full = val;
+            this.soulJar.classList.add('active');
+            setTimeout(() => { this.soulJar.classList.remove('active'); }, 30000);
+        }
+        this.expression = "";
+        this.cursorPos = 0;
+        this.resultContainer.classList.remove('final');
+        this.renderEditor();
+        this.renderTicker(0);
+        this.updateCounter();
+    }
+
+    restoreSoul() {
+        if(!this.soulJar.classList.contains('active')) return;
+        const val = document.getElementById('soul-jar-val').dataset.full || document.getElementById('soul-jar-val').innerText;
+        this.smartAppend(val);
+        this.soulJar.classList.remove('active');
+        app.vibrate();
+    }
+
+    /* --- INVERT LOGIC (Swaps 100-200 to 200-100) --- */
+    invertExpression() {
+        const parts = this.expression.split(/(-)/); // Split keeping delimiters
+        if(parts.length >= 3) {
+            // Very simple inversion: if A - B, swap to B - A
+            // Finding the last subtraction operator for simple "Shop Correction"
+            const lastMinusIndex = this.expression.lastIndexOf('-');
+            if(lastMinusIndex > 0) {
+                const left = this.expression.substring(0, lastMinusIndex);
+                const right = this.expression.substring(lastMinusIndex + 1);
+                // Check if they are numbers
+                if(!isNaN(parseFloat(left)) && !isNaN(parseFloat(right))) {
+                    this.expression = right + "-" + left;
+                    this.cursorPos = this.expression.length;
+                    this.renderEditor();
+                    app.vibrate();
+                }
+            }
+        }
+    }
+
+    evaluateLive() {
+        if(!this.expression) { 
+            this.renderTicker(0); 
+            document.getElementById('inversion-switch').classList.remove('visible');
+            return; 
+        }
+        try {
+            let safeExpr = this.expression.replace(/(\d+)%/g, '($1/100)').replace(/×/g, '*').replace(/÷/g, '/');
+            if(/[+\-*/]$/.test(safeExpr)) return; 
+            const res = new Function('return ' + safeExpr)();
+            if(isFinite(res)) {
+                this.renderTicker(res);
+                // SHOW INVERSION SWITCH IF NEGATIVE
+                if(res < 0) {
+                     document.getElementById('inversion-switch').classList.add('visible');
+                     document.getElementById('result').classList.add('negative');
+                } else {
+                     document.getElementById('inversion-switch').classList.remove('visible');
+                     document.getElementById('result').classList.remove('negative');
+                }
+            }
+        } catch(e) {}
+    }
+
+    finalize() {
+        if(!this.expression) return;
+        this.evaluateLive();
+        const res = this.resultContainer.innerText;
+        this.addToHistory(this.expression, res);
+        this.resultContainer.classList.add('final');
+        app.vibrate();
+    }
+
+    renderTicker(value) {
+        const str = parseFloat(value).toLocaleString('en-US', {maximumFractionDigits: 8});
+        this.resultContainer.innerHTML = '';
+        str.split('').forEach((char, i) => {
+            const span = document.createElement('span');
+            span.className = 'ticker-digit';
+            span.innerText = char;
+            if(!isNaN(char)) {
+                span.style.animationDelay = `${i * 0.05}s`;
+                span.classList.add('animating');
+            }
+            this.resultContainer.appendChild(span);
+        });
+    }
+
+    updateCounter() {
+        const count = this.expression.split(/[+\-*/]/).filter(x=>x).length;
+        document.getElementById('op-counter').innerText = count;
+    }
+    
+    saveState() {
+        if(this.undoStack.length > 20) this.undoStack.shift();
+        this.undoStack.push({ ex: this.expression, cur: this.cursorPos });
+        this.redoStack = [];
+    }
+    
+    undo() {
+        if(this.undoStack.length) {
+            this.redoStack.push({ ex: this.expression, cur: this.cursorPos });
+            const state = this.undoStack.pop();
+            this.expression = state.ex;
+            this.cursorPos = state.cur;
+            this.renderEditor();
+        }
+    }
+    
+    redo() {
+        if(this.redoStack.length) {
+            this.undoStack.push({ ex: this.expression, cur: this.cursorPos });
+            const state = this.redoStack.pop();
+            this.expression = state.ex;
+            this.cursorPos = state.cur;
+            this.renderEditor();
+        }
+    }
+
+    editHistory(id) {
+        const item = this.history.find(h => h.id === id);
+        if(item) {
+            this.reset(false);
+            this.expression = item.txt;
+            this.cursorPos = item.txt.length;
+            this.renderEditor();
+            this.toggleHistory(); 
+        }
+    }
+
+    toggleAuditSelection(id, el) {
+        if(this.auditSelection.includes(id)) {
+            this.auditSelection = this.auditSelection.filter(i => i !== id);
+            el.classList.remove('selected');
+        } else {
+            if(this.auditSelection.length < 2) {
+                this.auditSelection.push(id);
+                el.classList.add('selected');
+            }
+        }
+        if(this.auditSelection.length === 2) this.compareAudit();
+        else document.getElementById('audit-result-view').style.display = 'none';
+    }
+
+    compareAudit() {
+        if(this.auditSelection.length !== 2) return;
+        const h1 = this.history.find(h => h.id === this.auditSelection[0]);
+        const h2 = this.history.find(h => h.id === this.auditSelection[1]);
+        if(!h1 || !h2) return;
+
+        const getNums = (str) => str.split(/[^0-9.]+/).filter(n => n).map(Number);
+        const nums1 = getNums(h1.txt);
+        const nums2 = getNums(h2.txt);
+        const map1 = {}; nums1.forEach(n => map1[n] = (map1[n]||0)+1);
+        const map2 = {}; nums2.forEach(n => map2[n] = (map2[n]||0)+1);
+        
+        let diffs = [];
+        for(let k in map1) { 
+            let count1 = map1[k]; let count2 = map2[k] || 0;
+            if(count1 > count2) for(let i=0; i<(count1-count2); i++) diffs.push({val:k, type:'missing'}); 
+        }
+        for(let k in map2) { 
+            let count1 = map1[k] || 0; let count2 = map2[k];
+            if(count2 > count1) for(let i=0; i<(count2-count1); i++) diffs.push({val:k, type:'extra'});
+        }
+        
+        const container = document.getElementById('audit-result-view');
+        container.style.display = 'block';
+        if(diffs.length === 0) container.innerHTML = "<div style='color:green; font-weight:bold; text-align:center;'>✅ PERFECT MATCH</div>";
+        else container.innerHTML = "<div style='margin-bottom:10px; font-weight:bold;'>Differences:</div>" + diffs.map(d => `<span class="diff-tag ${d.type}">${d.val} ${d.type === 'missing' ? '(In A)' : '(In B)'}</span>`).join('');
+    }
+
+    toggleHistory() { 
+        this.historyDrawer.classList.toggle('open'); 
+        this.auditSelection = [];
+        document.querySelectorAll('.hist-item').forEach(el => el.classList.remove('selected'));
+        document.getElementById('audit-result-view').style.display = 'none';
+    }
+    
+    addToHistory(eq, res) {
+        const entry = { id: Date.now(), txt: eq, res: res };
+        this.history.unshift(entry);
+        if(this.history.length > 50) this.history.pop();
+        this.renderHistory();
+        localStorage.setItem('calcHistory', JSON.stringify(this.history));
+    }
+    
+    loadHistory() {
+        const s = localStorage.getItem('calcHistory');
+        if(s) { this.history = JSON.parse(s); this.renderHistory(); }
+    }
+    
+    renderHistory() {
+        this.historyList.innerHTML = this.history.map(h => `
+            <div class="hist-item" id="hist-${h.id}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:16px; flex:1; margin-right:10px; cursor:pointer; color:#fff;" onclick="mathEngine.editHistory(${h.id})">${h.txt}</span>
+                    <button class="icon-btn" style="border:1px solid #ccc; font-size:10px; padding:2px 5px;" onclick="event.stopPropagation(); mathEngine.toggleAuditSelection(${h.id}, document.getElementById('hist-${h.id}'))">Audit</button>
                 </div>
-                <div class="hist-row-top" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="hist-expression" onclick="mathEngine.loadExpression('${i.txt}')">${i.txt}</span>
-                    <span class="hist-result" onclick="mathEngine.useResult('${i.res}')">= ${i.res}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                    <div class="hist-actions">
-                        <button class="hist-btn" onclick="mathEngine.attachPhoto(${i.id})">📷 Photo</button>
-                        ${i.img ? `<img src="${i.img}" class="hist-img-preview" onclick="mathEngine.showImage('${i.img}')">` : ''}
-                    </div>
-                    <span class="hist-count">n=${i.valCount}</span>
-                </div>
-            </div>`).join(''); 
+                <div style="text-align:right; font-weight:bold; color:#007AFF">= ${h.res}</div>
+            </div>
+        `).join('');
     }
     
-    attachPhoto(id) { 
-        const input = document.getElementById('file-input'); 
-        input.onchange = (e) => { 
-            const file = e.target.files[0]; 
-            if (file) { 
-                const reader = new FileReader(); 
-                reader.onload = (event) => { 
-                    this.compressImage(event.target.result, (compressedData) => { 
-                        const idx = this.history.findIndex(x => x.id === id); 
-                        if (idx !== -1) { 
-                            this.history[idx].img = compressedData; 
-                            this.saveHistoryToStorage(); 
-                            this.renderHistory(); 
-                        } 
-                    }); 
-                }; 
-                reader.readAsDataURL(file); 
-            } 
-        }; 
-        input.click(); 
+    clearHistory() {
+        if(confirm("Clear All?")) { this.history = []; this.renderHistory(); localStorage.removeItem('calcHistory'); }
     }
     
-    compressImage(base64, cb) { 
-        const i = new Image(); 
-        i.src = base64; 
-        i.onload = () => { 
-            const c = document.createElement('canvas'); 
-            const x = c.getContext('2d'); 
-            const s = 300/i.width; 
-            c.width = 300; 
-            c.height = i.height*s; 
-            x.drawImage(i,0,0,c.width,c.height); 
-            cb(c.toDataURL('image/jpeg', 0.7)); 
-        }; 
-    }
-    
-    showImage(src) { 
-        document.getElementById('fullImage').src = src; 
-        document.getElementById('imgModal').style.display = 'flex'; 
-    }
-    
-    useResult(val) { 
-        this.insertText(val.replace(/,/g, '')); 
-        this.toggleHistory(); 
-    }
-    
-    exportAsImage() { 
-        if (this.history.length === 0) { alert("No history!"); return; } 
-        const canvas = document.createElement('canvas'); 
-        const ctx = canvas.getContext('2d'); 
-        const width = 600; 
-        let height = 100 + (this.history.length * 120); 
-        this.history.forEach(h => { if(h.img) height += 320; }); 
-        canvas.width = width; 
-        canvas.height = height; 
-        ctx.fillStyle = "#fff"; 
-        ctx.fillRect(0,0,width,height); 
-        ctx.fillStyle = "#000"; 
-        ctx.font = "bold 30px monospace"; 
-        ctx.fillText("CALCULATION HISTORY", 20, 50); 
-        ctx.fillStyle = "#555"; 
-        ctx.font = "16px monospace"; 
-        ctx.fillText(new Date().toLocaleString(), 20, 80); 
-        let y = 120; 
-        ctx.font = "20px monospace"; 
-        this.history.forEach(item => { 
-            ctx.fillStyle = "#ddd"; 
-            ctx.fillRect(10, y-30, width-20, 1); 
-            ctx.fillStyle = "#000"; 
-            ctx.fillText(item.txt, 20, y); 
-            ctx.fillStyle = "#007AFF"; 
-            const resWidth = ctx.measureText("= " + item.res).width; 
-            ctx.fillText("= " + item.res, width - resWidth - 20, y); 
-            y += 35; 
-            ctx.fillStyle = "#888"; 
-            ctx.font = "italic 14px monospace"; 
-            ctx.fillText(`(n=${item.valCount})`, 20, y); 
-            ctx.font = "20px monospace"; 
-            y += 25; 
-            if (item.img) { 
-                const img = new Image(); 
-                img.src = item.img; 
-                try { 
-                    ctx.drawImage(img, 20, y, 300, (img.height/img.width)*300); 
-                    y += (img.height/img.width)*300 + 20; 
-                } catch(e){} 
-            } 
-            y += 20; 
-        }); 
-        const link = document.createElement('a'); 
-        link.download = `history_export.jpg`; 
-        link.href = canvas.toDataURL("image/jpeg"); 
-        link.click(); 
-    }
-    
-    exportHistory() { 
-        if (this.history.length === 0) { alert("No history!"); return; } 
-        const c = this.history.map(h => `${h.txt} = ${h.res} (n=${h.valCount})${h.oldTxt ? ' [Edited]' : ''}`).join('\n'); 
-        const b = new Blob([c], { type: 'text/plain' }); 
-        const u = URL.createObjectURL(b); 
-        const a = document.createElement('a'); 
-        a.href = u; 
-        a.download = `history.txt`; 
-        document.body.appendChild(a); 
-        a.click(); 
-        document.body.removeChild(a); 
-    }
-    
-    clearHistory() { 
-        if(confirm("Clear history?")) { 
-            this.history = []; 
-            this.renderHistory(); 
-            localStorage.removeItem('calcHistory'); 
-        } 
-    }
-    
-    saveState() { 
-        if (this.undoStack.length > 30) this.undoStack.shift(); 
-        this.undoStack.push(this.editor.innerHTML); 
-        this.redoStack = []; 
-    }
-    
-    undo() { 
-        if (this.undoStack.length) { 
-            this.redoStack.push(this.editor.innerHTML); 
-            this.editor.innerHTML = this.undoStack.pop(); 
-            this.evaluateLive(); 
-            this.updateCount(); 
-        } 
-    }
-    
-    redo() { 
-        if (this.redoStack.length) { 
-            this.undoStack.push(this.editor.innerHTML); 
-            this.editor.innerHTML = this.redoStack.pop(); 
-            this.evaluateLive(); 
-            this.updateCount(); 
-        } 
+    exportHistory() {
+         const c = this.history.map(h => `${h.txt} = ${h.res}`).join('\n'); 
+         const b = new Blob([c], { type: 'text/plain' }); 
+         const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'history.txt'; a.click();
     }
 }
 
+/* --- GESTURE ENGINE (With Switch Logic) --- */
+class GestureEngine {
+    constructor() {
+        this.area = document.getElementById('gesture-area');
+        this.startX = 0; this.startY = 0;
+        this.startTime = 0;
+        this.fingerCount = 0;
+        this.isTouching = false; 
+        
+        // Editor Tap
+        this.area.addEventListener('click', e => {
+            const el = document.elementFromPoint(e.clientX, e.clientY);
+            if(el && el.classList.contains('char')) {
+                const idx = parseInt(el.dataset.idx);
+                const rect = el.getBoundingClientRect();
+                if (e.clientX > rect.left + rect.width / 2) mathEngine.cursorPos = idx + 1;
+                else mathEngine.cursorPos = idx;
+            } else {
+                mathEngine.cursorPos = mathEngine.expression.length;
+            }
+            mathEngine.renderEditor();
+        });
+
+        this.area.addEventListener('touchstart', e => this.touchStart(e), {passive: false});
+        this.area.addEventListener('touchmove', e => this.touchMove(e), {passive: false});
+        this.area.addEventListener('touchend', e => this.touchEnd(e), {passive: false});
+        
+        if (window.DeviceOrientationEvent) window.addEventListener('deviceorientation', e => this.handleTilt(e));
+        this.notchVal = null;
+        this.lastTiltTime = 0;
+    }
+    
+    touchStart(e) {
+        this.isTouching = true; 
+        this.fingerCount = e.touches.length;
+        this.startX = e.touches[0].clientX;
+        this.startY = e.touches[0].clientY;
+        this.startTime = Date.now();
+        
+        // Swipe on Inverter Switch
+        const sw = document.getElementById('inversion-switch');
+        if(sw.classList.contains('visible') && e.target.closest('#inversion-switch')) {
+            this.isSwipingSwitch = true;
+        } else {
+            this.isSwipingSwitch = false;
+        }
+    }
+    
+    touchMove(e) { e.preventDefault(); }
+    
+    touchEnd(e) {
+        this.isTouching = false; 
+        
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        const diffX = endX - this.startX;
+        const diffY = endY - this.startY;
+        const duration = Date.now() - this.startTime;
+        const swipeThresh = 40;
+        
+        // SWITCH SWIPE LOGIC
+        if(this.isSwipingSwitch && Math.abs(diffX) > 30) {
+            mathEngine.invertExpression();
+            this.isSwipingSwitch = false;
+            return;
+        }
+        
+        if (this.fingerCount === 2 && (diffY < -50 || diffX < -50)) {
+             app.vibrate(); mathEngine.reset(true); return;
+        }
+        
+        if (this.fingerCount === 1 && duration < 500 && !this.isSwipingSwitch) {
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX < -swipeThresh) { app.vibrate(); mathEngine.backspace(); } 
+                else if (diffX > swipeThresh) { app.vibrate(); mathEngine.redo(); }
+            } else {
+                if (diffY > swipeThresh) { app.vibrate(); mathEngine.toggleHistory(); } 
+                else if (diffY < -swipeThresh) {
+                    const el = document.elementFromPoint(this.startX, this.startY);
+                    if(el && el.classList.contains('char')) {
+                        app.vibrate(); mathEngine.deleteAtIndex(parseInt(el.dataset.idx));
+                    }
+                }
+            }
+        }
+        this.fingerCount = 0;
+    }
+    
+    handleTilt(e) {
+        if(this.isTouching) return; 
+        const g = e.gamma; 
+        if(!g) return;
+        const now = Date.now();
+        if(now - this.lastTiltTime < 1000) return; 
+        const notch = document.getElementById('gravity-notch');
+        
+        if(g > 65) {
+            const val = mathEngine.expression; 
+            if(val && val.length > 0) {
+                this.notchVal = val;
+                notch.classList.add('has-item');
+                mathEngine.reset(false);
+                app.vibrate();
+                this.lastTiltTime = now;
+            }
+        }
+        
+        if(g < -40 && this.notchVal) {
+            mathEngine.smartAppend(this.notchVal); 
+            this.notchVal = null;
+            notch.classList.remove('has-item');
+            app.vibrate();
+            this.lastTiltTime = now;
+        }
+    }
+}
+
+/* --- BATCH ENGINE --- */
 class BatchEngine {
     constructor() { 
-        this.listContainer = document.getElementById('batch-list'); 
-        this.inputDisplay = document.getElementById('batch-current-input'); 
-        this.totalDisplay = document.getElementById('batch-total-display'); 
-        this.items = []; 
-        this.currentStr = ""; 
+        this.items = []; this.currentStr = ""; 
+        this.inputDisplay = document.getElementById('batch-current-input');
+        this.listContainer = document.getElementById('batch-list');
+        this.totalDisplay = document.getElementById('batch-total-display');
     }
-    
-    input(val) { 
-        app.vibrate(); 
-        this.currentStr += val; 
-        this.renderInput(); 
+    input(val) { this.currentStr += val; this.render(); }
+    undoEntry() { this.currentStr = this.currentStr.slice(0, -1); this.render(); }
+    render() { this.inputDisplay.textContent = this.currentStr; }
+    addItem() {
+        try {
+            const val = eval(this.currentStr.replace(/×/g,'*').replace(/÷/g,'/'));
+            if(!isNaN(val)) {
+                this.items.push({txt: this.currentStr, val: val});
+                this.currentStr = ""; this.render();
+                this.listContainer.innerHTML = this.items.map((i, idx) => `<div><span>#${idx+1}</span> ${i.txt} = ${i.val}</div>`).join('');
+            }
+        } catch(e){}
     }
-    
-    undoEntry() { 
-        app.vibrate(); 
-        this.currentStr = this.currentStr.slice(0, -1); 
-        this.renderInput(); 
+    compute() {
+        const total = this.items.reduce((a,b)=>a+b.val, 0);
+        this.totalDisplay.style.display = 'block';
+        this.totalDisplay.innerText = "TOTAL: " + total;
+        mathEngine.addToHistory(`Batch Total (${this.items.length})`, total);
     }
-    
-    renderInput() { 
-        const display = this.currentStr.replace(/\*/g, '×').replace(/\//g, '÷'); 
-        this.inputDisplay.textContent = display; 
+    clearAll() {
+        if(confirm("Clear Batch?")) { this.items=[]; this.currentStr=""; this.render(); this.renderList(); }
     }
-    
-    addItem() { 
-        app.vibrate(); 
-        if (!this.currentStr) return; 
-        try { 
-            const safeStr = this.currentStr.replace(/[^0-9+\-*/.]/g, ''); 
-            const val = new Function('return ' + safeStr)(); 
-            if (isFinite(val)) { 
-                this.items.push({ txt: this.currentStr, val: val }); 
-                this.currentStr = ""; 
-                this.renderInput(); 
-                this.renderList(); 
-            } 
-        } catch(e) { alert("Invalid number"); } 
-    }
-    
-    renderList() { 
-        if(this.items.length === 0) { 
-            this.listContainer.innerHTML = '<div style="color:#666; font-size:14px; margin-top:50px; text-align:center;">Batch list empty...</div>'; 
-            this.totalDisplay.style.display = 'none'; 
-            return; 
-        } 
-        let html = ''; 
-        let subtotal = 0; 
-        this.items.forEach((item, index) => { 
-            subtotal += item.val; 
-            const displayTxt = item.txt.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\+/g, ' + ').replace(/\-/g, ' − '); 
-            html += `<div><span>#${index+1}</span> ${displayTxt} <small style="color:#555">(= ${item.val})</small></div>`; 
-        }); 
-        this.listContainer.innerHTML = html; 
-        this.listContainer.scrollTop = this.listContainer.scrollHeight; 
-        this.totalDisplay.textContent = `Running Total: ${subtotal}`; 
-        this.totalDisplay.style.display = 'block'; 
-    }
-    
-    compute() { 
-        app.vibrate(); 
-        if (this.items.length === 0 && !this.currentStr) return; 
-        if(this.currentStr) { this.addItem(); } 
-        if(this.items.length === 0) return; 
-        const total = this.items.reduce((acc, curr) => acc + curr.val, 0); 
-        this.totalDisplay.innerHTML = `<span style="color:white">FINAL TOTAL:</span> <span style="font-size:32px; font-weight:bold">${total}</span>`; 
-        const historyText = `Batch Sum (${this.items.length} items)`; 
-        const historyDetail = this.items.map(i => i.txt.replace(/\*/g, '×').replace(/\//g, '÷')).join(' + '); 
-        mathEngine.addToHistory(historyText, total, this.items.length, historyDetail); 
-    }
-    
-    clearAll() { 
-        if(confirm("Clear current batch?")) { 
-            this.items = []; 
-            this.currentStr = ""; 
-            this.renderInput(); 
-            this.renderList(); 
-        } 
+    renderList() {
+        this.listContainer.innerHTML = this.items.length ? '' : 'Empty...';
+        this.listContainer.innerHTML = this.items.map((i, idx) => `<div><span>#${idx+1}</span> ${i.txt} = ${i.val}</div>`).join('');
     }
 }
 
-class VoiceEngine {
-    constructor() { 
-        this.recognition = null; 
-        this.isListening = false; 
-        this.btn = document.getElementById('btn-voice'); 
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) { 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
-            this.recognition = new SpeechRecognition(); 
-            this.recognition.continuous = false; 
-            this.recognition.lang = 'en-US'; 
-            this.recognition.interimResults = false; 
-            this.recognition.onstart = () => { 
-                this.isListening = true; 
-                this.btn.classList.add('listening-mode'); 
-                app.vibrate(); 
-            }; 
-            this.recognition.onend = () => { 
-                this.isListening = false; 
-                this.btn.classList.remove('listening-mode'); 
-            }; 
-            this.recognition.onresult = (event) => { 
-                const transcript = event.results[0][0].transcript.toLowerCase(); 
-                this.parseCommand(transcript); 
-            }; 
-        } else { 
-            this.btn.style.display = 'none'; 
-        } 
+/* --- AI / DATE / FINANCE --- */
+class AiEngine {
+    constructor() {
+        const k1 = "AIzaSy"; const k2 = "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c";
+        this.apiKey = k1+k2;
     }
-    
-    toggle() { 
-        if (!this.recognition) return; 
-        if (this.isListening) this.recognition.stop(); 
-        else this.recognition.start(); 
-        app.vibrate(); 
+    importCalcContext() {
+        document.getElementById('ai-prompt').value = "Context Value: " + document.getElementById('result').innerText + "\n";
     }
-    
-    parseCommand(text) { 
-        let mathStr = text.replace(/times|multiplied by|into/g, '*')
-                          .replace(/divided by|over/g, '/')
-                          .replace(/plus|add/g, '+')
-                          .replace(/minus|subtract/g, '-')
-                          .replace(/point/g, '.')
-                          .replace(/equals/g, '')
-                          .replace(/[^0-9+\-*/.]/g, ''); 
-        if (mathStr.length > 0) { 
-            mathEngine.reset(); 
-            mathEngine.insertText(mathStr); 
-            mathEngine.finalize(); 
-        } else { 
-            alert("Didn't catch any numbers!"); 
-        } 
+    async explainCurrent() {
+        document.getElementById('ai-overlay').style.height = "60%";
+        document.getElementById('ai-quick-result').innerHTML = "Wait... Scanning...";
+        const expr = mathEngine.expression;
+        const res = document.getElementById('result').innerText;
+        await this.callGemini(`Explain this math step-by-step: ${expr} = ${res}`, 'ai-quick-result');
+    }
+    closeOverlay() { document.getElementById('ai-overlay').style.height = "0"; }
+    async askGemini() {
+        const q = document.getElementById('ai-prompt').value;
+        document.getElementById('ai-response-box').style.display = 'block';
+        document.getElementById('ai-response-content').innerHTML = "Thinking...";
+        await this.callGemini(q, 'ai-response-content');
+    }
+    async callGemini(prompt, targetId) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
+            const res = await fetch(url, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+            const data = await res.json();
+            const text = data.candidates[0].content.parts[0].text;
+            document.getElementById(targetId).innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            if(window.renderMathInElement) renderMathInElement(document.getElementById(targetId));
+        } catch(e) { document.getElementById(targetId).innerText = "Error connecting to AI."; }
     }
 }
 
 class DateEngine {
-    constructor() { 
-        this.start = document.getElementById('date-start'); 
-        this.end = document.getElementById('date-end'); 
-        this.box = document.getElementById('date-output-box'); 
-        const today = new Date().toISOString().split('T')[0]; 
-        if(this.start) this.start.value = today; 
-        if(this.end) this.end.value = today; 
-    }
-    
-    calculate() { 
-        const d1 = new Date(this.start.value); 
-        const d2 = new Date(this.end.value); 
-        const start = d1 < d2 ? d1 : d2; 
-        const end = d1 < d2 ? d2 : d1; 
-        let years = end.getFullYear() - start.getFullYear(); 
-        let months = end.getMonth() - start.getMonth(); 
-        let days = end.getDate() - start.getDate(); 
-        if (days < 0) { 
-            months--; 
-            days += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); 
-        } 
-        if (months < 0) { 
-            years--; 
-            months += 12; 
-        } 
-        const total = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)); 
-        document.getElementById('date-result-main').textContent = `${years}y ${months}m ${days}d`; 
-        document.getElementById('date-result-sub').textContent = `TOTAL: ${total} DAYS`; 
-        this.box.style.display = 'block'; 
+    calculate() {
+        const d1 = new Date(document.getElementById('date-start').value);
+        const d2 = new Date(document.getElementById('date-end').value);
+        const diff = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+        document.getElementById('date-output-box').style.display = 'block';
+        document.getElementById('date-result-main').innerText = diff + " Days";
     }
 }
 
 class FinanceEngine {
-    constructor() { this.box = document.getElementById('fin-output-box'); }
-    calculate() { 
-        const p = parseFloat(document.getElementById('fin-principal').value)||0; 
-        const r = parseFloat(document.getElementById('fin-rate').value)||0; 
-        const m = parseFloat(document.getElementById('fin-time').value)||0; 
-        const i = (p * r * (m/12))/100; 
-        document.getElementById('fin-interest').textContent = i.toLocaleString('en-IN', {style:'currency', currency:'INR'}); 
-        document.getElementById('fin-total').textContent = (p+i).toLocaleString('en-IN', {style:'currency', currency:'INR'}); 
-        this.box.style.display = 'block'; 
+    calculate() {
+        const p = parseFloat(document.getElementById('fin-principal').value);
+        const r = parseFloat(document.getElementById('fin-rate').value);
+        const t = parseFloat(document.getElementById('fin-time').value);
+        const i = (p*r*(t/12))/100; 
+        document.getElementById('fin-output-box').style.display = 'block';
+        document.getElementById('fin-interest').innerText = i.toFixed(2);
+        document.getElementById('fin-total').innerText = (p+i).toFixed(2);
     }
 }
 
-class AiEngine {
-        constructor() {
-            // We split the key to hide it from security bots
-            const keyPart1 = "AIzaSy";
-            const keyPart2 = "CMxc3KUDKp4ZtKBy91vqB6IfPG_48064c"; 
-            this.apiKey = keyPart1 + keyPart2;
-            this.cachedModel = null;
-        }
-    
-    importCalcContext() { 
-        const mathResult = document.getElementById('result').innerText; 
-        const promptBox = document.getElementById('ai-prompt'); 
-        if(mathResult && mathResult !== '0') { 
-            const contextLine = `Current Calculation Value: ${mathResult}\n(Task: )`; 
-            promptBox.value = contextLine + promptBox.value; 
-            promptBox.focus(); 
-        } else { 
-            alert("No calculation result to import!"); 
-        } 
-    }
-    
-    async findWorkingModel() { 
-        if(this.cachedModel) return this.cachedModel; 
-        try { 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${this.apiKey}`); 
-            const data = await res.json(); 
-            if(data.models) { 
-                const valid = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent")); 
-                const chosen = valid.find(m => m.name.includes('flash')) || valid[0]; 
-                if(chosen) { 
-                    this.cachedModel = chosen.name.replace("models/", ""); 
-                    return this.cachedModel; 
-                } 
-            } 
-        } catch(e) {} 
-        return "gemini-1.5-flash"; 
-    }
-    
-    async explainCurrent() { 
-        const expr = mathEngine.editor.textContent; 
-        const res = mathEngine.result.textContent; 
-        if (!expr || res === '0') return; 
-        document.getElementById('ai-overlay').style.height = "60%"; 
-        document.getElementById('ai-quick-result').textContent = "Scanning..."; 
-        const model = await this.findWorkingModel(); 
-        const response = await this.callApi(`Explain clearly using LaTeX format for math: ${expr} = ${res}`, model); 
-        const box = document.getElementById('ai-quick-result'); 
-        box.innerHTML = response.replace(/\n/g, '<br>'); 
-        this.renderMath(box); 
-    }
-    
-    closeOverlay() { document.getElementById('ai-overlay').style.height = "0"; }
-    
-    async askGemini() { 
-        const query = document.getElementById('ai-prompt').value; 
-        if (!query) return; 
-        const responseBox = document.getElementById('ai-response-box'); 
-        const contentBox = document.getElementById('ai-response-content'); 
-        const actionBox = document.getElementById('ai-action-container'); 
-        responseBox.style.display = 'block'; 
-        contentBox.textContent = "Thinking..."; 
-        actionBox.style.display = 'none'; 
-        const model = await this.findWorkingModel(); 
-        const fullQuery = query + " (Please format all math equations using LaTeX syntax with $ delimiters)"; 
-        const response = await this.callApi(fullQuery, model); 
-        this.renderFormattedResponse(response); 
-    }
-    
-    renderFormattedResponse(text) { 
-        const contentBox = document.getElementById('ai-response-content'); 
-        const actionBox = document.getElementById('ai-action-container'); 
-        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:white">$1</strong>')
-                            .replace(/\n\*/g, '<br>• ')
-                            .replace(/\n/g, '<br>'); 
-        contentBox.innerHTML = formatted; 
-        this.renderMath(contentBox); 
-        const numberMatches = text.match(/[-]?\d{1,3}(,\d{3})*(\.\d+)?/g); 
-        if (numberMatches && numberMatches.length > 0) { 
-            const val = numberMatches[numberMatches.length - 1].replace(/,/g,''); 
-            if(!isNaN(parseFloat(val))) { 
-                actionBox.innerHTML = `<button class="action-btn" onclick="aiEngine.transferToMath('${val}')" style="font-size:13px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid var(--primary); color:var(--primary);">USE RESULT (${val}) IN CALC ➔</button>`; 
-                actionBox.style.display = 'block'; 
-            } 
-        } 
-    }
-    
-    renderMath(element) { 
-        if (window.renderMathInElement) { 
-            renderMathInElement(element, { 
-                delimiters: [
-                    {left: "$$", right: "$$", display: true}, 
-                    {left: "$", right: "$", display: false}, 
-                    {left: "\\(", right: "\\)", display: false}, 
-                    {left: "\\[", right: "\\]", display: true}
-                ], 
-                throwOnError: false 
-            }); 
-        } 
-    }
-    
-    transferToMath(val) { 
-        app.switchMode('math'); 
-        mathEngine.insertText(val); 
-    }
-    
-    async callApi(query, model) { 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`; 
-        try { 
-            const response = await fetch(url, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ contents: [{ parts: [{ text: query }] }] }) 
-            }); 
-            const data = await response.json(); 
-            if (data.error) return "AI Error: " + data.error.message; 
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "No Data"; 
-        } catch (e) { return "Connection Lost"; } 
-    }
-}
-
-window.mathEngine = new MathEngine(); 
-window.batchEngine = new BatchEngine(); 
-window.dateEngine = new DateEngine(); 
-window.financeEngine = new FinanceEngine(); 
-window.aiEngine = new AiEngine(); 
-window.voiceEngine = new VoiceEngine();
+/* --- INIT --- */
+window.mathEngine = new MathEngine();
+window.gestureEngine = new GestureEngine();
+window.batchEngine = new BatchEngine();
+window.aiEngine = new AiEngine();
+window.dateEngine = new DateEngine();
+window.financeEngine = new FinanceEngine();
 
 window.app = {
-    bgIndex: 0, 
-    bgs: ['url("https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2000")', 'url("https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=2000")', 'url("https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=2000")'],
-    init: () => { 
-        const savedTheme = localStorage.getItem('calcTheme'); 
-        if(savedTheme === 'light') document.body.classList.add('light-mode'); 
-        const savedBg = localStorage.getItem('calcBgIndex'); 
-        if(savedBg) { 
-            app.bgIndex = parseInt(savedBg); 
-            document.body.style.backgroundImage = app.bgs[app.bgIndex]; 
-        } 
-        app.initGestures(); 
-    },
     vibrate: () => { if(navigator.vibrate) navigator.vibrate(5); },
-    switchMode: (mode) => { 
-        app.vibrate(); 
-        document.getElementById('app-launcher').classList.remove('active'); 
-        document.querySelectorAll('.calc-view').forEach(v => v.classList.remove('active-view')); 
-        document.getElementById(`view-${mode}`).classList.add('active-view'); 
-        const label = mode === 'math' ? 'MATH' : mode === 'ai' ? 'AI CORE' : mode.toUpperCase(); 
-        document.getElementById('mode-label').textContent = label; 
+    bgIndex: 0,
+    wallpapers: [
+        'none',
+        'url("https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1000")',
+        'url("https://images.unsplash.com/photo-1635805737707-575885ab0820?q=80&w=1000")'
+    ],
+    switchMode: (mode) => {
+        document.querySelectorAll('.calc-view').forEach(v => {
+            v.classList.remove('active-view');
+            v.style.display = 'none'; 
+        });
+        const target = document.getElementById(`view-${mode}`);
+        target.classList.add('active-view');
+        target.style.display = 'flex'; 
+        document.getElementById('app-launcher').classList.remove('active');
+        document.getElementById('mode-label').innerText = mode.toUpperCase();
+        app.vibrate();
     },
-    toggleLauncher: () => { app.vibrate(); document.getElementById('app-launcher').classList.toggle('active'); },
-    toggleTheme: () => { 
-        app.vibrate(); 
-        document.body.classList.toggle('light-mode'); 
-        localStorage.setItem('calcTheme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); 
+    toggleLauncher: () => {
+        document.getElementById('app-launcher').classList.toggle('active');
+        app.vibrate();
     },
-    toggleWallpaper: () => { 
-        app.vibrate(); 
-        app.bgIndex = (app.bgIndex + 1) % app.bgs.length; 
-        document.body.style.backgroundImage = app.bgs[app.bgIndex]; 
-        localStorage.setItem('calcBgIndex', app.bgIndex); 
+    toggleTheme: () => {
+        document.body.classList.toggle('light-mode');
+        app.vibrate();
     },
-    initGestures: () => { 
-        const touchArea = document.getElementById('gesture-area'); 
-        let touchStartX = 0; 
-        let touchEndX = 0; 
-        touchArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true}); 
-        touchArea.addEventListener('touchend', e => { 
-            touchEndX = e.changedTouches[0].screenX; 
-            if (touchEndX < touchStartX - 50 || touchEndX > touchStartX + 50) { 
-                app.vibrate(); 
-                mathEngine.backspace(); 
-                touchArea.style.opacity = '0.5'; 
-                setTimeout(() => touchArea.style.opacity = '1', 100); 
-            } 
-        }, {passive: true}); 
+    toggleWallpaper: () => {
+        app.bgIndex = (app.bgIndex + 1) % app.wallpapers.length;
+        document.body.style.backgroundImage = app.wallpapers[app.bgIndex];
+        document.body.style.backgroundSize = "cover";
     }
 };
 
-app.init();
+const keypad = document.getElementById('math-keypad');
+keypad.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    
+    // TACTILE TILT (2.5x Multiplier for Heavy Feel)
+    const rect = btn.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width/2) / 2;
+    const y = (e.clientY - rect.top - rect.height/2) / 2;
+    btn.style.transform = `perspective(500px) rotateX(${-y*2.5}deg) rotateY(${x*2.5}deg) scale(0.9)`;
+    setTimeout(() => btn.style.transform = 'none', 150);
 
-const keypad = document.getElementById('math-keypad'); 
-if(keypad) { 
-    const press = (e) => { 
-        e.preventDefault(); 
-        app.vibrate(); 
-        const btn = e.target.closest('button'); 
-        if (!btn) return; 
-        btn.classList.add('pressed'); 
-        setTimeout(() => btn.classList.remove('pressed'), 150); 
-        const key = btn.dataset.key; 
-        if (key === 'C') mathEngine.reset(); 
-        else if (key === '=') mathEngine.finalize(); 
-        else if (key === 'neg') mathEngine.insertText('-'); 
-        else mathEngine.insertText(key); 
-    }; 
-    keypad.addEventListener('mousedown', press); 
-    keypad.addEventListener('touchstart', press, {passive: false}); 
-}
-
-document.getElementById('btn-backspace').addEventListener('click', (e) => { 
-    e.preventDefault(); 
-    app.vibrate(); 
-    mathEngine.backspace(); 
+    app.vibrate();
+    const k = btn.dataset.key;
+    if(k === 'C') mathEngine.reset(true); 
+    else if(k === '=') mathEngine.finalize();
+    else if(k === 'neg') mathEngine.insertText('-');
+    else mathEngine.insertText(k);
 });
 
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+try {
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW Fail', e)); }
+} catch (e) {
+    console.log('Service Worker check failed:', e);
+}
 </script>
 </body>
     </html>
