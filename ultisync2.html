@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>UltiSync: HIVE MIND v4.0 (FINAL)</title>
+    
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/secrets.js-grempe@2.0.0/secrets.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --glass: rgba(15, 23, 42, 0.95); --border: rgba(99, 102, 241, 0.2); --accent: #6366f1; }
+        body { background-color: #020617; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; }
+        
+        /* MESH VISUALIZER */
+        #meshGraph { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; pointer-events: none; transition: opacity 0.5s; }
+        
+        /* INFINITY WALL LAYER */
+        #wallContainer { position: absolute; inset: 0; z-index: 5; background: black; display: none; overflow: hidden; }
+        video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 0 0; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pos-0 { transform: scale(2) translate(0%, 0%); } .pos-1 { transform: scale(2) translate(-25%, 0%); }
+        .pos-2 { transform: scale(2) translate(0%, -25%); } .pos-3 { transform: scale(2) translate(-25%, -25%); }
+        
+        /* GHOST TOUCH */
+        .ghost-cursor { position: absolute; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.5); border: 2px solid white; border-radius: 50%; pointer-events: none; z-index: 50; box-shadow: 0 0 10px rgba(255,255,255,0.8); transform: translate(-50%, -50%); transition: opacity 0.2s; }
+
+        /* HORCRUX VAULT STYLES */
+        .shard-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* HIVE MIND CANVAS */
+        #hiveCanvas { background: #000; width: 100%; aspect-ratio: 1/1; border-radius: 8px; border: 1px solid #333; image-rendering: pixelated; }
+        .processing-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; flex-direction: column; items-center: center; justify-content: center; backdrop-filter: blur(5px); }
+
+        /* UI ELEMENTS */
+        .hud-panel { background: var(--glass); backdrop-filter: blur(8px); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .msg-me { align-self: flex-end; background: var(--accent); color: white; border-radius: 12px 12px 0 12px; }
+        .msg-other { align-self: flex-start; background: #1e293b; border: 1px solid var(--border); border-radius: 12px 12px 12px 0; }
+        .msg-system { align-self: center; font-size: 0.65rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin: 4px 0; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-dvh w-screen flex flex-col relative">
+
+    <canvas id="meshGraph"></canvas>
+
+    <div id="wallContainer">
+        <video id="sharedVideo" playsinline webkit-playsinline loop></video>
+        <div id="touchSurface" class="absolute inset-0 z-10" onmousedown="startTouch(event)" ontouchstart="startTouch(event)"></div>
+        <div id="cursorLayer" class="absolute inset-0 z-20 pointer-events-none"></div>
+    </div>
+
+    <div id="mainUI" class="relative z-30 flex flex-col h-full pointer-events-none transition-opacity duration-300">
+        
+        <header class="h-16 px-4 flex items-center justify-between pointer-events-auto bg-gradient-to-b from-[#020617] to-transparent">
+            <div class="flex items-center gap-3">
+                <div id="statusDot" class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-white leading-none">ULTI<span class="text-indigo-500">SYNC</span></h1>
+                    <div class="text-[10px] font-mono text-indigo-400 opacity-80" id="myIdDisplay">OFFLINE</div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleHive()" class="w-9 h-9 bg-slate-800/80 rounded-lg flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-indigo-500/20 transition active:scale-95" title="Hive Mind">
+                    <i class="ph ph-brain text-lg"></i>
+                </button>
+                <button onclick="toggleVault()" class="w-9 h-9 bg-slate-800/80 rounded-lg flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-indigo-500/20 transition active:scale-95" title="Vault">
+                    <i class="ph ph-safe text-lg"></i>
+                </button>
+                <button onclick="toggleWallMode()" class="w-9 h-9 bg-slate-800/80 rounded-lg flex items-center justify-center text-indigo-400 border border-slate-700 hover:bg-indigo-500/20 transition active:scale-95" title="Wall">
+                    <i class="ph ph-monitor-play text-lg"></i>
+                </button>
+                <button onclick="copyId()" class="w-9 h-9 bg-slate-800/80 rounded-lg flex items-center justify-center text-white border border-slate-700 hover:bg-slate-700 transition active:scale-95">
+                    <i class="ph ph-copy text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col relative overflow-hidden">
+            
+            <div id="setupPanel" class="absolute inset-0 flex items-center justify-center pointer-events-auto p-6 z-50 bg-[#020617]/80 backdrop-blur-sm transition-opacity duration-500">
+                <div class="hud-panel w-full max-w-sm p-6 rounded-2xl">
+                    <div class="text-center mb-6">
+                        <i class="ph ph-share-network text-5xl text-indigo-500 mb-2"></i>
+                        <h2 class="text-xl font-bold text-white">Initialize Node</h2>
+                        <p class="text-xs text-slate-400 mt-1">Join the mesh network.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-500 ml-1">Your Alias</label>
+                            <input type="text" id="username" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none" placeholder="Codename">
+                        </div>
+                        <div class="relative"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-700"></div></div><div class="relative flex justify-center text-xs uppercase"><span class="bg-[#1e293b] px-2 text-slate-500">Connect To Peer</span></div></div>
+                        <div>
+                            <input type="text" id="targetPeerId" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-indigo-300 font-mono focus:border-indigo-500 outline-none" placeholder="Paste Peer ID (Optional)">
+                        </div>
+                        <button onclick="initMesh()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-600/25 transition transform active:scale-[0.98] flex items-center justify-center gap-2">
+                            <i class="ph ph-power"></i> ACTIVATE NODE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chatArea" class="flex-1 flex flex-col p-4 opacity-0 transition-opacity duration-500">
+                <div id="messages" class="flex-1 overflow-y-auto flex flex-col gap-2 pb-4 mask-gradient pointer-events-auto">
+                    <div class="flex flex-col items-center justify-center h-full opacity-30 text-center">
+                        <i class="ph ph-planet text-6xl mb-4 text-indigo-500"></i>
+                        <p class="text-xs font-mono text-indigo-300">WAITING FOR UPLINK...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vaultPanel" class="absolute inset-4 hud-panel rounded-2xl p-4 hidden flex-col gap-4 pointer-events-auto z-40 animate-[zoomIn_0.2s_ease-out]">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-lock-key-open text-emerald-400 text-xl"></i>
+                        <h3 class="font-bold text-white text-sm">HORCRUX VAULT</h3>
+                    </div>
+                    <button onclick="toggleVault()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-lg"></i></button>
+                </div>
+                <div id="vaultList" class="flex-1 overflow-y-auto space-y-2">
+                    <div class="text-center py-10 opacity-30"><i class="ph ph-files text-4xl mb-2"></i><p class="text-xs">Vault Empty</p></div>
+                </div>
+                <div class="pt-3 border-t border-slate-700">
+                    <button onclick="document.getElementById('horcruxInput').click()" class="w-full py-3 bg-emerald-600/20 text-emerald-400 border border-emerald-500/50 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-600 hover:text-white transition group">
+                        <i class="ph ph-upload-simple group-hover:animate-bounce"></i> SHATTER & STORE FILE
+                    </button>
+                    <input type="file" id="horcruxInput" class="hidden" onchange="processHorcruxUpload(this)">
+                </div>
+            </div>
+
+            <div id="hivePanel" class="absolute inset-4 hud-panel rounded-2xl p-4 hidden flex-col gap-4 pointer-events-auto z-40 animate-[zoomIn_0.2s_ease-out]">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-cpu text-indigo-400 text-xl animate-pulse"></i>
+                        <h3 class="font-bold text-white text-sm">HIVE MIND RENDERER</h3>
+                    </div>
+                    <button onclick="toggleHive()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-lg"></i></button>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center gap-4">
+                    <canvas id="hiveCanvas" width="400" height="400"></canvas>
+                    <div class="w-full text-center">
+                        <p class="text-[10px] font-mono text-slate-400 mb-2">DISTRIBUTED RAY TRACING (WEB WORKERS)</p>
+                        <button onclick="startHiveJob()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-600/25 transition">
+                            <i class="ph ph-play-circle"></i> INITIATE CLUSTER RENDER
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wallControls" class="absolute bottom-4 left-4 right-4 hud-panel p-4 rounded-xl hidden pointer-events-auto animate-[slideUp_0.3s_ease-out]">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider">Infinity Wall Config</h3>
+                    <button onclick="loadFile()" class="text-[10px] bg-indigo-600 px-3 py-1 rounded text-white font-bold">LOAD VIDEO</button>
+                    <input type="file" id="videoInput" class="hidden" accept="video/*" onchange="handleVideoFile(this)">
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button onclick="setWallPos(0)" class="h-12 border border-slate-600 rounded bg-slate-800 text-xs font-mono" id="btn-pos-0">TL (1)</button>
+                    <button onclick="setWallPos(1)" class="h-12 border border-slate-600 rounded bg-slate-800 text-xs font-mono" id="btn-pos-1">TR (2)</button>
+                    <button onclick="setWallPos(2)" class="h-12 border border-slate-600 rounded bg-slate-800 text-xs font-mono" id="btn-pos-2">BL (3)</button>
+                    <button onclick="setWallPos(3)" class="h-12 border border-slate-600 rounded bg-slate-800 text-xs font-mono" id="btn-pos-3">BR (4)</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="syncAction('play')" class="flex-1 bg-green-600/20 text-green-400 py-2 rounded text-xs border border-green-600/50"><i class="ph ph-play"></i> PLAY</button>
+                    <button onclick="syncAction('pause')" class="flex-1 bg-red-600/20 text-red-400 py-2 rounded text-xs border border-red-600/50"><i class="ph ph-pause"></i> PAUSE</button>
+                </div>
+            </div>
+
+        </main>
+
+        <div id="footerInput" class="p-4 pointer-events-auto bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+            <form onsubmit="broadcastChat(event)" class="flex gap-2 max-w-4xl mx-auto">
+                <input type="text" id="msgInput" class="flex-1 bg-slate-800/80 backdrop-blur border border-slate-700 text-white rounded-xl px-4 py-3.5 text-sm focus:border-indigo-500 focus:outline-none placeholder-slate-500 shadow-xl" placeholder="Broadcast to Mesh..." autocomplete="off">
+                <button type="submit" class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 active:scale-90 transition hover:bg-indigo-500">
+                    <i class="ph ph-paper-plane-right text-lg"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <div id="processingOverlay" class="processing-overlay hidden">
+        <i class="ph ph-cpu text-6xl text-indigo-500 animate-spin mb-4"></i>
+        <h2 class="text-xl font-bold text-white tracking-widest">HIVE NODE ACTIVE</h2>
+        <p class="text-xs text-indigo-300 font-mono mt-2" id="processingStatus">COMPUTING RAYS...</p>
+    </div>
+
+    <div id="debugPanel" class="fixed top-20 right-4 w-64 bg-black/90 text-[10px] font-mono p-4 rounded-lg text-green-400 border border-green-900 hidden z-[100] pointer-events-auto">
+        <h3 class="font-bold mb-2 border-b border-green-800 pb-1">ROUTING TABLE</h3>
+        <div id="routesDisplay" class="whitespace-pre"></div>
+    </div>
+
+    <script>
+        // --- 1. CONFIG & STATE ---
+        const el = id => document.getElementById(id);
+        const uuid = () => Math.random().toString(36).substr(2, 9);
+        const NODE = { id: null, name: localStorage.getItem('us_name') || `Node-${Math.floor(Math.random()*999)}`, peers: {}, routes: {}, processedMsgs: new Set() };
+        const WALL = { active: false, position: -1, videoUrl: null };
+        const VAULT = { myShards: {}, myFiles: {}, recoveryBuffer: {} };
+        const HIVE = { active: false, worker: null, startTime: 0 };
+
+        let peer = null;
+        el('username').value = NODE.name;
+        
+        // --- 2. PEERJS INIT ---
+        function initMesh() {
+            NODE.name = el('username').value.trim() || NODE.name;
+            localStorage.setItem('us_name', NODE.name);
+            el('setupPanel').classList.add('opacity-0', 'pointer-events-none');
+            el('chatArea').classList.remove('opacity-0');
+            el('statusDot').className = "w-3 h-3 rounded-full bg-yellow-500 animate-pulse";
+            el('myIdDisplay').innerText = "INITIALIZING...";
+            peer = new Peer(null, { debug: 1 });
+            peer.on('open', (id) => { NODE.id = id; el('myIdDisplay').innerText = `ID: ${id}`; el('statusDot').className = "w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]"; graph.addNode(NODE.id, NODE.name, true); if(el('targetPeerId').value.trim()) connectToPeer(el('targetPeerId').value.trim()); });
+            peer.on('connection', conn => handleConnection(conn));
+            peer.on('error', err => systemMsg(`Error: ${err.type}`));
+        }
+
+        // --- 3. MESH PROTOCOL ---
+        function connectToPeer(targetId) { if (NODE.peers[targetId] || targetId === NODE.id) return; const conn = peer.connect(targetId, { reliable: true }); handleConnection(conn); }
+        function handleConnection(conn) {
+            conn.on('open', () => { NODE.peers[conn.peer] = conn; graph.addNode(conn.peer, "Unknown"); graph.addLink(NODE.id, conn.peer); sendDirect(conn, { type: 'HELLO', senderId: NODE.id, senderName: NODE.name, knownRoutes: Object.keys(NODE.routes) }); systemMsg(`Uplink: ${conn.peer.substr(0,5)}...`); updateDebug(); if(WALL.active && WALL.videoUrl) sendDirect(conn, { type: 'WALL_SYNC', payload: { action: 'load', url: WALL.videoUrl } }); });
+            conn.on('data', d => handlePacket(d, conn));
+            conn.on('close', () => { delete NODE.peers[conn.peer]; delete NODE.routes[conn.peer]; graph.removeLink(NODE.id, conn.peer); systemMsg(`Lost: ${conn.peer.substr(0,5)}...`); updateDebug(); });
+        }
+        function handlePacket(packet, conn) {
+            if (packet.msgId && NODE.processedMsgs.has(packet.msgId)) return;
+            if (packet.msgId) NODE.processedMsgs.add(packet.msgId);
+            const isForMe = packet.targetId === NODE.id || packet.targetId === 'BROADCAST';
+            if (isForMe) processPayload(packet);
+            if (packet.ttl > 0 && packet.targetId !== NODE.id) { packet.ttl--; flood(packet, conn.peer); }
+        }
+        function processPayload(packet) {
+            if (packet.type === 'HELLO') { graph.updateNode(packet.senderId, packet.senderName); NODE.routes[packet.senderId] = { nextHop: packet.senderId, hops: 1 }; if(packet.knownRoutes) packet.knownRoutes.forEach(rid => { if(rid!==NODE.id && !NODE.peers[rid]) { graph.addNode(rid, "Remote"); graph.addLink(packet.senderId, rid); NODE.routes[rid] = { nextHop: packet.senderId, hops: 2 }; } }); updateDebug(); }
+            if (packet.type === 'CHAT') addChatBubble(packet.payload.text, packet.senderName, false);
+            if (packet.type === 'WALL_SYNC') handleWallSync(packet.payload);
+            if (packet.type === 'TOUCH_TRACE') showGhostCursor(packet.payload);
+            if (packet.type === 'HORCRUX_STORE') storeShard(packet.payload);
+            if (packet.type === 'HORCRUX_REQ') handleRecoveryRequest(packet.payload, packet.senderId);
+            if (packet.type === 'HORCRUX_RESTORE') receiveShard(packet.payload);
+            
+            // PHASE 4 HANDLERS
+            if (packet.type === 'HIVE_ASSIGN') executeHiveTask(packet.payload, packet.senderId);
+            if (packet.type === 'HIVE_RESULT') collectHiveResult(packet.payload);
+        }
+
+        // --- 4. INFINITY WALL ---
+        function toggleWallMode() { WALL.active = !WALL.active; const vid=el('wallContainer'), g=el('meshGraph'), c=el('wallControls'); if(WALL.active){vid.style.display='block';g.style.opacity='0.1';c.classList.remove('hidden');el('chatArea').classList.add('opacity-0');}else{vid.style.display='none';g.style.opacity='0.4';c.classList.add('hidden');el('chatArea').classList.remove('opacity-0');el('sharedVideo').className='';WALL.position=-1;} }
+        function loadFile(){el('videoInput').click();} function handleVideoFile(input){const f=input.files[0];if(!f)return;const url=URL.createObjectURL(f);loadVideo(url);broadcastWall({action:'load_signal',filename:f.name});}
+        function loadVideo(url){WALL.videoUrl=url;const v=el('sharedVideo');v.src=url;v.load();}
+        function setWallPos(i){WALL.position=i;const v=el('sharedVideo');[0,1,2,3].forEach(x=>el(`btn-pos-${x}`).classList.remove('bg-indigo-600'));el(`btn-pos-${i}`).classList.add('bg-indigo-600');v.className=`pos-${i}`;}
+        function syncAction(a){const v=el('sharedVideo');if(a==='play')v.play();if(a==='pause')v.pause();broadcastWall({action:a,time:v.currentTime});}
+        function broadcastWall(p){const packet={type:'WALL_SYNC',msgId:uuid(),senderId:NODE.id,targetId:'BROADCAST',ttl:5,payload:p};NODE.processedMsgs.add(packet.msgId);flood(packet);}
+        function handleWallSync(p){const v=el('sharedVideo');if(p.action==='play'){if(Math.abs(v.currentTime-p.time)>0.5)v.currentTime=p.time;v.play();}if(p.action==='pause'){v.pause();v.currentTime=p.time;}}
+        function startTouch(e){if(!WALL.active)return;document.addEventListener('mousemove',trackTouch);document.addEventListener('touchmove',trackTouch);document.addEventListener('mouseup',endTouch);document.addEventListener('touchend',endTouch);}
+        function trackTouch(e){let x,y;if(e.type.includes('touch')){x=e.touches[0].clientX;y=e.touches[0].clientY;}else{x=e.clientX;y=e.clientY;}const packet={type:'TOUCH_TRACE',msgId:uuid(),senderId:NODE.id,targetId:'BROADCAST',ttl:3,payload:{x:x/window.innerWidth,y:y/window.innerHeight}};if(Math.random()>0.5)flood(packet);}
+        function endTouch(){document.removeEventListener('mousemove',trackTouch);document.removeEventListener('touchmove',trackTouch);}
+        function showGhostCursor(d){const l=el('cursorLayer');const x=d.x*window.innerWidth;const y=d.y*window.innerHeight;let c=document.getElementById(`cursor-${d.senderId}`);if(!c){c=document.createElement('div');c.id=`cursor-${d.senderId}`;c.className='ghost-cursor';l.appendChild(c);}c.style.left=`${x}px`;c.style.top=`${y}px`;c.style.opacity='1';clearTimeout(c.fadeTimeout);c.fadeTimeout=setTimeout(()=>{c.style.opacity='0';},500);}
+
+        // --- 5. HORCRUX VAULT ---
+        function toggleVault(){const v=el('vaultPanel');v.style.display=(v.style.display==='flex')?'none':'flex';renderVault();}
+        function processHorcruxUpload(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.readAsDataURL(f);r.onload=function(){const hex=secrets.str2hex(r.result);const peers=Object.keys(NODE.peers);const total=peers.length+1;const thresh=Math.ceil(total/2);const shares=secrets.share(hex,total,thresh);const fid=uuid();peers.forEach((pid,i)=>{const conn=NODE.peers[pid];sendDirect(conn,{type:'HORCRUX_STORE',msgId:uuid(),senderId:NODE.id,targetId:pid,ttl:1,payload:{fileId:fid,filename:f.name,shard:shares[i]}});});VAULT.myShards[fid]={shard:shares[peers.length],filename:f.name+"(Local)"};VAULT.myFiles[fid]={filename:f.name,timestamp:Date.now(),threshold:thresh};systemMsg(`File '${f.name}' shattered.`);renderVault();};}
+        function storeShard(p){VAULT.myShards[p.fileId]={shard:p.shard,filename:p.filename};systemMsg(`Received shard: ${p.filename}`);renderVault();}
+        function requestRecovery(fid){systemMsg(`Summoning shards...`);VAULT.recoveryBuffer[fid]=[];const packet={type:'HORCRUX_REQ',msgId:uuid(),senderId:NODE.id,targetId:'BROADCAST',ttl:5,payload:{fileId:fid}};NODE.processedMsgs.add(packet.msgId);flood(packet);}
+        function handleRecoveryRequest(p,rid){const s=VAULT.myShards[p.fileId];if(s){const resp={type:'HORCRUX_RESTORE',msgId:uuid(),senderId:NODE.id,targetId:rid,ttl:5,payload:{fileId:p.fileId,shard:s.shard}};if(NODE.peers[rid])sendDirect(NODE.peers[rid],resp);else flood(resp);}}
+        function receiveShard(p){const b=VAULT.recoveryBuffer[p.fileId];if(!b)return;if(!b.includes(p.shard)){b.push(p.shard);systemMsg(`Shard collected (${b.length})`);try{const hex=secrets.combine(b);const url=secrets.hex2str(hex);downloadFile(url,VAULT.myFiles[p.fileId].filename);delete VAULT.recoveryBuffer[p.fileId];systemMsg(`RECOVERY COMPLETE!`);}catch(e){}}}
+        function downloadFile(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+        function renderVault(){const l=el('vaultList');l.innerHTML='';Object.keys(VAULT.myFiles).forEach(fid=>{const f=VAULT.myFiles[fid];l.innerHTML+=`<div class="bg-slate-800 p-3 rounded-lg flex items-center justify-between"><div><div class="text-xs text-white font-bold">${f.filename}</div><div class="text-[9px] text-slate-400">Req: ${f.threshold}</div></div><button onclick="requestRecovery('${fid}')" class="bg-indigo-600 px-3 py-1.5 rounded text-[10px] text-white font-bold">SUMMON</button></div>`;});if(Object.keys(VAULT.myShards).length>0){l.innerHTML+=`<div class="text-[9px] text-slate-500 font-bold mt-4">MY SHARDS</div>`;Object.values(VAULT.myShards).forEach(i=>{l.innerHTML+=`<div class="border border-slate-700 p-2 rounded text-[10px] text-slate-300 mt-1">${i.filename}</div>`;});}}
+
+        // --- 6. HIVE MIND (PHASE 4) ---
+
+        // The Ray Tracing Worker Code (Embedded as string to avoid CORS/File issues)
+        const WORKER_CODE = `
+            self.onmessage = function(e) {
+                const { startX, startY, width, height, canvasW, canvasH } = e.data;
+                const buffer = new Uint8ClampedArray(width * height * 4);
+                
+                // Scene Definition
+                const sphere = { x: 0, y: 0, z: 5, r: 1.5 };
+                const light = { x: -5, y: -5, z: -5 };
+                
+                let idx = 0;
+                for(let y = startY; y < startY + height; y++) {
+                    for(let x = startX; x < startX + width; x++) {
+                        // Normalize coordinates (-1 to 1)
+                        const uvX = (x / canvasW) * 2 - 1;
+                        const uvY = 1 - (y / canvasH) * 2; // Flip Y
+                        
+                        // Ray
+                        const ro = {x:0, y:0, z:0}; // Ray Origin
+                        const rd = normalize({x: uvX, y: uvY, z: 2}); // Ray Direction
+                        
+                        // Intersection
+                        const t = intersectSphere(ro, rd, sphere);
+                        
+                        let r=0, g=0, b=0;
+                        if(t > 0) {
+                            // Hit Point
+                            const hit = { x: ro.x + rd.x*t, y: ro.y + rd.y*t, z: ro.z + rd.z*t };
+                            // Normal
+                            const norm = normalize({ x: hit.x - sphere.x, y: hit.y - sphere.y, z: hit.z - sphere.z });
+                            // Light Dir
+                            const ld = normalize({ x: light.x - hit.x, y: light.y - hit.y, z: light.z - hit.z });
+                            // Diffuse
+                            const diff = Math.max(0, dot(norm, ld));
+                            
+                            r = diff * 255; g = diff * 100; b = diff * 255; // Purple Sphere
+                        }
+                        
+                        buffer[idx++] = r; buffer[idx++] = g; buffer[idx++] = b; buffer[idx++] = 255; // Alpha
+                    }
+                }
+                
+                self.postMessage({ buffer, startX, startY, width, height }, [buffer.buffer]);
+            };
+
+            function dot(v1, v2) { return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z; }
+            function normalize(v) { const l = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z); return { x:v.x/l, y:v.y/l, z:v.z/l }; }
+            function intersectSphere(ro, rd, s) {
+                const oc = { x: ro.x - s.x, y: ro.y - s.y, z: ro.z - s.z };
+                const b = 2.0 * dot(oc, rd);
+                const c = dot(oc, oc) - s.r*s.r;
+                const disc = b*b - 4*c;
+                if(disc < 0) return -1;
+                return (-b - Math.sqrt(disc)) / 2.0;
+            }
+        `;
+
+        function toggleHive() {
+            const h = el('hivePanel');
+            h.style.display = (h.style.display === 'flex') ? 'none' : 'flex';
+            if(!HIVE.worker) {
+                const blob = new Blob([WORKER_CODE], {type: 'application/javascript'});
+                HIVE.worker = new Worker(URL.createObjectURL(blob));
+                HIVE.worker.onmessage = (e) => {
+                    if(HIVE.active) {
+                        // I am a worker node reporting to host
+                        sendResultToHost(e.data);
+                    } else {
+                        // I am the host processing my own chunk
+                        paintTile(e.data);
+                    }
+                    el('processingOverlay').classList.add('hidden');
+                };
+            }
+        }
+
+        // A. HOST: Start the Job
+        function startHiveJob() {
+            const canvas = el('hiveCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 400, 400); // Clear
+            
+            const peers = Object.keys(NODE.peers);
+            const totalNodes = peers.length + 1; // Me + Peers
+            
+            // Simple split: Rows
+            const chunkHeight = Math.floor(400 / totalNodes);
+            
+            systemMsg(`HIVE: Splitting job into ${totalNodes} chunks...`);
+            
+            // 1. Assign remote peers
+            peers.forEach((pid, index) => {
+                const startY = index * chunkHeight;
+                const task = { startX: 0, startY: startY, width: 400, height: chunkHeight, canvasW: 400, canvasH: 400 };
+                const conn = NODE.peers[pid];
+                sendDirect(conn, { type: 'HIVE_ASSIGN', msgId: uuid(), senderId: NODE.id, targetId: pid, ttl: 1, payload: task });
+            });
+
+            // 2. Do my own chunk
+            const myStartY = peers.length * chunkHeight;
+            const remainingHeight = 400 - myStartY;
+            HIVE.worker.postMessage({ startX: 0, startY: myStartY, width: 400, height: remainingHeight, canvasW: 400, canvasH: 400 });
+        }
+
+        // B. PEER: Execute Task
+        function executeHiveTask(task, hostId) {
+            el('processingOverlay').classList.remove('hidden');
+            HIVE.active = true;
+            HIVE.hostId = hostId; // Remember who to send back to
+            
+            // Lazy load worker if needed
+            if(!HIVE.worker) {
+                const blob = new Blob([WORKER_CODE], {type: 'application/javascript'});
+                HIVE.worker = new Worker(URL.createObjectURL(blob));
+                HIVE.worker.onmessage = (e) => {
+                    sendResultToHost(e.data);
+                    el('processingOverlay').classList.add('hidden');
+                    HIVE.active = false;
+                };
+            }
+            
+            HIVE.worker.postMessage(task);
+        }
+
+        function sendResultToHost(result) {
+            // Convert TypedArray to Array for PeerJS JSON transport (inefficient but compatible)
+            // Ideally we transfer binary, but for Phase 4 Demo simplicity:
+            const pixelArray = Array.from(result.buffer); 
+            
+            const response = {
+                type: 'HIVE_RESULT',
+                msgId: uuid(),
+                senderId: NODE.id,
+                targetId: HIVE.hostId,
+                ttl: 5,
+                payload: {
+                    buffer: pixelArray,
+                    startX: result.startX,
+                    startY: result.startY,
+                    width: result.width,
+                    height: result.height
+                }
+            };
+            
+            if(NODE.peers[HIVE.hostId]) sendDirect(NODE.peers[HIVE.hostId], response);
+            else flood(response);
+        }
+
+        // C. HOST: Collect Results
+        function collectHiveResult(result) {
+            // Reconstruct Uint8ClampedArray
+            const data = new Uint8ClampedArray(result.buffer);
+            paintTile({ buffer: data, startX: result.startX, startY: result.startY, width: result.width, height: result.height });
+            systemMsg(`HIVE: Received chunk from node.`);
+        }
+
+        function paintTile(data) {
+            const canvas = el('hiveCanvas');
+            const ctx = canvas.getContext('2d');
+            const imgData = new ImageData(data.buffer, data.width, data.height);
+            ctx.putImageData(imgData, data.startX, data.startY);
+        }
+
+        // --- 7. UTILS ---
+        function sendDirect(conn, data) { if (conn && conn.open) conn.send(data); }
+        function flood(packet, excludePeerId = null) { Object.values(NODE.peers).forEach(conn => { if (conn.peer !== excludePeerId) sendDirect(conn, packet); }); }
+        function broadcastChat(e) { e.preventDefault(); const input = el('msgInput'); const text = input.value.trim(); if (!text) return; const packet = { type: 'CHAT', msgId: uuid(), senderId: NODE.id, senderName: NODE.name, targetId: 'BROADCAST', ttl: 5, payload: { text } }; addChatBubble(text, "You", true); NODE.processedMsgs.add(packet.msgId); flood(packet); input.value = ''; }
+        function addChatBubble(text, sender, isMe) { const container = el('messages'); if (container.children[0]?.classList.contains('text-center')) container.innerHTML = ''; const div = document.createElement('div'); div.className = `flex flex-col max-w-[85%] ${isMe ? 'items-end self-end' : 'items-start self-start'}`; div.innerHTML = `<span class="text-[9px] text-slate-500 mb-1 ml-1 font-bold uppercase">${sender}</span><div class="p-3 shadow-lg text-sm ${isMe ? 'msg-me' : 'msg-other'} animate-[fadeIn_0.3s_ease-out]">${text}</div>`; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+        function systemMsg(text) { const container = el('messages'); const div = document.createElement('div'); div.className = 'msg-system'; div.innerText = `[SYSTEM] ${text}`; container.appendChild(div); }
+        function copyId() { navigator.clipboard.writeText(NODE.id); alert("ID Copied!"); }
+        function updateDebug() { const out = el('routesDisplay'); let html = `MY ID: ${NODE.id}\n-------------------\nDIRECT PEERS: ${Object.keys(NODE.peers).length}\n`; Object.keys(NODE.peers).forEach(p => html += ` > ${p}\n`); html += `-------------------\nROUTING TABLE:\n`; Object.keys(NODE.routes).forEach(r => { html += ` DST: ${r.substr(0,5)}... VIA: ${NODE.routes[r].nextHop.substr(0,5)}... (HOPS: ${NODE.routes[r].hops})\n`; }); out.innerText = html; }
+
+        // --- 8. VISUALIZER ---
+        const canvas = el('meshGraph'); const ctx = canvas.getContext('2d'); let width, height;
+        const graph = { nodes: [], links: [], addNode: (id, label, isMe=false) => { if(!graph.nodes.find(n=>n.id===id)) graph.nodes.push({id, label, isMe, x: width/2+(Math.random()-0.5)*50, y: height/2+(Math.random()-0.5)*50, vx:0, vy:0}); }, updateNode: (id, label) => { const n=graph.nodes.find(x=>x.id===id); if(n) n.label=label; }, addLink: (src, tgt) => { if(!graph.links.find(l=>(l.source===src&&l.target===tgt)||(l.source===tgt&&l.target===src))) graph.links.push({source:src, target:tgt}); }, removeLink: (src, tgt) => { graph.links=graph.links.filter(l=>!((l.source===src&&l.target===tgt)||(l.source===tgt&&l.target===src))); } };
+        function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+        window.addEventListener('resize', resize); resize();
+        function tick() {
+            ctx.clearRect(0, 0, width, height); const REPULSION=500, ATTRACTION=0.005, CENTER_PULL=0.002, DAMPING=0.9;
+            graph.nodes.forEach(node => { graph.nodes.forEach(other => { if(node===other)return; const dx=node.x-other.x, dy=node.y-other.y, dist=Math.sqrt(dx*dx+dy*dy)||1, force=REPULSION/(dist*dist); node.vx+=(dx/dist)*force; node.vy+=(dy/dist)*force; }); node.vx+=(width/2-node.x)*CENTER_PULL; node.vy+=(height/2-node.y)*CENTER_PULL; });
+            graph.links.forEach(link => { const src=graph.nodes.find(n=>n.id===link.source), tgt=graph.nodes.find(n=>n.id===link.target); if(!src||!tgt)return; const dx=tgt.x-src.x, dy=tgt.y-src.y; src.vx+=dx*ATTRACTION; src.vy+=dy*ATTRACTION; tgt.vx-=dx*ATTRACTION; tgt.vy-=dy*ATTRACTION; });
+            graph.nodes.forEach(node => { node.vx*=DAMPING; node.vy*=DAMPING; node.x+=node.vx; node.y+=node.vy; });
+            ctx.strokeStyle='rgba(99, 102, 241, 0.3)'; ctx.beginPath(); graph.links.forEach(l=>{ const s=graph.nodes.find(n=>n.id===l.source), t=graph.nodes.find(n=>n.id===l.target); if(s&&t){ ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); } }); ctx.stroke();
+            graph.nodes.forEach(n => { ctx.beginPath(); ctx.arc(n.x, n.y, n.isMe?8:5, 0, Math.PI*2); ctx.fillStyle=n.isMe?'#ef4444':'#6366f1'; ctx.fill(); ctx.fillStyle='#94a3b8'; ctx.font='10px monospace'; ctx.fillText(n.label||n.id.substr(0,4), n.x+10, n.y+3); });
+            requestAnimationFrame(tick);
+        }
+        tick();
+    </script>
+</body>
+</html>
