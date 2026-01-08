@@ -3,140 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI TELEPORT: V3 ULTIMATE</title>
+    <title>AI TELEPORT: V4 ULTIMATE</title>
     
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js"></script>
 
     <style>
+        /* * ==========================================================================
+         * HUAWEI-STYLE PRO UI SYSTEM
+         * ========================================================================== */
         :root { 
             --bg: #000; 
-            --accent: #00E5FF; 
-            --grab: #FFD700; 
-            --danger: #FF003C;
+            --accent: #00E5FF; /* Huawei Blue */
+            --grab: #FFD700;   /* Gold for Grab */
+            --text: #FFF;
+            --panel: rgba(20, 20, 20, 0.9);
         }
+
         body { 
-            background: var(--bg); color: #FFF; 
-            font-family: 'Courier New', monospace; 
+            background: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
             margin: 0; overflow: hidden; height: 100vh; 
             display: flex; flex-direction: column; 
+            user-select: none; -webkit-user-select: none;
         }
-        
-        /* === FULLSCREEN LAYERS === */
-        .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 10; }
+
+        /* LAYERS */
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 10; transition: opacity 0.3s; }
         .active { display: flex; }
 
-        /* CAMERA FEED */
+        /* VIDEO FEED */
         .video-bg { 
             position: absolute; inset: 0; width: 100%; height: 100%; 
-            object-fit: cover; transform: scaleX(-1); opacity: 0.8; 
+            object-fit: cover; transform: scaleX(-1); /* Mirror */
         }
-        
-        /* HUD & UI */
+
+        /* HUD OVERLAY */
         #hud-layer { 
             position: absolute; inset: 0; z-index: 20; 
             padding: 20px; pointer-events: none; 
-            display: flex; flex-direction: column; justify-content: space-between; 
+            display: flex; flex-direction: column; justify-content: space-between;
         }
         
-        .status-badge { 
-            align-self: center; background: rgba(0,0,0,0.8); 
-            border: 1px solid var(--accent); padding: 8px 16px; 
-            border-radius: 20px; font-size: 10px; font-weight: bold; 
-            text-transform: uppercase; letter-spacing: 2px; 
-            box-shadow: 0 0 15px var(--accent); 
+        .top-bar { display: flex; justify-content: space-between; width: 100%; }
+        .role-badge { 
+            background: rgba(0,0,0,0.6); border: 1px solid var(--accent); 
+            padding: 6px 12px; border-radius: 4px; font-size: 10px; 
+            font-weight: 800; letter-spacing: 2px; color: var(--accent);
         }
 
-        /* TRACKING BOX (TARGET LOCK) */
+        /* GESTURE TRACKER BOX */
         #tracker-box {
             position: absolute;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            transition: all 0.1s linear;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            transition: all 0.05s linear;
             pointer-events: none;
             display: none;
             z-index: 15;
         }
-        #tracker-box::after {
-            content: attr(data-label);
-            position: absolute; top: -20px; left: 0;
-            background: var(--accent); color: #000;
-            font-size: 10px; font-weight: bold; padding: 2px 5px;
+        #tracker-label {
+            position: absolute; top: -25px; left: 0;
+            background: #333; color: #FFF;
+            font-size: 10px; font-weight: bold; padding: 4px 8px;
+            border-radius: 4px; white-space: nowrap;
         }
-        .locked-grab { border-color: var(--grab) !important; box-shadow: 0 0 20px var(--grab) !important; }
-        .locked-drop { border-color: var(--accent) !important; box-shadow: 0 0 20px var(--accent) !important; }
+        
+        /* LOCK STATES */
+        .locked-grab { border-color: var(--grab) !important; box-shadow: 0 0 30px var(--grab) !important; transform: scale(1.1); }
+        .locked-grab #tracker-label { background: var(--grab); color: #000; }
+        
+        .locked-drop { border-color: var(--accent) !important; box-shadow: 0 0 30px var(--accent) !important; transform: scale(1.1); }
+        .locked-drop #tracker-label { background: var(--accent); color: #000; }
 
-        /* INSTRUCTIONS */
-        #instruction-box {
-            text-align: center; margin-bottom: 50px;
-        }
-        #instruction-text {
-            font-size: 24px; font-weight: 900; 
-            text-shadow: 0 2px 10px #000;
-            transition: color 0.3s;
+        /* INSTRUCTION TEXT */
+        #instruction-box { text-align: center; margin-bottom: 60px; pointer-events: auto; }
+        #instruction-text { 
+            font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8); transition: color 0.3s;
         }
         .text-grab { color: var(--grab); }
         .text-drop { color: var(--accent); }
 
-        /* ANIMATIONS */
-        @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
-        .scan-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(0, 229, 255, 0.2), transparent); animation: scanline 2s linear infinite; pointer-events: none; opacity: 0.3; }
-
-        @keyframes shutterFlash { 0% { background: #FFF; opacity: 1; } 100% { background: transparent; opacity: 0; } }
-        .flash-anim { position: fixed; inset: 0; background: #FFF; z-index: 100; animation: shutterFlash 0.3s ease-out forwards; }
-
-        @keyframes warpOut { 0% { transform: scale(1); filter: blur(0px); opacity: 1; } 100% { transform: scale(0.1) translateY(-500px); filter: blur(10px); opacity: 0; } }
-        .warp-anim { animation: warpOut 0.6s cubic-bezier(0.7, 0, 0.84, 0) forwards; }
-
-        @keyframes portalIn { 0% { transform: scale(0) rotate(10deg); opacity: 0; } 80% { transform: scale(1.05) rotate(-2deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
-        .portal-anim { animation: portalIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        /* IMAGE CONTAINERS */
+        /* PHOTO CONTAINERS */
         #frozen-frame { position: absolute; inset: 0; z-index: 12; display: none; background: #000; }
         #frozen-img { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         
-        #received-frame { position: absolute; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); }
-        #received-img { max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 0 50px rgba(0, 229, 255, 0.4); border: 2px solid var(--accent); }
+        #received-frame { 
+            position: absolute; inset: 0; z-index: 30; display: none; 
+            align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(5px);
+        }
+        #received-img { 
+            max-width: 90%; max-height: 80%; border-radius: 12px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7); 
+            border: 1px solid #333;
+        }
 
         /* MENU STYLES */
         .menu-btn { 
-            background: #111; border: 1px solid #333; 
-            color: #FFF; padding: 25px; margin: 10px; 
-            width: 250px; text-align: center; cursor: pointer; 
-            border-radius: 8px; font-weight: bold; font-size: 14px;
+            background: #1a1a1a; border: 1px solid #333; color: #FFF; 
+            padding: 24px; margin: 8px; width: 100%; max-width: 300px; 
+            text-align: left; cursor: pointer; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: space-between;
             transition: all 0.2s;
         }
-        .menu-btn:active { transform: scale(0.98); background: #222; border-color: var(--accent); }
-        .menu-btn i { display: block; font-size: 20px; margin-bottom: 5px; }
+        .menu-btn:active { transform: scale(0.98); background: #252525; border-color: var(--accent); }
+        .menu-icon { font-size: 24px; margin-right: 15px; opacity: 0.8; }
+        .menu-label { font-size: 14px; font-weight: bold; }
+        .menu-sub { font-size: 10px; color: #888; display: block; margin-top: 4px; }
+
+        /* QR & CONNECTION UI */
+        #qr-box { background: #FFF; padding: 10px; border-radius: 8px; margin: 20px 0; display: none; }
+        #id-display { font-family: monospace; font-size: 18px; color: var(--accent); margin: 10px 0; letter-spacing: 2px; }
         
-        input { background: #222; border: 1px solid #444; color: white; padding: 15px; width: 220px; margin: 10px; text-align: center; outline: none; border-radius: 4px; font-family: monospace; }
-        input:focus { border-color: var(--accent); }
+        input { 
+            background: #222; border: 1px solid #444; color: white; 
+            padding: 15px; width: 200px; margin: 10px; 
+            text-align: center; border-radius: 8px; outline: none; 
+            font-family: monospace; font-size: 16px;
+        }
+
+        /* ANIMATIONS */
+        @keyframes warpIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .anim-pop { animation: warpIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes flashWhite { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .flash-fx { position: fixed; inset: 0; background: #FFF; pointer-events: none; opacity: 0; z-index: 100; }
+        .do-flash { animation: flashWhite 0.2s ease-out; }
     </style>
 </head>
 <body>
 
     <div id="screen-menu" class="screen active">
-        <h1 style="font-weight: 300; letter-spacing: 8px; margin-bottom: 40px;">
-            GHOST<span style="color:var(--accent); font-weight:800;">PORT</span>
-        </h1>
+        <h1 style="font-weight: 300; letter-spacing: 6px; margin-bottom: 5px;">GHOST<span style="color:var(--accent); font-weight:900;">PORT</span></h1>
+        <p style="color:#666; font-size:10px; margin-bottom: 40px;">DISTRIBUTED AI CAMERA SYSTEM</p>
         
         <div class="menu-btn" onclick="App.init('sender')">
-            <i></i> SOURCE DEVICE (CAMERA)
-        </div>
-        <div class="menu-btn" onclick="App.init('receiver')">
-            <i></i> TARGET DEVICE (SCREEN)
+            <div style="display:flex; align-items:center;">
+                <span class="menu-icon">📡</span>
+                <div>
+                    <span class="menu-label">SOURCE MODE</span>
+                    <span class="menu-sub">Use this device as Camera</span>
+                </div>
+            </div>
+            <span style="color:#444">➔</span>
         </div>
 
-        <div id="connect-box" style="display:none; flex-direction: column; align-items: center; margin-top: 20px;">
-            <p style="font-size: 10px; color: #666;">ENTER SOURCE ID</p>
+        <div class="menu-btn" onclick="App.init('receiver')">
+            <div style="display:flex; align-items:center;">
+                <span class="menu-icon">📱</span>
+                <div>
+                    <span class="menu-label">TARGET MODE</span>
+                    <span class="menu-sub">Use this device as Screen</span>
+                </div>
+            </div>
+            <span style="color:#444">➔</span>
+        </div>
+
+        <div id="connect-ui" style="display:none; flex-direction: column; align-items: center; margin-top: 20px; width: 100%;">
+            <div style="height: 1px; width: 50%; background: #222; margin: 20px 0;"></div>
+            <p style="font-size: 10px; color: #666; text-transform: uppercase;">Enter Source ID</p>
             <input type="text" id="target-id" placeholder="XXXX-XXXX">
-            <div class="menu-btn" style="background: var(--accent); color: #000; border:none;" onclick="App.connect()">INITIATE LINK</div>
+            <div class="menu-btn" style="justify-content: center; background: var(--accent); color: #000; border:none;" onclick="App.connect()">LINK DEVICES</div>
+        </div>
+
+        <div id="sender-ui" style="display:none; flex-direction: column; align-items: center; margin-top: 20px;">
+            <div id="qr-box">
+                <img id="qr-img" width="150" height="150">
+            </div>
+            <div id="id-display">Generating...</div>
+            <button onclick="App.copyID()" style="background:transparent; border:1px solid #333; color:#888; padding:5px 15px; border-radius:20px; cursor:pointer; font-size:10px;">COPY ID</button>
         </div>
     </div>
 
     <div id="screen-active" class="screen">
-        <div class="scan-overlay"></div>
-        
         <video id="video-feed" class="video-bg" autoplay playsinline muted></video>
         
         <div id="frozen-frame">
@@ -146,72 +188,82 @@
         <div id="received-frame">
             <img id="received-img">
             <div style="position: absolute; bottom: 40px; display:flex; gap:10px;">
-                <div class="menu-btn" style="width: auto; padding: 15px 30px;" onclick="App.download()">SAVE</div>
-                <div class="menu-btn" style="width: auto; padding: 15px 30px; background: #222;" onclick="Actions.resetReceiver()">CLEAR</div>
+                <div class="menu-btn" style="width: auto; padding: 15px 30px; justify-content:center;" onclick="App.download()">
+                    SAVE IMAGE
+                </div>
+                <div class="menu-btn" style="width: auto; padding: 15px 30px; background: #222; justify-content:center;" onclick="Actions.resetReceiver()">
+                    DISMISS
+                </div>
             </div>
         </div>
 
-        <div id="tracker-box" data-label="HAND"></div>
+        <div id="tracker-box">
+            <div id="tracker-label">HAND</div>
+        </div>
 
         <div id="hud-layer">
-            <div class="status-badge">
-                <span id="role-display" style="color:var(--accent)">SYSTEM</span>
-                <span id="status-display" style="margin-left:10px; color:#888;">� IDLE</span>
+            <div class="top-bar">
+                <div class="role-badge" id="role-display">SYSTEM</div>
+                <div class="role-badge" id="conn-status" style="border-color:#333; color:#666;">• WAITING</div>
             </div>
             
             <div id="instruction-box">
-                <div id="instruction-text">SYSTEM READY</div>
+                <div id="instruction-text">INITIALIZING...</div>
             </div>
         </div>
         
-        <div id="flash-fx"></div>
+        <div id="flash-fx" class="flash-fx"></div>
     </div>
 
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
         /* * ==========================================================================
-         * GHOST PORT KERNEL V3.0
+         * GHOST PORT KERNEL V4.0 (STABILIZED)
          * ========================================================================== */
 
         const STATE = {
-            role: null, // 'sender' | 'receiver'
+            role: null,
             peer: null,
             conn: null,
+            myId: null,
             model: null,
             isDetecting: false,
             // Logic Flags
-            isGrabbed: false,   // Sender: Has photo?
-            isReceived: false,  // Receiver: Has photo?
+            isGrabbed: false,   
+            isReceived: false, 
             cooldown: false,
             grabbedBlob: null,
-            // Stabilizer
+            // Stabilizer Vars
             lastGesture: null,
             gestureFrames: 0,
-            REQUIRED_FRAMES: 10 // Need 10 frames of same gesture to trigger (Stability)
+            STABILITY_THRESHOLD: 8 // Frames required to lock a gesture
         };
 
         const AudioEngine = {
-            ctx: new (window.AudioContext || window.webkitAudioContext)(),
+            ctx: null,
+            init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
             play(type) {
+                this.init();
+                const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.connect(gain); gain.connect(this.ctx.destination);
-                
-                if (type === 'lock') { // High pitch blip
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
-                } else if (type === 'grab') { // Low thud
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
-                } else if (type === 'warp') { // Sci-fi sweep
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.5);
-                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+
+                if (type === 'lock') { // Blip
+                    osc.frequency.setValueAtTime(800, t);
+                    gain.gain.setValueAtTime(0.05, t);
+                    osc.start(); osc.stop(t + 0.05);
+                } else if (type === 'shutter') { // Snap
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, t);
+                    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                    osc.start(); osc.stop(t + 0.1);
+                } else if (type === 'warp') { // Swoosh
+                    osc.frequency.setValueAtTime(200, t);
+                    osc.frequency.exponentialRampToValueAtTime(600, t + 0.3);
+                    gain.gain.linearRampToValueAtTime(0, t + 0.3);
+                    osc.start(); osc.stop(t + 0.3);
                 }
             }
         };
@@ -219,33 +271,51 @@
         const App = {
             init(role) {
                 STATE.role = role;
+                AudioEngine.init();
+                
                 if (role === 'sender') {
+                    // Generate Short ID
                     const id = Math.floor(Math.random()*9000)+1000;
-                    STATE.peer = new Peer('ghost-'+id);
-                    STATE.peer.on('open', id => {
-                        alert(`SOURCE ID: ${id}`);
-                        App.startSession();
-                    });
+                    STATE.myId = 'ghost-' + id;
+                    
+                    // Show ID & QR
+                    document.getElementById('sender-ui').style.display = 'flex';
+                    document.getElementById('id-display').innerText = id;
+                    document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}`;
+                    
+                    // Init Peer
+                    STATE.peer = new Peer(STATE.myId);
+                    STATE.peer.on('open', () => console.log('Peer Open'));
                     STATE.peer.on('connection', conn => {
                         STATE.conn = conn;
-                        App.setStatus("TARGET LINKED");
-                        // Sender listens for pull request
+                        App.startSession();
+                        App.setStatus("LINKED", "#00E5FF");
                         conn.on('data', d => { if(d === 'PULL') Actions.senderTeleport(); });
                     });
                 } else {
-                    document.getElementById('screen-menu').innerHTML = document.getElementById('connect-box').outerHTML;
-                    document.getElementById('connect-box').style.display = 'flex';
+                    // Show Connect UI
+                    document.getElementById('screen-menu').innerHTML = document.getElementById('connect-ui').outerHTML;
+                    document.getElementById('connect-ui').style.display = 'flex';
                 }
             },
 
+            copyID() {
+                const id = STATE.myId.replace('ghost-', '');
+                navigator.clipboard.writeText(id);
+                alert("ID Copied: " + id);
+            },
+
             connect() {
-                const target = 'ghost-' + document.getElementById('target-id').value;
+                const rawId = document.getElementById('target-id').value;
+                if(rawId.length < 4) return alert("Invalid ID");
+                const target = 'ghost-' + rawId;
+                
                 STATE.peer = new Peer();
                 STATE.peer.on('open', () => {
                     STATE.conn = STATE.peer.connect(target);
                     STATE.conn.on('open', () => {
                         App.startSession();
-                        // Receiver listens for photo
+                        App.setStatus("LINKED", "#00E5FF");
                         STATE.conn.on('data', d => { if(d.type === 'PHOTO') Actions.receiverShow(d.blob); });
                     });
                 });
@@ -256,7 +326,7 @@
                 document.getElementById('screen-active').classList.add('active');
                 document.getElementById('role-display').innerText = STATE.role.toUpperCase();
                 
-                // Start Camera on BOTH (Required for gesture detection)
+                // Start Video
                 const video = document.getElementById('video-feed');
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -265,10 +335,15 @@
                     });
                     video.srcObject = stream;
                     video.onloadeddata = () => AI.load();
-                } catch(e) { alert("Camera Permission Required for Hand Tracking"); }
+                } catch(e) { alert("Camera Access Denied"); }
             },
 
-            setStatus(text) { document.getElementById('status-display').innerText = "� " + text; },
+            setStatus(text, color) { 
+                const el = document.getElementById('conn-status');
+                el.innerText = "• " + text;
+                el.style.color = color || "#FFF";
+                el.style.borderColor = color || "#333";
+            },
             
             setInstruction(text, type) {
                 const el = document.getElementById('instruction-text');
@@ -286,19 +361,19 @@
         };
 
         const Actions = {
-            // SENDER: Freezes the frame
+            // SENDER: Grabs Frame
             senderGrab() {
                 if(STATE.isGrabbed) return;
                 STATE.isGrabbed = true;
-                AudioEngine.play('grab');
+                AudioEngine.play('shutter');
+                if(navigator.vibrate) navigator.vibrate(50);
                 
-                // 1. Flash FX
-                const flash = document.createElement('div');
-                flash.className = 'flash-anim';
-                document.body.appendChild(flash);
-                setTimeout(() => flash.remove(), 300);
+                // Flash
+                const flash = document.getElementById('flash-fx');
+                flash.classList.add('do-flash');
+                setTimeout(()=>flash.classList.remove('do-flash'), 200);
 
-                // 2. Capture
+                // Capture
                 const video = document.getElementById('video-feed');
                 const canvas = document.getElementById('capture-canvas');
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -310,79 +385,76 @@
                     STATE.grabbedBlob = blob;
                     document.getElementById('frozen-img').src = URL.createObjectURL(blob);
                     document.getElementById('frozen-frame').style.display = 'block';
-                    
-                    App.setInstruction("HOLDING... WAITING FOR TARGET", 'drop');
-                    App.setStatus("IMAGE BUFFERED");
+                    App.setInstruction("WAITING FOR TARGET...", 'drop');
                 }, 'image/jpeg', 0.9);
             },
 
-            // SENDER: Sends data to Receiver
+            // SENDER: Sends Frame
             senderTeleport() {
                 if(!STATE.isGrabbed || !STATE.grabbedBlob) return;
                 AudioEngine.play('warp');
-
-                // 1. Warp Animation
+                
+                // Warp Anim
                 const frame = document.getElementById('frozen-frame');
-                frame.classList.add('warp-anim');
+                frame.style.transform = "scale(0.1) translateY(-200px)";
+                frame.style.opacity = "0";
+                frame.style.transition = "all 0.5s ease-in";
 
-                // 2. Send Data
+                // Send
                 STATE.conn.send({ type: 'PHOTO', blob: STATE.grabbedBlob });
 
-                // 3. Reset
+                // Reset
                 setTimeout(() => {
                     frame.style.display = 'none';
-                    frame.classList.remove('warp-anim');
+                    frame.style.transform = ""; frame.style.opacity = ""; frame.style.transition = "";
                     STATE.isGrabbed = false;
                     STATE.grabbedBlob = null;
-                    App.setInstruction("SHOW FIST  TO GRAB", 'grab');
-                    App.setStatus("READY");
+                    App.setInstruction("SHOW FIST ✊ TO GRAB", 'grab');
                 }, 800);
             },
 
-            // RECEIVER: Requests the pull
+            // RECEIVER: Requests Pull
             receiverPull() {
                 if(STATE.isReceived) return;
                 if(STATE.conn) {
                     STATE.conn.send('PULL');
-                    App.setStatus("PULLING DATA...");
                     AudioEngine.play('lock');
+                    App.setInstruction("PULLING DATA...", 'drop');
                 }
             },
 
-            // RECEIVER: Displays data
+            // RECEIVER: Shows Frame
             receiverShow(blob) {
                 STATE.isReceived = true;
                 STATE.grabbedBlob = blob;
-                
                 const url = URL.createObjectURL(blob);
                 document.getElementById('received-img').src = url;
                 
                 const frame = document.getElementById('received-frame');
                 frame.style.display = 'flex';
-                frame.classList.add('portal-anim');
+                frame.classList.add('anim-pop');
                 
                 AudioEngine.play('warp');
+                if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
                 App.setInstruction("TRANSFER COMPLETE", 'drop');
-                App.setStatus("SAVED IN BUFFER");
             },
 
             resetReceiver() {
                 document.getElementById('received-frame').style.display = 'none';
-                document.getElementById('received-frame').classList.remove('portal-anim');
                 STATE.isReceived = false;
-                App.setInstruction("SHOW PALM  TO DROP", 'drop');
+                App.setInstruction("SHOW PALM ✋ TO DROP", 'drop');
             }
         };
 
         const AI = {
             async load() {
-                App.setInstruction("CALIBRATING AI...", '');
-                const modelParams = { flipHorizontal: true, maxNumBoxes: 1, scoreThreshold: 0.7 };
+                App.setInstruction("LOADING AI...", '');
+                const modelParams = { flipHorizontal: true, maxNumBoxes: 1, scoreThreshold: 0.65 };
                 STATE.model = await handTrack.load(modelParams);
                 STATE.isDetecting = true;
                 
-                if(STATE.role === 'sender') App.setInstruction("SHOW FIST  TO GRAB", 'grab');
-                else App.setInstruction("SHOW PALM  TO DROP", 'drop');
+                if(STATE.role === 'sender') App.setInstruction("SHOW FIST ✊ TO GRAB", 'grab');
+                else App.setInstruction("SHOW PALM ✋ TO DROP", 'drop');
                 
                 AI.loop();
             },
@@ -393,20 +465,21 @@
 
                 const video = document.getElementById('video-feed');
                 const preds = await STATE.model.detect(video);
-                
                 const box = document.getElementById('tracker-box');
+                const labelEl = document.getElementById('tracker-label');
 
                 if (preds.length > 0) {
                     const hand = preds[0];
-                    const label = hand.label; // 'open', 'closed', 'pinch'
+                    const label = hand.label; 
                     const [x, y, w, h] = hand.bbox;
 
-                    // UI: Draw Box
+                    // UI Update
                     box.style.display = 'block';
                     box.style.left = x + 'px'; box.style.top = y + 'px';
                     box.style.width = w + 'px'; box.style.height = h + 'px';
+                    labelEl.innerText = label.toUpperCase();
 
-                    // STABILIZER LOGIC
+                    // STABILIZER
                     if (label === STATE.lastGesture) {
                         STATE.gestureFrames++;
                     } else {
@@ -414,32 +487,30 @@
                         STATE.lastGesture = label;
                     }
 
-                    // TRIGGER ACTION AFTER 10 STABLE FRAMES
-                    if (STATE.gestureFrames > STATE.REQUIRED_FRAMES) {
+                    // TRIGGER
+                    if (STATE.gestureFrames > STATE.STABILITY_THRESHOLD) {
                         
+                        // SENDER LOGIC
                         if (STATE.role === 'sender' && !STATE.isGrabbed) {
-                            // SENDER: Needs CLOSED/PINCH to Grab
                             if (label === 'closed' || label === 'pinch') {
                                 box.className = 'locked-grab';
-                                box.setAttribute('data-label', 'GRABBING...');
+                                labelEl.innerText = "LOCKED";
                                 Actions.senderGrab();
                                 AI.triggerCooldown(2000);
                             } else {
                                 box.className = '';
-                                box.setAttribute('data-label', 'OPEN HAND');
                             }
                         }
                         
+                        // RECEIVER LOGIC
                         else if (STATE.role === 'receiver' && !STATE.isReceived) {
-                            // RECEIVER: Needs OPEN to Drop
                             if (label === 'open') {
                                 box.className = 'locked-drop';
-                                box.setAttribute('data-label', 'PULLING...');
+                                labelEl.innerText = "PULLING";
                                 Actions.receiverPull();
                                 AI.triggerCooldown(3000);
                             } else {
                                 box.className = '';
-                                box.setAttribute('data-label', 'FIST DETECTED');
                             }
                         }
                     }
@@ -461,4 +532,4 @@
         };
     </script>
 </body>
-</html>
+            </html>
