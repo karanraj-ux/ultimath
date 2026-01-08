@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI TELEPORT: V3 ULTIMATE</title>
+    
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js"></script>
+
+    <style>
+        :root { 
+            --bg: #000; 
+            --accent: #00E5FF; 
+            --grab: #FFD700; 
+            --danger: #FF003C;
+        }
+        body { 
+            background: var(--bg); color: #FFF; 
+            font-family: 'Courier New', monospace; 
+            margin: 0; overflow: hidden; height: 100vh; 
+            display: flex; flex-direction: column; 
+        }
+        
+        /* === FULLSCREEN LAYERS === */
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 10; }
+        .active { display: flex; }
+
+        /* CAMERA FEED */
+        .video-bg { 
+            position: absolute; inset: 0; width: 100%; height: 100%; 
+            object-fit: cover; transform: scaleX(-1); opacity: 0.8; 
+        }
+        
+        /* HUD & UI */
+        #hud-layer { 
+            position: absolute; inset: 0; z-index: 20; 
+            padding: 20px; pointer-events: none; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+        }
+        
+        .status-badge { 
+            align-self: center; background: rgba(0,0,0,0.8); 
+            border: 1px solid var(--accent); padding: 8px 16px; 
+            border-radius: 20px; font-size: 10px; font-weight: bold; 
+            text-transform: uppercase; letter-spacing: 2px; 
+            box-shadow: 0 0 15px var(--accent); 
+        }
+
+        /* TRACKING BOX (TARGET LOCK) */
+        #tracker-box {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            transition: all 0.1s linear;
+            pointer-events: none;
+            display: none;
+            z-index: 15;
+        }
+        #tracker-box::after {
+            content: attr(data-label);
+            position: absolute; top: -20px; left: 0;
+            background: var(--accent); color: #000;
+            font-size: 10px; font-weight: bold; padding: 2px 5px;
+        }
+        .locked-grab { border-color: var(--grab) !important; box-shadow: 0 0 20px var(--grab) !important; }
+        .locked-drop { border-color: var(--accent) !important; box-shadow: 0 0 20px var(--accent) !important; }
+
+        /* INSTRUCTIONS */
+        #instruction-box {
+            text-align: center; margin-bottom: 50px;
+        }
+        #instruction-text {
+            font-size: 24px; font-weight: 900; 
+            text-shadow: 0 2px 10px #000;
+            transition: color 0.3s;
+        }
+        .text-grab { color: var(--grab); }
+        .text-drop { color: var(--accent); }
+
+        /* ANIMATIONS */
+        @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+        .scan-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(0, 229, 255, 0.2), transparent); animation: scanline 2s linear infinite; pointer-events: none; opacity: 0.3; }
+
+        @keyframes shutterFlash { 0% { background: #FFF; opacity: 1; } 100% { background: transparent; opacity: 0; } }
+        .flash-anim { position: fixed; inset: 0; background: #FFF; z-index: 100; animation: shutterFlash 0.3s ease-out forwards; }
+
+        @keyframes warpOut { 0% { transform: scale(1); filter: blur(0px); opacity: 1; } 100% { transform: scale(0.1) translateY(-500px); filter: blur(10px); opacity: 0; } }
+        .warp-anim { animation: warpOut 0.6s cubic-bezier(0.7, 0, 0.84, 0) forwards; }
+
+        @keyframes portalIn { 0% { transform: scale(0) rotate(10deg); opacity: 0; } 80% { transform: scale(1.05) rotate(-2deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        .portal-anim { animation: portalIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        /* IMAGE CONTAINERS */
+        #frozen-frame { position: absolute; inset: 0; z-index: 12; display: none; background: #000; }
+        #frozen-img { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        #received-frame { position: absolute; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); }
+        #received-img { max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 0 50px rgba(0, 229, 255, 0.4); border: 2px solid var(--accent); }
+
+        /* MENU STYLES */
+        .menu-btn { 
+            background: #111; border: 1px solid #333; 
+            color: #FFF; padding: 25px; margin: 10px; 
+            width: 250px; text-align: center; cursor: pointer; 
+            border-radius: 8px; font-weight: bold; font-size: 14px;
+            transition: all 0.2s;
+        }
+        .menu-btn:active { transform: scale(0.98); background: #222; border-color: var(--accent); }
+        .menu-btn i { display: block; font-size: 20px; margin-bottom: 5px; }
+        
+        input { background: #222; border: 1px solid #444; color: white; padding: 15px; width: 220px; margin: 10px; text-align: center; outline: none; border-radius: 4px; font-family: monospace; }
+        input:focus { border-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div id="screen-menu" class="screen active">
+        <h1 style="font-weight: 300; letter-spacing: 8px; margin-bottom: 40px;">
+            GHOST<span style="color:var(--accent); font-weight:800;">PORT</span>
+        </h1>
+        
+        <div class="menu-btn" onclick="App.init('sender')">
+            <i></i> SOURCE DEVICE (CAMERA)
+        </div>
+        <div class="menu-btn" onclick="App.init('receiver')">
+            <i></i> TARGET DEVICE (SCREEN)
+        </div>
+
+        <div id="connect-box" style="display:none; flex-direction: column; align-items: center; margin-top: 20px;">
+            <p style="font-size: 10px; color: #666;">ENTER SOURCE ID</p>
+            <input type="text" id="target-id" placeholder="XXXX-XXXX">
+            <div class="menu-btn" style="background: var(--accent); color: #000; border:none;" onclick="App.connect()">INITIATE LINK</div>
+        </div>
+    </div>
+
+    <div id="screen-active" class="screen">
+        <div class="scan-overlay"></div>
+        
+        <video id="video-feed" class="video-bg" autoplay playsinline muted></video>
+        
+        <div id="frozen-frame">
+            <img id="frozen-img">
+        </div>
+        
+        <div id="received-frame">
+            <img id="received-img">
+            <div style="position: absolute; bottom: 40px; display:flex; gap:10px;">
+                <div class="menu-btn" style="width: auto; padding: 15px 30px;" onclick="App.download()">SAVE</div>
+                <div class="menu-btn" style="width: auto; padding: 15px 30px; background: #222;" onclick="Actions.resetReceiver()">CLEAR</div>
+            </div>
+        </div>
+
+        <div id="tracker-box" data-label="HAND"></div>
+
+        <div id="hud-layer">
+            <div class="status-badge">
+                <span id="role-display" style="color:var(--accent)">SYSTEM</span>
+                <span id="status-display" style="margin-left:10px; color:#888;">• IDLE</span>
+            </div>
+            
+            <div id="instruction-box">
+                <div id="instruction-text">SYSTEM READY</div>
+            </div>
+        </div>
+        
+        <div id="flash-fx"></div>
+    </div>
+
+    <canvas id="capture-canvas" style="display:none;"></canvas>
+
+    <script>
+        /* * ==========================================================================
+         * GHOST PORT KERNEL V3.0
+         * ========================================================================== */
+
+        const STATE = {
+            role: null, // 'sender' | 'receiver'
+            peer: null,
+            conn: null,
+            model: null,
+            isDetecting: false,
+            // Logic Flags
+            isGrabbed: false,   // Sender: Has photo?
+            isReceived: false,  // Receiver: Has photo?
+            cooldown: false,
+            grabbedBlob: null,
+            // Stabilizer
+            lastGesture: null,
+            gestureFrames: 0,
+            REQUIRED_FRAMES: 10 // Need 10 frames of same gesture to trigger (Stability)
+        };
+
+        const AudioEngine = {
+            ctx: new (window.AudioContext || window.webkitAudioContext)(),
+            play(type) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                
+                if (type === 'lock') { // High pitch blip
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                } else if (type === 'grab') { // Low thud
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+                } else if (type === 'warp') { // Sci-fi sweep
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+                }
+            }
+        };
+
+        const App = {
+            init(role) {
+                STATE.role = role;
+                if (role === 'sender') {
+                    const id = Math.floor(Math.random()*9000)+1000;
+                    STATE.peer = new Peer('ghost-'+id);
+                    STATE.peer.on('open', id => {
+                        alert(`SOURCE ID: ${id}`);
+                        App.startSession();
+                    });
+                    STATE.peer.on('connection', conn => {
+                        STATE.conn = conn;
+                        App.setStatus("TARGET LINKED");
+                        // Sender listens for pull request
+                        conn.on('data', d => { if(d === 'PULL') Actions.senderTeleport(); });
+                    });
+                } else {
+                    document.getElementById('screen-menu').innerHTML = document.getElementById('connect-box').outerHTML;
+                    document.getElementById('connect-box').style.display = 'flex';
+                }
+            },
+
+            connect() {
+                const target = 'ghost-' + document.getElementById('target-id').value;
+                STATE.peer = new Peer();
+                STATE.peer.on('open', () => {
+                    STATE.conn = STATE.peer.connect(target);
+                    STATE.conn.on('open', () => {
+                        App.startSession();
+                        // Receiver listens for photo
+                        STATE.conn.on('data', d => { if(d.type === 'PHOTO') Actions.receiverShow(d.blob); });
+                    });
+                });
+            },
+
+            async startSession() {
+                document.getElementById('screen-menu').classList.remove('active');
+                document.getElementById('screen-active').classList.add('active');
+                document.getElementById('role-display').innerText = STATE.role.toUpperCase();
+                
+                // Start Camera on BOTH (Required for gesture detection)
+                const video = document.getElementById('video-feed');
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user', width: { ideal: 1280 } }, 
+                        audio: false 
+                    });
+                    video.srcObject = stream;
+                    video.onloadeddata = () => AI.load();
+                } catch(e) { alert("Camera Permission Required for Hand Tracking"); }
+            },
+
+            setStatus(text) { document.getElementById('status-display').innerText = "• " + text; },
+            
+            setInstruction(text, type) {
+                const el = document.getElementById('instruction-text');
+                el.innerText = text;
+                el.className = type === 'grab' ? 'text-grab' : (type === 'drop' ? 'text-drop' : '');
+            },
+
+            download() {
+                if(!STATE.grabbedBlob) return;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(STATE.grabbedBlob);
+                a.download = `teleport_${Date.now()}.jpg`;
+                a.click();
+            }
+        };
+
+        const Actions = {
+            // SENDER: Freezes the frame
+            senderGrab() {
+                if(STATE.isGrabbed) return;
+                STATE.isGrabbed = true;
+                AudioEngine.play('grab');
+                
+                // 1. Flash FX
+                const flash = document.createElement('div');
+                flash.className = 'flash-anim';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 300);
+
+                // 2. Capture
+                const video = document.getElementById('video-feed');
+                const canvas = document.getElementById('capture-canvas');
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0);
+
+                canvas.toBlob(blob => {
+                    STATE.grabbedBlob = blob;
+                    document.getElementById('frozen-img').src = URL.createObjectURL(blob);
+                    document.getElementById('frozen-frame').style.display = 'block';
+                    
+                    App.setInstruction("HOLDING... WAITING FOR TARGET", 'drop');
+                    App.setStatus("IMAGE BUFFERED");
+                }, 'image/jpeg', 0.9);
+            },
+
+            // SENDER: Sends data to Receiver
+            senderTeleport() {
+                if(!STATE.isGrabbed || !STATE.grabbedBlob) return;
+                AudioEngine.play('warp');
+
+                // 1. Warp Animation
+                const frame = document.getElementById('frozen-frame');
+                frame.classList.add('warp-anim');
+
+                // 2. Send Data
+                STATE.conn.send({ type: 'PHOTO', blob: STATE.grabbedBlob });
+
+                // 3. Reset
+                setTimeout(() => {
+                    frame.style.display = 'none';
+                    frame.classList.remove('warp-anim');
+                    STATE.isGrabbed = false;
+                    STATE.grabbedBlob = null;
+                    App.setInstruction("SHOW FIST  TO GRAB", 'grab');
+                    App.setStatus("READY");
+                }, 800);
+            },
+
+            // RECEIVER: Requests the pull
+            receiverPull() {
+                if(STATE.isReceived) return;
+                if(STATE.conn) {
+                    STATE.conn.send('PULL');
+                    App.setStatus("PULLING DATA...");
+                    AudioEngine.play('lock');
+                }
+            },
+
+            // RECEIVER: Displays data
+            receiverShow(blob) {
+                STATE.isReceived = true;
+                STATE.grabbedBlob = blob;
+                
+                const url = URL.createObjectURL(blob);
+                document.getElementById('received-img').src = url;
+                
+                const frame = document.getElementById('received-frame');
+                frame.style.display = 'flex';
+                frame.classList.add('portal-anim');
+                
+                AudioEngine.play('warp');
+                App.setInstruction("TRANSFER COMPLETE", 'drop');
+                App.setStatus("SAVED IN BUFFER");
+            },
+
+            resetReceiver() {
+                document.getElementById('received-frame').style.display = 'none';
+                document.getElementById('received-frame').classList.remove('portal-anim');
+                STATE.isReceived = false;
+                App.setInstruction("SHOW PALM  TO DROP", 'drop');
+            }
+        };
+
+        const AI = {
+            async load() {
+                App.setInstruction("CALIBRATING AI...", '');
+                const modelParams = { flipHorizontal: true, maxNumBoxes: 1, scoreThreshold: 0.7 };
+                STATE.model = await handTrack.load(modelParams);
+                STATE.isDetecting = true;
+                
+                if(STATE.role === 'sender') App.setInstruction("SHOW FIST  TO GRAB", 'grab');
+                else App.setInstruction("SHOW PALM  TO DROP", 'drop');
+                
+                AI.loop();
+            },
+
+            async loop() {
+                if(!STATE.isDetecting) return;
+                if(STATE.cooldown) { requestAnimationFrame(AI.loop); return; }
+
+                const video = document.getElementById('video-feed');
+                const preds = await STATE.model.detect(video);
+                
+                const box = document.getElementById('tracker-box');
+
+                if (preds.length > 0) {
+                    const hand = preds[0];
+                    const label = hand.label; // 'open', 'closed', 'pinch'
+                    const [x, y, w, h] = hand.bbox;
+
+                    // UI: Draw Box
+                    box.style.display = 'block';
+                    box.style.left = x + 'px'; box.style.top = y + 'px';
+                    box.style.width = w + 'px'; box.style.height = h + 'px';
+
+                    // STABILIZER LOGIC
+                    if (label === STATE.lastGesture) {
+                        STATE.gestureFrames++;
+                    } else {
+                        STATE.gestureFrames = 0;
+                        STATE.lastGesture = label;
+                    }
+
+                    // TRIGGER ACTION AFTER 10 STABLE FRAMES
+                    if (STATE.gestureFrames > STATE.REQUIRED_FRAMES) {
+                        
+                        if (STATE.role === 'sender' && !STATE.isGrabbed) {
+                            // SENDER: Needs CLOSED/PINCH to Grab
+                            if (label === 'closed' || label === 'pinch') {
+                                box.className = 'locked-grab';
+                                box.setAttribute('data-label', 'GRABBING...');
+                                Actions.senderGrab();
+                                AI.triggerCooldown(2000);
+                            } else {
+                                box.className = '';
+                                box.setAttribute('data-label', 'OPEN HAND');
+                            }
+                        }
+                        
+                        else if (STATE.role === 'receiver' && !STATE.isReceived) {
+                            // RECEIVER: Needs OPEN to Drop
+                            if (label === 'open') {
+                                box.className = 'locked-drop';
+                                box.setAttribute('data-label', 'PULLING...');
+                                Actions.receiverPull();
+                                AI.triggerCooldown(3000);
+                            } else {
+                                box.className = '';
+                                box.setAttribute('data-label', 'FIST DETECTED');
+                            }
+                        }
+                    }
+                } else {
+                    box.style.display = 'none';
+                    STATE.gestureFrames = 0;
+                }
+
+                requestAnimationFrame(AI.loop);
+            },
+
+            triggerCooldown(ms) {
+                STATE.cooldown = true;
+                setTimeout(() => {
+                    STATE.cooldown = false;
+                    STATE.gestureFrames = 0;
+                }, ms);
+            }
+        };
+    </script>
+</body>
+</html>
