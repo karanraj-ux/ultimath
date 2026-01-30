@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta property="og:title" content="RealityCheck - AI Roast for Indian Drama">
+    <meta property="og:description" content="Check if your relationship is toxic or if you are the clown. Powered by AI.">
+    <meta property="og:image" content="https://dummyimage.com/1200x630/000/ff4d4d.png&text=REALITY+CHECK+FAILED">
+    <meta property="og:url" content="https://realitycheck.app">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="The brutal AI psychologist that roasts your relationship, friendship, and corporate life in Hinglish.">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiUmVhbGl0eUNoZWNrIiwiY2hhcmVfbmFtZSI6IlJlYWxpdHkiLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiIzAwZmY5ZCIsImljb25zIjpbeyJzcmMiOiJodHRwczovL2R1bW15aW1hZ2UuY29tLzE5MngxOTIvMDAwL2ZmZmYwMC5wbmcmdGV4dD1SQyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmciHSx7InNyYyI6Imh0dHBzOi8vZHVtbXlpbWFnZS5jb20vNTEyeDUxMi8wMDAvZmZmZjAwLnBuZyZ0ZXh0PVJDIiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
+    
+    <title>RealityCheck | Viral Edition</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. THEME ENGINE & DESIGN TOKENS
+           ========================================================================== */
+        :root {
+            /* CORE TYPOGRAPHY */
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-display: 'Inter', sans-serif; 
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-meme: 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+            
+            /* ANIMATION CURVES */
+            --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);  /* Bouncy */
+            --ease-flow: cubic-bezier(0.4, 0, 0.2, 1);       /* Smooth */
+            --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* THEME A: DARK MODE (VIBRANT AURA) 
+           This is the default "Instagram/Snapchat" style look.
+        */
+        body[data-theme="dark"] {
+            --bg-base: #000000;
+            --bg-card: rgba(20, 20, 20, 0.65);
+            --bg-input: rgba(40, 40, 40, 0.4);
+            --bg-hover: rgba(255, 255, 255, 0.1);
+            
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-accent: #FF2E63; /* Viral Red */
+            
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --border-active: rgba(255, 255, 255, 0.3);
+            
+            /* Gradient for Brand & Buttons */
+            --accent-grad: linear-gradient(135deg, #FF2E63, #FF99C8); 
+            --btn-shadow: 0 8px 32px rgba(255, 46, 99, 0.35);
+            
+            --blur-strength: 24px;
+            
+            --status-green: #00ffa3;
+            --status-yellow: #ffd700;
+            --status-red: #ff3b3b;
+        }
+
+        /* THEME B: LIGHT MODE (CLEAN AESTHETIC) 
+           High readability, professional "SaaS" look.
+        */
+        body[data-theme="light"] {
+            --bg-base: #f8f9fa;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-input: rgba(240, 240, 245, 0.7);
+            --bg-hover: rgba(0, 0, 0, 0.05);
+            
+            --text-primary: #1a1a1a;
+            --text-secondary: rgba(0, 0, 0, 0.6);
+            --text-muted: rgba(0, 0, 0, 0.4);
+            --text-accent: #007AFF; /* System Blue */
+            
+            --border-glass: rgba(0, 0, 0, 0.08);
+            --border-active: rgba(0, 0, 0, 0.2);
+            
+            --accent-grad: linear-gradient(135deg, #007AFF, #00C6FF);
+            --btn-shadow: 0 8px 32px rgba(0, 122, 255, 0.25);
+            
+            --blur-strength: 30px;
+            
+            --status-green: #059669;
+            --status-yellow: #d97706;
+            --status-red: #dc2626;
+        }
+
+        /* ==========================================================================
+           2. GLOBAL RESET & LAYOUT
+           ========================================================================== */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.5s ease;
+        }
+
+        /* ANIMATED BACKGROUND ORBS (THE "AURA" ENGINE) */
+        .aura-bg {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, var(--bg-base) 80%);
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.5;
+            animation: float 12s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+        
+        /* Orb 1: The Primary Accent (Red/Pink) */
+        .orb-1 {
+            width: 350px; 
+            height: 350px;
+            background: #FF2E63;
+            top: -80px; 
+            left: -80px;
+            animation-delay: 0s;
+        }
+        
+        /* Orb 2: The Secondary Cool Tone (Cyan/Blue) */
+        .orb-2 {
+            width: 450px; 
+            height: 450px;
+            background: #08D9D6;
+            bottom: -150px; 
+            right: -150px;
+            animation-delay: -3s;
+        }
+        
+        /* Orb 3: The Center Highlight */
+        .orb-3 {
+            width: 300px; 
+            height: 300px;
+            background: #712B75; 
+            top: 40%; 
+            left: 40%;
+            opacity: 0.2;
+            animation-duration: 18s;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, 20px) scale(1.1); }
+            100% { transform: translate(-20px, 50px) scale(0.95); }
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            width: 100%;
+            max-width: 500px; /* Constrained for Mobile-First Look */
+            padding: 24px;
+            padding-bottom: 140px; /* Space for footer/ticker */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            transition: all 0.5s var(--ease-flow);
+        }
+
+        /* CUSTOM SCROLLBAR (WEBKIT) */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--border-active); 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* ==========================================================================
+           3. COMPONENT: HEADER
+           ========================================================================== */
+        .header-clean {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-top: 15px;
+        }
+        
+        .brand-title {
+            font-size: 1.8rem; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            font-family: var(--font-display);
+            text-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header-actions { 
+            display: flex; 
+            gap: 12px; 
+        }
+        
+        .icon-btn {
+            background: var(--bg-card); 
+            border: 1px solid var(--border-glass);
+            width: 44px; 
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.25rem; 
+            cursor: pointer;
+            color: var(--text-primary); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.3s var(--ease-snap);
+            backdrop-filter: blur(10px);
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .icon-btn:hover { 
+            background: var(--text-primary); 
+            color: var(--bg-base);
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Fake Notification Badge (Psychological Trigger) */
+        .badge-dot {
+            position: absolute; 
+            top: 2px; 
+            right: 2px;
+            width: 12px; 
+            height: 12px;
+            background: #FF2E63;
+            border: 2px solid var(--bg-base);
+            border-radius: 50%;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 
+            0%, 100% { transform: translateY(0); } 
+            50% { transform: translateY(-3px); } 
+        }
+
+        /* ==========================================================================
+           4. COMPONENT: STATS PILL (HUD)
+           ========================================================================== */
+        .stats-pill {
+            display: flex; 
+            justify-content: space-between;
+            width: 100%;
+            background: var(--bg-card); 
+            backdrop-filter: blur(var(--blur-strength));
+            padding: 18px 24px; 
+            border-radius: 24px;
+            border: 1px solid var(--border-glass); 
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stats-pill:hover { transform: translateY(-2px); }
+        
+        .stat-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex: 1; 
+        }
+        
+        .stat-label { 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            color: var(--text-secondary); 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 6px;
+        }
+        
+        .stat-val { 
+            font-size: 1.2rem; 
+            font-weight: 900; 
+            color: var(--text-primary);
+            font-family: var(--font-display);
+        }
+        
+        .stat-sep { 
+            width: 1px; 
+            background: var(--border-glass); 
+            margin: 0 10px;
+        }
+
+        /* ==========================================================================
+           5. COMPONENT: DAILY BANNER (STORY STYLE)
+           ========================================================================== */
+        .daily-banner {
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--blur-strength));
+            padding: 4px; /* Space for the gradient border */
+            border-radius: 22px;
+            margin-bottom: 28px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .daily-banner:active { transform: scale(0.98); }
+        
+        /* Inner container for the banner content */
+        .daily-inner {
+            background: var(--bg-base); /* Gives the "Inset" look */
+            border-radius: 19px;
+            padding: 16px 22px;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Rotating Gradient Border Animation */
+        .daily-gradient {
+            position: absolute; 
+            top: -50%; 
+            left: -50%; 
+            width: 200%; 
+            height: 200%;
+            background: conic-gradient(
+                transparent, 
+                #FF2E63, 
+                #08D9D6, 
+                #FF99C8, 
+                transparent 40%
+            );
+            animation: rotate 4s linear infinite;
+            z-index: 1;
+        }
+        @keyframes rotate { 
+            100% { transform: rotate(360deg); } 
+        }
+        
+        .daily-text-group { display: flex; flex-direction: column; }
+        
+        .daily-tag { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            color: #FF2E63; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        
+        .daily-main { 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--text-primary); 
+        }
+        
+        .daily-arrow {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        /* ==========================================================================
+           6. COMPONENT: INPUT STAGE (AUTO-TYPE ENABLED)
+           ========================================================================== */
+        .input-stage {
+            width: 100%; 
+            position: relative; 
+            margin-bottom: 24px;
+        }
+        
+        textarea {
+            width: 100%; 
+            height: 200px; 
+            background: var(--bg-input);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent; 
+            border-radius: 24px; 
+            padding: 24px;
+            color: var(--text-primary); 
+            font-size: 1.25rem; 
+            font-family: var(--font-main);
+            resize: none; 
+            box-sizing: border-box; 
+            outline: none;
+            line-height: 1.5; 
+            transition: all 0.3s var(--ease-flow);
+        }
+        
+        textarea:focus {
+            background: var(--bg-card);
+            border-color: rgba(255, 46, 99, 0.5); /* Brand color focus */
+            box-shadow: 0 0 30px rgba(255, 46, 99, 0.15);
+        }
+        
+        /* Placeholder Animation Styling */
+        textarea::placeholder { 
+            color: var(--text-secondary); 
+            opacity: 0.6; 
+            font-weight: 400; 
+            font-style: italic;
+        }
+        
+        .char-count {
+            position: absolute; 
+            bottom: 16px; 
+            right: 20px; 
+            font-size: 0.75rem; 
+            color: var(--text-secondary); 
+            font-weight: 600;
+            background: rgba(0,0,0,0.1);
+            padding: 4px 8px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        /* ==========================================================================
+           7. COMPONENT: HERO BUTTON (GRADIENT)
+           ========================================================================== */
+        .check-btn {
+            width: 100%; 
+            padding: 22px;
+            background: var(--accent-grad);
+            color: #ffffff; 
+            border: none;
+            border-radius: 18px; 
+            font-size: 1.15rem; 
+            font-weight: 800; 
+            cursor: pointer;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            box-shadow: var(--btn-shadow);
+            transition: all 0.3s var(--ease-snap);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Button Hover Effect (Lift & Glow) */
+        .check-btn:hover { 
+            transform: translateY(-4px) scale(1.02); 
+            box-shadow: 0 15px 40px rgba(255, 46, 99, 0.4);
+        }
+        
+        .check-btn:active { transform: scale(0.95); }
+        
+        .check-btn:disabled { 
+            opacity: 0.6; 
+            cursor: not-allowed; 
+            background: var(--bg-input); 
+            box-shadow: none;
+            color: var(--text-muted);
+        }
+        
+        /* ==========================================================================
+           8. COMPONENT: RESULT CARD (THE CORE CONTENT)
+           ========================================================================== */
+        #ugly-card {
+            display: none; 
+            margin-top: 32px; 
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass); 
+            backdrop-filter: blur(var(--blur-strength));
+            border-radius: 26px; 
+            padding: 32px;
+            position: relative; 
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            animation: slideUpFade 0.6s var(--ease-snap);
+        }
+        
+        @keyframes slideUpFade { 
+            from { opacity: 0; transform: translateY(40px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        .watermark {
+            position: absolute; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 5rem; 
+            font-weight: 900; 
+            color: rgba(255, 255, 255, 0.03);
+            pointer-events: none; 
+            white-space: nowrap;
+            z-index: 0;
+        }
+
+        .verdict-header {
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            text-transform: uppercase;
+            margin-bottom: 20px; 
+            color: var(--text-accent);
+            line-height: 1; 
+            letter-spacing: -1.5px;
+            position: relative; 
+            z-index: 1;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* CLEAN TEXT (Replaces Monospace) */
+        .result-text {
+            font-family: var(--font-main); 
+            font-size: 1.1rem; 
+            color: var(--text-primary);
+            line-height: 1.7; 
+            font-weight: 500;
+            position: relative; 
+            z-index: 1;
+        }
+
+        /* Action Buttons Row (Listen / Share) */
+        .actions-row {
+            display: flex; 
+            gap: 12px; 
+            margin-top: 28px; 
+            position: relative; 
+            z-index: 2;
+        }
+        
+        .action-btn {
+            flex: 1; 
+            padding: 14px; 
+            border-radius: 14px;
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            cursor: pointer;
+            border: 1px solid var(--border-glass);
+            background: rgba(255,255,255,0.05); 
+            color: var(--text-primary);
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+        }
+        
+        .action-btn:hover { 
+            background: rgba(255,255,255,0.1); 
+            transform: translateY(-2px); 
+        }
+        
+        .action-primary { 
+            background: rgba(255, 46, 99, 0.1); 
+            border-color: rgba(255, 46, 99, 0.3); 
+            color: #FF2E63; 
+        }
+
+        /* ==========================================================================
+           9. STORY MODE OVERRIDE (THE VIRAL FEATURE)
+           This completely changes the CSS layout when 'story-mode' class is added
+           to the body. It hides everything except the result for a clean screenshot.
+           ========================================================================== */
+        body.story-mode .header-clean, 
+        body.story-mode .stats-pill,
+        body.story-mode .daily-banner,
+        body.story-mode .input-stage,
+        body.story-mode .check-btn,
+        body.story-mode .community-section,
+        body.story-mode .history-section,
+        body.story-mode .ticker-wrap,
+        body.story-mode .legal-footer,
+        body.story-mode #unlock-btn {
+            display: none !important;
+        }
+
+        body.story-mode .container {
+            height: 100vh; 
+            justify-content: center; 
+            padding: 0;
+            max-width: 100%;
+        }
+
+        body.story-mode #ugly-card {
+            margin: 0;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            justify-content: center;
+            backdrop-filter: none;
+        }
+        
+        /* Scale up text for 9:16 vertical video format */
+        body.story-mode .verdict-header { 
+            font-size: 4.5rem; 
+            text-shadow: 0 0 40px rgba(255, 46, 99, 0.6); 
+            margin-bottom: 30px;
+        }
+        body.story-mode .result-text { 
+            font-size: 1.8rem; 
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5); 
+            max-width: 85%;
+        }
+        body.story-mode .story-watermark { 
+            display: block; 
+            margin-top: 60px; 
+            opacity: 0.8; 
+            font-weight: 900; 
+            letter-spacing: 3px; 
+            font-size: 1rem;
+        }
+        
+        .story-watermark { display: none; color: var(--text-primary); text-transform: uppercase; }
+        
+        /* CLOSE STORY BUTTON */
+        .exit-story-btn {
+            display: none; 
+            position: fixed; 
+            top: 40px; 
+            right: 30px; 
+            z-index: 9999;
+            background: rgba(0,0,0,0.6); 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            padding: 12px 24px; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        body.story-mode .exit-story-btn { display: block; }
+
+        /* ==========================================================================
+           10. COMMUNITY FEED (LIVE CONTENT)
+           ========================================================================== */
+        .community-section { 
+            width: 100%; 
+            margin-top: 60px; 
+            border-top: 1px solid var(--border-glass);
+            padding-top: 30px;
+        }
+        
+        .feed-header {
+            font-size: 0.9rem; 
+            font-weight: 800; 
+            color: var(--text-secondary);
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 24px;
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        
+        .feed-card {
+            background: var(--bg-card); 
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass); 
+            border-radius: 20px;
+            padding: 20px; 
+            margin-bottom: 16px; 
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .feed-card:hover { 
+            transform: scale(1.02); 
+            background: var(--bg-hover);
+        }
+        
+        .feed-text { 
+            font-size: 1rem; 
+            line-height: 1.5; 
+            margin-bottom: 12px; 
+            color: var(--text-primary);
+        }
+        
+        .feed-meta { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+        }
+        
+        .vote-pill {
+            background: rgba(255,255,255,0.1); 
+            padding: 5px 12px; 
+            border-radius: 12px;
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        
+        .vote-pill:hover { 
+            background: var(--text-accent); 
+            color: white; 
+        }
+
+        /* ==========================================================================
+           11. HISTORY & FOOTER
+           ========================================================================== */
+        .history-section { 
+            margin-top: 60px; 
+            width: 100%; 
+        }
+        
+        .history-title { 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            color: var(--text-secondary); 
+            margin-bottom: 20px; 
+            letter-spacing: 2px; 
+            text-align: center; 
+            font-weight: 800;
+        }
+        
+        .history-item { 
+            background: var(--bg-card); 
+            padding: 18px; 
+            border-radius: 16px; 
+            margin-bottom: 12px; 
+            cursor: pointer; 
+            transition: background 0.2s;
+            border-left: 3px solid var(--border-glass);
+        }
+        
+        .history-item:hover { 
+            background: var(--bg-hover); 
+            border-left-color: var(--text-accent);
+        }
+        
+        .hist-date { 
+            font-size: 0.75rem; 
+            color: var(--text-secondary); 
+            display: block; 
+            margin-bottom: 4px; 
+        }
+        
+        .hist-verdict { 
+            font-weight: 800; 
+            color: var(--text-accent); 
+        }
+
+        .legal-footer {
+            margin-top: 80px; 
+            font-size: 0.75rem; 
+            color: var(--text-secondary);
+            text-align: center; 
+            max-width: 90%; 
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        .ticker-wrap {
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: var(--bg-base);
+            border-top: 1px solid var(--border-glass); 
+            height: 42px; 
+            overflow: hidden;
+            display: flex; 
+            align-items: center; 
+            z-index: 100;
+        }
+        .ticker { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 3rem; color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        /* ==========================================================================
+           12. MODALS & OVERLAYS
+           ========================================================================== */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(12px);
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #111; 
+            width: 85%; 
+            max-width: 400px; 
+            padding: 36px;
+            border-radius: 30px; 
+            border: 1px solid var(--border-glass);
+            animation: zoomIn 0.3s var(--ease-snap);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+        }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .api-input {
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 16px;
+            background: #222; 
+            border: 1px solid #333; 
+            color: white; 
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        
+        .theme-btn {
+            width: 100%; 
+            padding: 14px; 
+            background: #333; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            margin-top: 10px; 
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .theme-btn:hover { background: #444; }
+
+        #unlock-btn {
+            display: none; 
+            width: 100%; 
+            margin-top: 24px; 
+            padding: 20px;
+            background: var(--text-primary); 
+            color: var(--bg-base);
+            border: none; 
+            border-radius: 16px; 
+            font-weight: 900;
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s;
+        }
+        #unlock-btn:hover { transform: scale(1.02); }
+
+        /* MEME OVERLAY (GLASS) */
+        #meme-overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.9); 
+            backdrop-filter: blur(20px);
+            z-index: 3000; 
+            align-items: center; 
+            justify-content: center; 
+            flex-direction: column;
+        }
+        
+        .scrapbook-card {
+            width: 90%; 
+            max-width: 380px; 
+            background: #111;
+            border: 4px solid var(--text-accent); 
+            border-radius: 8px; 
+            padding: 30px;
+            text-align: center; 
+            transform: rotate(-2deg); 
+            position: relative;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.8);
+        }
+        
+        .meme-verdict { font-family: 'Impact', sans-serif; font-size: 3.5rem; color: #FF2E63; line-height: 1; }
+        .meme-text { font-family: 'Impact', sans-serif; font-size: 1.4rem; color: white; text-align: left; margin-top: 20px; line-height: 1.3; }
+        
+        .share-pill {
+            margin-top: 30px; 
+            padding: 16px 32px; 
+            border-radius: 50px;
+            background: #25D366; 
+            color: white; 
+            border: none; 
+            font-weight: 900;
+            cursor: pointer; 
+            width: 100%; 
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+        }
+
+        .spinner {
+            display: none; 
+            width: 24px; 
+            height: 24px; 
+            border: 3px solid #ffffff;
+            border-bottom-color: transparent; 
+            border-radius: 50%;
+            animation: rotation 1s linear infinite; 
+            margin: 0 auto;
+        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .queue-msg {
+            color: var(--text-secondary); 
+            font-size: 0.9rem; 
+            margin-top: 20px;
+            text-align: center; 
+            display: none; 
+            padding: 15px; 
+            border: 1px dashed var(--border-glass); 
+            border-radius: 12px; 
+            background: var(--bg-card);
+        }
+
+        /* PWA INSTALL BUTTON (HIDDEN BY DEFAULT) */
+        .install-btn {
+            background: linear-gradient(135deg, #00C6FF, #007AFF);
+            color: white;
+            border: none;
+            margin-top: 15px;
+            display: none; 
+        }
+
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="aura-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <button class="exit-story-btn" onclick="toggleStoryMode()">
+        ✖ Exit Story Mode
+    </button>
+
+    <div class="container">
+        
+        <div class="header-clean">
+            <div class="brand-title">
+                <div class="brand-dot"></div>
+                REALITYCHECK
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleStoryMode()" title="Story Mode (Screenshot)">
+                    📸
+                </button>
+                <button class="icon-btn" onclick="openSettings()" title="Settings">
+                    ⚙️
+                    <div class="badge-dot"></div> 
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-pill">
+            <div class="stat-item">
+                <span class="stat-label">Streak</span>
+                <span class="stat-val" id="streak-display">0</span>
+            </div>
+            <div class="stat-sep"></div>
+            <div class="stat-item">
+                <span class="stat-label">Status</span>
+                <span class="stat-val" id="level-display" style="color:var(--text-accent)">NOOB</span>
+            </div>
+        </div>
+
+        <div class="daily-banner" onclick="playSound('click'); loadDailyTopic()">
+            <div class="daily-gradient"></div>
+            <div class="daily-inner">
+                <div class="daily-text-group">
+                    <span class="daily-tag">📅 Today's Roast</span>
+                    <span class="daily-main" id="daily-topic-text">Loading Topic...</span>
+                </div>
+                <div class="daily-arrow">→</div>
+            </div>
+        </div>
+
+        <div class="input-stage">
+            <textarea id="user-input" placeholder=""></textarea> 
+            <div class="char-count">0/300</div>
+        </div>
+
+        <button id="submit-btn" class="check-btn" onclick="playSound('click'); runHydraEngine()">
+            <span id="btn-text">CHECK REALITY</span>
+            <div id="spinner" class="spinner"></div>
+        </button>
+        
+        <div id="queue-msg" class="queue-msg">
+            🔥 High Drama Load! Server cooling down... <br>
+            Retrying in <span id="timer" class="timer-count">10</span>s...
+        </div>
+
+        <div id="ugly-card">
+            <div class="watermark">PREVIEW</div>
+            
+            <div class="verdict-header" id="verdict-display"></div>
+            <div class="result-text" id="result-text-display"></div>
+            
+            <div class="story-watermark">RealityCheck.App</div>
+
+            <div class="actions-row">
+                <button class="action-btn secondary-btn" onclick="speakVerdict()">
+                    🔊 Listen
+                </button>
+                <button class="action-btn action-primary" onclick="playSound('click'); postToCommunity()">
+                    🚀 Post (Anon)
+                </button>
+            </div>
+        </div>
+
+        <button id="unlock-btn" onclick="playSound('success'); unlockMeme()">
+            🤡 Unlock Magic Card
+        </button>
+
+        <div class="community-section">
+            <div class="feed-header">
+                🔥 LIVE DRAMA FEED
+            </div>
+            <div id="community-feed">
+                </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">Your Past Reality Checks</div>
+            <div id="history-list">
+                </div>
+        </div>
+
+        <div class="legal-footer">
+            Generated by AI. For entertainment purposes only.<br>
+            We are not responsible for breakups, fights, or flying chappals.
+        </div>
+    </div>
+
+    <div class="ticker-wrap">
+        <div class="ticker" id="ticker-content">
+            </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Settings</div>
+            <span class="close-modal" onclick="closeSettings()">&times;</span>
+            
+            <div class="api-group">
+                <label class="api-label">Gemini API Key (Primary)</label>
+                <input type="password" id="api-key" class="api-input" placeholder="Paste Gemini Key Here">
+            </div>
+            
+            <div class="api-group">
+                <label class="api-label">Groq API Key (Fast Backup)</label>
+                <input type="password" id="groq-key" class="api-input" placeholder="Paste Groq Key Here">
+            </div>
+
+            <div class="api-group" style="border-top: 1px solid var(--border-glass); padding-top: 15px;">
+                <label class="api-label">Firebase Config (For Community)</label>
+                <textarea id="firebase-config" class="api-input" style="height:60px" placeholder='{"apiKey": "...", "projectId": "..."}'></textarea>
+            </div>
+
+            <label class="api-label">Analysis Mode</label>
+            <div class="mode-toggle">
+                <button class="toggle-btn active" id="btn-sit" onclick="setMode('situation')">Situation</button>
+                <button class="toggle-btn" id="btn-msg" onclick="setMode('message')">Message</button>
+            </div>
+
+            <div class="theme-switch-wrapper">
+                <span class="theme-label" style="color:var(--text-primary); font-weight:600;">Visual Theme</span>
+                <button class="theme-btn" onclick="toggleTheme()">🌗 Toggle Light/Dark</button>
+            </div>
+
+            <button id="install-btn" class="theme-btn install-btn" onclick="installPWA()">
+                📲 Install App to Home Screen
+            </button>
+        </div>
+    </div>
+
+    <div id="meme-overlay">
+        <div class="scrapbook-card">
+            <div class="tape" style="position:absolute; top:-15px; left:45%; width:100px; height:30px; background:rgba(255,255,255,0.2); transform:rotate(2deg); backdrop-filter:blur(5px);"></div>
+            
+            <span style="position:absolute; top:15px; right:20px; color:white; font-size:2rem; cursor:pointer; z-index:10;" onclick="closeMeme()">&times;</span>
+            
+            <div style="font-size:0.8rem; color:#888; letter-spacing:2px; margin-bottom: 5px;">OFFICIAL VERDICT</div>
+            <div class="meme-verdict" id="meme-verdict">TOXIC</div>
+            
+            <div class="meme-content" id="meme-text">
+                Loading drama...
+            </div>
+
+            <div class="stamp-footer">
+                <span>CASE #<span id="case-id">000</span></span>
+                <span class="stamp-logo">REALITYCHECK.APP</span>
+            </div>
+        </div>
+        
+        <button class="share-pill" onclick="shareMeme()">
+            📤 Share to Bestie
+        </button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        
+        // Global DB Reference
+        window.db = null;
+
+        // Initialize Firebase from LocalStorage Config
+        window.initFirebase = function() {
+            const configStr = localStorage.getItem('rc_firebase_config');
+            if(configStr) {
+                try { 
+                    const app = initializeApp(JSON.parse(configStr)); 
+                    window.db = getFirestore(app); 
+                    console.log("Firebase Connected Successfully");
+                    loadCommunityFeed(); 
+                } catch(e) { 
+                    console.log("Firebase Config Error: " + e.message); 
+                }
+            }
+        };
+
+        // Post to Community Logic
+        window.submitToFirebase = async function(text, verdict) {
+            if(!window.db) return alert("Please configure Firebase in Settings first!");
+            
+            try { 
+                await addDoc(collection(window.db, "posts"), { 
+                    text: text, 
+                    verdict: verdict, 
+                    votes: 0, 
+                    timestamp: serverTimestamp() 
+                }); 
+                alert("Posted to Community Feed! 🔥"); 
+            } catch(e) { 
+                alert("Error posting: " + e.message); 
+            }
+        };
+
+        // Live Feed Listener
+        function loadCommunityFeed() {
+            if(!window.db) return;
+            
+            const q = query(collection(window.db, "posts"), orderBy("timestamp", "desc"), limit(30));
+            
+            onSnapshot(q, (snap) => {
+                const feedDiv = document.getElementById('community-feed'); 
+                feedDiv.innerHTML = "";
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    feedDiv.innerHTML += `
+                    <div class="feed-card">
+                        <div class="feed-text">${d.text}</div>
+                        <div class="feed-meta">
+                            <span style="color:var(--text-accent); font-weight:800;">${d.verdict}</span>
+                            <span class="vote-pill" onclick="votePost('${doc.id}', ${d.votes})">
+                                🔥 ${d.votes}
+                            </span>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        // Vote Logic
+        window.votePost = async function(id, current) { 
+            if(window.db) {
+                await updateDoc(doc(window.db, "posts", id), { votes: current+1 }); 
+                playSound('success');
+            }
+        };
+        
+        // Auto-init on load
+        initFirebase();
+    </script>
+
+    <script>
+        // ========================
+        // A. GLOBAL STATE & CONFIG
+        // ========================
+        let confirmedGeminiModel = null;
+        let confirmedGroqModel = null; // Auto-detected model stores here
+        let activePayload = null;
+        let lastInputText = "";
+        let currentMode = 'situation';
+        let voiceEngine = null; // For Phase 5 Voice
+        let defPrompt; // For PWA
+
+        // DOM ELEMENTS
+        const geminiInput = document.getElementById('api-key');
+        const groqInput = document.getElementById('groq-key');
+        const fbInput = document.getElementById('firebase-config');
+
+        // ========================
+        // B. INITIALIZATION
+        // ========================
+        window.onload = function() {
+            // 1. Load Keys & Configs
+            if(localStorage.getItem('gemini_key')) geminiInput.value = localStorage.getItem('gemini_key');
+            if(localStorage.getItem('groq_key')) groqInput.value = localStorage.getItem('groq_key');
+            const fbConfig = localStorage.getItem('rc_firebase_config');
+            if(fbConfig) document.getElementById('firebase-config').value = fbConfig;
+            
+            // 2. Load Theme
+            const savedTheme = localStorage.getItem('rc_theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+
+            // 3. Start Visuals
+            typeEffect(); 
+            initTicker();
+            loadRetention();
+            
+            // 4. Init Audio
+            loadVoices();
+            
+            // 5. Preload Content
+            renderPreloadedFeed();
+        };
+
+        // SAVE KEYS LISTENER
+        geminiInput.addEventListener('input', (e) => localStorage.setItem('gemini_key', e.target.value));
+        groqInput.addEventListener('input', (e) => localStorage.setItem('groq_key', e.target.value));
+        fbInput.addEventListener('input', (e) => localStorage.setItem('rc_firebase_config', e.target.value));
+
+        // ========================
+        // C. HYDRA ENGINE (THE BRAIN)
+        // ========================
+        const SYSTEM_INSTRUCTION = `
+        ROLE: You are 'RealityCheck', a clinical psychologist who talks like a brutal Indian standup comedian.
+        TASK: Roast the user's situation in Hinglish (Hindi + English).
+        OUTPUT JSON ONLY:
+        {
+            "verdict": "🔴 RED FLAG" / "🟡 YELLOW FLAG" / "🟢 GREEN FLAG" / "🤡 CLOWN MOMENT",
+            "reason": "Hinglish explanation. Start with a direct insult or wake-up call. Use words like 'Bhai', 'Behen', 'Natak', 'Delusional'.",
+            "meme_content": "Le You: [Delusional thought]... \\nLe Reality: [Brutal Truth]"
+        }`;
+
+        // 1. HELPER: CLEAN JSON (Removes Markdown)
+        function cleanJSON(str) {
+            let clean = str.replace(/```json/g, '').replace(/```/g, '');
+            // Attempt to find the first '{' and last '}' to strip extra text
+            const firstBrace = clean.indexOf('{');
+            const lastBrace = clean.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                clean = clean.substring(firstBrace, lastBrace + 1);
+            }
+            return JSON.parse(clean); // Can throw error, handled in runHydraEngine
+        }
+
+        // 2. HELPER: GROQ AUTO-MODEL FINDER (The Fix)
+        async function findBestGroqModel(key) {
+            try {
+                console.log("Searching for best Groq model...");
+                const response = await fetch('https://api.groq.com/openai/v1/models', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${key}` }
+                });
+                
+                if (!response.ok) throw new Error("Groq API Key Invalid");
+                
+                const data = await response.json();
+                const models = data.data.map(m => m.id);
+                
+                // Priority Logic: Try Llama 3.3 -> 3.1 -> 3 -> Mixtral
+                const preferred = models.find(m => m.includes("llama-3.3-70b")) || 
+                                  models.find(m => m.includes("llama-3.1-70b")) ||
+                                  models.find(m => m.includes("llama-3.1-8b")) ||
+                                  models.find(m => m.includes("mixtral"));
+                                  
+                console.log("Auto-selected Groq Model:", preferred);
+                return preferred || "llama3-8b-8192"; // Ultimate fallback
+            } catch(e) {
+                console.error("Groq Model Search Failed:", e);
+                return "llama3-8b-8192"; 
+            }
+        }
+
+        // 3. MAIN RUN FUNCTION
+        async function runHydraEngine() {
+            const text = document.getElementById('user-input').value.trim();
+            if(!text) return alert("Likho kuch! (Type something)");
+            lastInputText = text;
+            
+            // UI LOADING STATE
+            const btn = document.getElementById('submit-btn');
+            const spinner = document.getElementById('spinner');
+            document.getElementById('btn-text').style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+            document.getElementById('ugly-card').style.display = 'none';
+            document.getElementById('unlock-btn').style.display = 'none';
+            document.getElementById('queue-msg').style.display = 'none';
+
+            const gKey = geminiInput.value.trim();
+            const grKey = groqInput.value.trim();
+            let result = null;
+
+            try {
+                // --- LAYER 0: INSTANT CHEAT SHEET ---
+                const CHEAT_SHEET = {
+                    "hi": { verdict: "🟢 GREEN FLAG", reason: "Hello! Main tera dost hoon. Drama bata.", meme_content: "Le You: Hi\nLe Me: Mudde pe aa." },
+                    "hello": { verdict: "🟢 GREEN FLAG", reason: "RealityCheck active. Time waste mat kar.", meme_content: "Le You: Hello\nLe AI: Ready to roast." },
+                    "test": { verdict: "🟢 SYSTEM OK", reason: "System chal raha hai. Don't worry.", meme_content: "Le Dev: Testing...\nLe App: 100% OK." }
+                };
+                if(CHEAT_SHEET[text.toLowerCase()]) {
+                    result = CHEAT_SHEET[text.toLowerCase()];
+                    await new Promise(r => setTimeout(r, 600)); // Fake processing delay for feel
+                }
+
+                // --- LAYER 1: GEMINI API (PRIMARY) ---
+                else if(gKey) {
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: SYSTEM_INSTRUCTION + "\nINPUT: " + text }] }] })
+                        });
+                        
+                        if(res.status === 429) throw new Error("GEMINI_LIMIT");
+                        if(res.status !== 200) throw new Error("GEMINI_ERROR");
+                        
+                        const data = await res.json();
+                        result = cleanJSON(data.candidates[0].content.parts[0].text);
+                        console.log("Gemini Success");
+                    } catch(e) { 
+                        console.warn("Gemini Failed/Limit, Switching to Groq...", e); 
+                    }
+                }
+
+                // --- LAYER 2: GROQ API (BACKUP / AUTO-SWITCH) ---
+                if(!result && grKey) {
+                    try {
+                        // Step A: Auto-Find Model if not set
+                        if(!confirmedGroqModel) {
+                            confirmedGroqModel = await findBestGroqModel(grKey);
+                        }
+
+                        // Step B: Call API
+                        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${grKey}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                messages: [{role:"system", content:SYSTEM_INSTRUCTION}, {role:"user", content:text}],
+                                model: confirmedGroqModel, // Dynamic Model
+                                response_format: {type: "json_object"}
+                            })
+                        });
+
+                        if(!res.ok) throw new Error("GROQ_ERROR: " + res.status);
+                        
+                        const data = await res.json();
+                        result = JSON.parse(data.choices[0].message.content);
+                        console.log("Groq Success with " + confirmedGroqModel);
+
+                    } catch(e) { 
+                        console.error("Groq Failed:", e); 
+                    }
+                }
+
+                // --- FINAL CHECK ---
+                if(!result) throw new Error("QUEUE_FULL");
+
+                // SUCCESS EXECUTION
+                activePayload = result;
+                // Add Easter Egg Analysis
+                activePayload.reason += checkEasterEggs(text);
+                
+                showUglyCard(activePayload);
+                updateStreak();
+                playSound('success');
+
+            } catch(e) {
+                // ERROR HANDLING
+                playSound('error');
+                if(e.message === "QUEUE_FULL") {
+                    document.getElementById('queue-msg').style.display = 'block';
+                    startQueueTimer(); // Auto-retry logic
+                } else {
+                    alert("System Error: " + e.message + "\nPlease check API Keys in Settings.");
+                }
+            } finally {
+                // UI CLEANUP
+                if(document.getElementById('queue-msg').style.display === 'none') {
+                    document.getElementById('btn-text').style.display = 'block';
+                    spinner.style.display = 'none';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ========================
+        // D. VIRAL FEATURES (VISUALS & CONTENT)
+        // ========================
+        
+        // 1. AUTO-TYPE ANIMATION
+        const placeholders = [
+            "My ex texted me at 2 AM...",
+            "He asked to split the chai bill...",
+            "She posted a story with 'Hidden'...",
+            "My manager wants me to work weekend...",
+            "He has 'Sigma Male' in bio...",
+            "She said 'I'm not like other girls'...",
+            "He follows 500 random girls on Insta..."
+        ];
+        let phIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        
+        function typeEffect() {
+            const currentTxt = placeholders[phIndex];
+            const input = document.getElementById('user-input');
+            if(input.value.length > 0) return;
+
+            if (isDeleting) {
+                input.setAttribute("placeholder", currentTxt.substring(0, charIndex--));
+            } else {
+                input.setAttribute("placeholder", currentTxt.substring(0, charIndex++));
+            }
+
+            let typeSpeed = isDeleting ? 30 : 80;
+            if (!isDeleting && charIndex === currentTxt.length) {
+                typeSpeed = 2000; 
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phIndex = (phIndex + 1) % placeholders.length;
+            }
+            setTimeout(typeEffect, typeSpeed);
+        }
+
+        // 2. EASTER EGG LOGIC
+        function checkEasterEggs(text) {
+            const t = text.toLowerCase();
+            if(t.includes("bangalore")) return "\n\n(Location Analysis: Bangalore detected. Enjoy your traffic & trauma.)";
+            if(t.includes("delhi")) return "\n\n(Location Analysis: Delhi detected. Tu jaanta nahi mera baap kaun hai?)";
+            if(t.includes("mumbai")) return "\n\n(Location Analysis: Mumbai detected. Paying 50k rent for a matchbox?)";
+            if(t.includes("tinder") || t.includes("bumble")) return "\n\n(App Analysis: Delete the app. Touch grass.)";
+            if(t.includes("hr")) return "\n\n(Corporate Analysis: Just reply 'Noted' and move on.)";
+            return "";
+        }
+
+        // 3. STORY MODE (SCREENSHOT VIEW)
+        function toggleStoryMode() {
+            document.body.classList.toggle('story-mode');
+            if(document.body.classList.contains('story-mode')) {
+                document.getElementById('ugly-card').style.display = 'flex';
+                if(!document.getElementById('verdict-display').innerText) {
+                    document.getElementById('verdict-display').innerText = "REALITY CHECK";
+                    document.getElementById('result-text-display').innerText = "Take a screenshot of your roast here.";
+                }
+            } else {
+                if(!activePayload) document.getElementById('ugly-card').style.display = 'none';
+            }
+        }
+
+        // ========================
+        // E. DISPLAY & AUDIO
+        // ========================
+        function showUglyCard(data) {
+            document.getElementById('ugly-card').style.display = 'block';
+            document.getElementById('unlock-btn').style.display = 'block';
+            
+            const verdictEl = document.getElementById('verdict-display');
+            verdictEl.innerText = data.verdict;
+            
+            if(data.verdict.includes("RED")) verdictEl.style.color = "#FF2E63";
+            else if(data.verdict.includes("GREEN")) verdictEl.style.color = "#00ffa3";
+            else if(data.verdict.includes("CLOWN")) verdictEl.style.color = "#bc13fe";
+            else verdictEl.style.color = "#ffffff";
+
+            if(data.verdict.includes("RED")) playSound('error'); 
+
+            document.getElementById('result-text-display').innerText = data.reason;
+            document.getElementById('ugly-card').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function unlockMeme() {
+            document.getElementById('meme-verdict').innerText = activePayload.verdict;
+            document.getElementById('meme-text').innerText = activePayload.meme_content;
+            document.getElementById('case-id').innerText = Math.floor(Math.random() * 9000) + 1000;
+            
+            // Color Logic
+            let color = "#00ffa3";
+            if(activePayload.verdict.includes("RED")) color = "#FF2E63";
+            if(activePayload.verdict.includes("CLOWN")) color = "#bc13fe";
+            
+            document.getElementById('meme-verdict').style.color = color;
+            document.querySelector('.scrapbook-card').style.borderColor = color;
+
+            document.getElementById('meme-overlay').style.display = 'flex';
+            fireConfetti();
+        }
+
+        // VOICE ENGINE (PHASE 5)
+        function loadVoices() {
+            const vs = window.speechSynthesis.getVoices();
+            voiceEngine = vs.find(v => v.lang === 'en-IN') || 
+                          vs.find(v => v.lang === 'hi-IN') || 
+                          vs[0];
+        }
+        if(window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        function speakVerdict() {
+            if(!activePayload) return;
+            const cleanReason = activePayload.reason.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
+            const u = new SpeechSynthesisUtterance(`${activePayload.verdict}. ${cleanReason}`);
+            u.voice = voiceEngine;
+            u.pitch = 0.85; u.rate = 1.1;
+            window.speechSynthesis.speak(u);
+        }
+
+        // SOUND ENGINE
+        const sounds = {
+            click: new Audio("data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAA"), 
+            success: new Audio("data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAA"),
+            error: new Audio("data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAA")
+        };
+        function playSound(t) { try { sounds[t].play().catch(()=>{}); } catch(e){} }
+
+        function fireConfetti() { 
+            if(window.confetti) confetti({particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#FF2E63', '#08D9D6', '#EAEAEA']}); 
+        }
+
+        // ========================
+        // F. UTILS (SETTINGS, THEMES, PWA)
+        // ========================
+        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+        function closeMeme() { document.getElementById('meme-overlay').style.display = 'none'; }
+        
+        function toggleTheme() {
+            const b = document.body;
+            b.setAttribute('data-theme', b.getAttribute('data-theme')==='dark'?'light':'dark');
+            localStorage.setItem('rc_theme', b.getAttribute('data-theme'));
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            playSound('click');
+            document.getElementById('btn-sit').className = mode === 'situation' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('btn-msg').className = mode === 'message' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('user-input').placeholder = "Analysis Mode Changed...";
+        }
+
+        function initTicker() {
+            const t = document.getElementById('ticker-content');
+            let h = ""; 
+            const PRELOADED_GOSSIPS = [
+                "🔥 Trending: Bangalore Techie caught texting ex on LinkedIn.",
+                "🤡 New: Guy asks GF to split petrol bill for first date.",
+                "🚩 Toxic: Mom said 'Choose me or her' over Paneer dish.",
+                "🔥 Trending: Girl makes PPT to explain why she is mad."
+            ];
+            PRELOADED_GOSSIPS.forEach(g => h+=`<div class="ticker-item">${g}</div>`);
+            t.innerHTML = h;
+        }
+
+        function loadRetention() {
+            const s = localStorage.getItem('rc_streak') || "0";
+            document.getElementById('streak-display').innerText = s;
+            const checks = parseInt(localStorage.getItem('rc_checks') || "0");
+            let level = "NOOB";
+            if(checks > 5) level = "NORMIE";
+            if(checks > 20) level = "SIGMA";
+            document.getElementById('level-display').innerText = level;
+            
+            const topics = ["Toxic Exes", "Bangalore Rent", "HR Emails", "Arranged Marriage Bio"];
+            document.getElementById('daily-topic-text').innerText = topics[new Date().getDate() % topics.length];
+        }
+        
+        function updateStreak() {
+            let s = parseInt(localStorage.getItem('rc_streak')||"0") + 1;
+            localStorage.setItem('rc_streak', s);
+            let c = parseInt(localStorage.getItem('rc_checks')||"0") + 1;
+            localStorage.setItem('rc_checks', c);
+            loadRetention();
+        }
+
+        function loadDailyTopic() {
+            const topic = document.getElementById('daily-topic-text').innerText;
+            document.getElementById('user-input').value = `Roast the concept of ${topic} like an Indian comedian.`;
+            runHydraEngine();
+        }
+
+        function renderPreloadedFeed() {
+            const f = document.getElementById('community-feed');
+            if(!f.innerHTML) {
+                f.innerHTML = `
+                <div class="feed-card"><div class="feed-text">Bangalore Techie caught texting ex on LinkedIn.</div><div class="feed-meta"><span>VIRAL</span><span class="vote-pill">🔥 99+</span></div></div>
+                <div class="feed-card"><div class="feed-text">Guy asked GF to split petrol bill for first date.</div><div class="feed-meta"><span>CLOWN</span><span class="vote-pill">🔥 85</span></div></div>
+                `;
+            }
+        }
+
+        function postToCommunity() {
+            if(!window.submitToFirebase) return alert("Firebase not configured in Settings.");
+            window.submitToFirebase(lastInputText, activePayload.verdict);
+        }
+
+        async function shareMeme() {
+            if(navigator.share) {
+                await navigator.share({
+                    title: 'Reality Check',
+                    text: `${activePayload.verdict}: ${activePayload.meme_content}\n\nCheck yours: RealityCheck.app`
+                });
+            } else { alert("Take a screenshot to share!"); }
+        }
+
+        function startQueueTimer() {
+            let t = 10;
+            const el = document.getElementById('timer');
+            const int = setInterval(() => {
+                t--; el.innerText = t;
+                if(t<=0) { clearInterval(int); document.getElementById('queue-msg').style.display='none'; runHydraEngine(); }
+            }, 1000);
+        }
+
+        // PWA INSTALL LOGIC
+        window.addEventListener('beforeinstallprompt', (e) => { 
+            e.preventDefault(); 
+            defPrompt=e; 
+            document.getElementById('install-btn').style.display='block'; 
+        });
+        
+        async function installPWA() { 
+            if(defPrompt) {
+                defPrompt.prompt();
+                const { outcome } = await defPrompt.userChoice;
+                if (outcome === 'accepted') document.getElementById('install-btn').style.display = 'none';
+                defPrompt = null;
+            }
+        }
+
+    </script>
+</body>
+</html> 
