@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CHEM TITAN v9 | FULL QUESTION BANK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: {
+                        'bg': '#050505',
+                        'card': '#111111',
+                        'primary': '#a3e635', // Lime
+                        'accent': '#10b981',  // Emerald
+                        'risk': '#ef4444',    // Red
+                        'dim': '#333333',
+                        'org': '#f472b6',     // Pink
+                        'inorg': '#22d3ee',   // Cyan
+                        'phys': '#fbbf24'     // Amber
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: #eee; font-family: 'JetBrains Mono', monospace; -webkit-tap-highlight-color: transparent; }
+        
+        /* UTILS */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        .border-glow { border: 1px solid #222; transition: all 0.2s; }
+        .border-glow:focus-within { border-color: #a3e635; box-shadow: 0 0 15px rgba(163, 230, 53, 0.15); }
+        
+        /* ANIMATION */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TOUCH */
+        .big-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; }
+        
+        /* TEXT WRAPPING */
+        .question-text { line-height: 1.6; letter-spacing: 0.01em; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-bg">
+
+    <header class="h-16 bg-card border-b border-dim flex justify-between items-center px-4 shrink-0 z-50 shadow-xl">
+        <div class="flex items-center gap-3 select-none">
+            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center border border-primary/20">
+                <i class="fa-solid fa-flask text-primary animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wider leading-none">TITAN <span class="text-primary">v9</span></h1>
+                <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">CHEMISTRY FULL TEXT</div>
+            </div>
+        </div>
+        
+        <div class="flex gap-3 items-center">
+            <div class="text-[10px] font-bold text-gray-400 font-mono bg-dim/20 px-3 py-1.5 rounded border border-dim flex items-center gap-2">
+                <i class="fa-regular fa-clock text-primary"></i><span id="timer">00:00</span>
+            </div>
+            
+            <button onclick="app.toggleMask()" id="mask-btn" class="bg-dim/30 text-gray-400 px-4 py-1.5 rounded border border-dim text-[10px] font-bold uppercase hover:bg-dim hover:text-white transition-all shadow-lg active:scale-95">
+                MASK: ON
+            </button>
+        </div>
+    </header>
+
+    <div class="h-14 bg-bg border-b border-dim flex items-center overflow-x-auto no-scrollbar px-2 shrink-0 gap-2 select-none z-40" id="nav-tabs">
+        </div>
+
+    <div class="bg-card border-b border-dim p-3 flex gap-2 shrink-0 z-30 shadow-md">
+        <div class="flex-1 relative">
+            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600 text-xs"></i>
+            <input type="text" id="search-box" placeholder="Search 60 Full Questions..." onkeyup="app.search(this.value)" 
+                class="w-full bg-bg border border-dim rounded-lg py-2.5 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-primary transition-colors placeholder-gray-700 font-bold">
+        </div>
+        <button onclick="app.backup()" class="bg-dim/30 border border-dim rounded-lg px-4 text-primary text-sm hover:bg-white/5 active:scale-95 transition-transform" title="Backup Data">
+            <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button onclick="app.reset()" class="bg-risk/10 border border-risk/30 rounded-lg px-4 text-risk text-sm hover:bg-risk/20 active:scale-95 transition-transform" title="Reset All">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </div>
+
+    <main id="main-feed" class="flex-1 overflow-y-auto p-4 space-y-5 pb-24 safe-pb bg-bg/50">
+        </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-dim p-3 flex justify-between items-center px-5 text-xs font-mono z-50 safe-pb shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+        <span class="text-gray-500 font-bold text-[10px] tracking-widest">REACTION YIELD</span>
+        <div class="flex items-center gap-3">
+            <div class="w-24 h-2 bg-dim rounded-full overflow-hidden border border-white/5">
+                <div id="mastery-bar" class="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="mastery-text" class="text-white font-bold">0/60</span>
+        </div>
+    </div>
+
+    <script>
+        // --- EXPANDED DATABASE: FULL CBSE QUESTIONS ---
+        const DB = {
+            'ORGANIC_1': {
+                title: "HALO & ALCOHOLS",
+                items: [
+                    { 
+                        id: 'o1', 
+                        q: `Differentiate between SN1 and SN2 mechanisms of substitution reactions of haloalkanes. Compare them based on order of reactivity, solvent polarity, and stereochemistry.`, 
+                        m: 3, 
+                        tags: ['Core', 'Mech'], 
+                        insight: `SN1 proceeds via Carbocation (2 steps, Racemization, 3°>2°>1°). SN2 proceeds via Transition State (1 step, Inversion, 1°>2°>3°).`, 
+                        steps: [`1. Kinetics: SN1 is Unimolecular (Rate ∝ [RX]), SN2 is Bimolecular (Rate ∝ [RX][Nu]).`, `2. Mechanism: SN1 (2 Step), SN2 (1 Step).`, `3. Reactivity: SN1 (3° > 2° > 1°), SN2 (1° > 2° > 3°).`, `4. Stereochemistry: SN1 gives Racemic mixture, SN2 gives Walden Inversion.`] 
+                    },
+                    { 
+                        id: 'o2', 
+                        q: `Write the chemical reaction and mechanism for the Reimer-Tiemann reaction. Name the major product formed.`, 
+                        m: 2, 
+                        tags: ['Name Rxn'], 
+                        insight: `The electrophile is Dichlorocarbene (:CCl2). It is an electrophilic substitution reaction on Phenol.`, 
+                        steps: [`1. Phenol is treated with Chloroform (CHCl3) and aq. NaOH.`, `2. An intermediate substituted benzal chloride is formed.`, `3. Hydrolysis and acidification gives Salicylaldehyde (o-Hydroxybenzaldehyde).`] 
+                    },
+                    { 
+                        id: 'o3', 
+                        q: `Explain Kolbe's Reaction with a chemical equation. What is the main product and how is it used?`, 
+                        m: 2, 
+                        tags: ['Name Rxn'], 
+                        insight: `Used to prepare Salicylic Acid (precursor for Aspirin). Electrophile is weak CO2.`, 
+                        steps: [`1. Sodium Phenoxide is heated with CO2 at 400K and 4-7 atm pressure.`, `2. Sodium Salicylate is formed.`, `3. Acidification yields Salicylic Acid (2-Hydroxybenzoic acid).`] 
+                    },
+                    { 
+                        id: 'o4', 
+                        q: `Write the stepwise mechanism for the acid-catalysed hydration of ethene to yield ethanol.`, 
+                        m: 3, 
+                        tags: ['Mech', 'Draw'], 
+                        insight: `Draw curved arrows for electron movement. Step 2 is the rate-determining step in some contexts, but usually, carbocation formation is key.`, 
+                        steps: [`1. Protonation: Ethene attacks H3O+ to form Ethyl Carbocation (C2H5+).`, `2. Nucleophilic Attack: Water molecule attacks the carbocation.`, `3. Deprotonation: Loss of a proton to give Ethanol.`] 
+                    },
+                    { 
+                        id: 'o5', 
+                        q: `How would you distinguish between primary, secondary, and tertiary alcohols using Lucas Reagent? Describe the observations.`, 
+                        m: 2, 
+                        tags: ['Test'], 
+                        insight: `Lucas Reagent: Conc. HCl + Anhydrous ZnCl2. Based on the stability of carbocation formed.`, 
+                        steps: [`1. Tertiary Alcohol: Turbidity appears immediately.`, `2. Secondary Alcohol: Turbidity appears after ~5 minutes.`, `3. Primary Alcohol: No turbidity at room temperature (heating required).`] 
+                    },
+                    { 
+                        id: 'o6', 
+                        q: `Explain Williamson Synthesis for the preparation of ethers. What are the limitations regarding the choice of alkyl halides?`, 
+                        m: 2, 
+                        tags: ['Name Rxn'], 
+                        insight: `It follows SN2 mechanism. Alkyl halide MUST be primary. If 3°, elimination (alkene) dominates.`, 
+                        steps: [`1. Reaction: R-X + R'-ONa -> R-O-R' + NaX.`, `2. Condition: Alkyl halide (R-X) should be primary.`, `3. If R-X is tertiary, sodium alkoxide acts as a base causing dehydrohalogenation to form Alkene.`] 
+                    },
+                    { 
+                        id: 'o7', 
+                        q: `Describe the industrial preparation of Phenol from Cumene (Isopropylbenzene) with relevant chemical equations.`, 
+                        m: 3, 
+                        tags: ['Prep'], 
+                        insight: `Important because the byproduct (Acetone) is also commercially valuable.`, 
+                        steps: [`1. Oxidation: Cumene + O2 (air) -> Cumene Hydroperoxide.`, `2. Hydrolysis: Cumene Hydroperoxide + Dil H2SO4 -> Phenol + Acetone.`, `3. Separation by distillation.`] 
+                    },
+                    { 
+                        id: 'o8', 
+                        q: `Differentiate between Swarts reaction and Finkelstein reaction with one example for each.`, 
+                        m: 2, 
+                        tags: ['Name Rxn'], 
+                        insight: `Halogen Exchange Methods. Finkelstein -> Iodides. Swarts -> Fluorides.`, 
+                        steps: [`1. Finkelstein: R-X + NaI (in dry acetone) -> R-I + NaX (ppt).`, `2. Swarts: R-X + AgF (or Hg2F2/CoF2) -> R-F + AgX.`, `3. Used to synthesize Alkyl Iodides and Fluorides respectively.`] 
+                    },
+                    { 
+                        id: 'o9', 
+                        q: `How are Primary, Secondary, and Tertiary alcohols prepared from Grignard Reagent? Give general equations.`, 
+                        m: 2, 
+                        tags: ['React'], 
+                        insight: `Formaldehyde -> 1°. Other Aldehydes -> 2°. Ketones -> 3°.`, 
+                        steps: [`1. HCHO + RMgX -> Adduct -> (H3O+) -> Primary Alcohol.`, `2. R'CHO + RMgX -> Adduct -> (H3O+) -> Secondary Alcohol.`, `3. R'COR'' + RMgX -> Adduct -> (H3O+) -> Tertiary Alcohol.`] 
+                    },
+                    { 
+                        id: 'o10', 
+                        q: `Explain the mechanism of dehydration of ethanol to ethene at 443 K in the presence of concentrated H2SO4.`, 
+                        m: 3, 
+                        tags: ['Mech'], 
+                        insight: `Temperature is crucial. At 413K, Ether is formed. At 443K, Ethene is formed.`, 
+                        steps: [`1. Protonation of alcohol to form alkyloxonium ion.`, `2. Formation of Carbocation (Slow step, removal of H2O).`, `3. Elimination of a proton to form the double bond (Ethene).`] 
+                    },
+                    { 
+                        id: 'o11', 
+                        q: `Write the equations for Friedel-Crafts Alkylation and Acylation of Anisole. Name the reagents used.`, 
+                        m: 3, 
+                        tags: ['React'], 
+                        insight: `-OCH3 is an ortho-para directing group. Anhydrous AlCl3 is the Lewis acid catalyst.`, 
+                        steps: [`1. Alkylation: Anisole + CH3Cl (AlCl3) -> 2-Methoxytoluene + 4-Methoxytoluene (Major).`, `2. Acylation: Anisole + CH3COCl (AlCl3) -> 2-Methoxyacetophenone + 4-Methoxyacetophenone (Major).`] 
+                    },
+                    { 
+                        id: 'o12', 
+                        q: `Describe Dow's Process for the preparation of Phenol from Chlorobenzene. Why are drastic conditions required?`, 
+                        m: 2, 
+                        tags: ['Prep'], 
+                        insight: `C-Cl bond in chlorobenzene has partial double bond character due to resonance, making it hard to break.`, 
+                        steps: [`1. Chlorobenzene is fused with NaOH at 623K and 300 atm pressure.`, `2. Sodium Phenoxide is formed.`, `3. Acidification with HCl yields Phenol.`] 
+                    },
+                    { 
+                        id: 'o13', 
+                        q: `What happens when Phenol acts with (i) Concentrated HNO3 and (ii) Na2Cr2O7/H2SO4?`, 
+                        m: 2, 
+                        tags: ['React'], 
+                        insight: `(i) gives Picric Acid. (ii) gives Benzoquinone.`, 
+                        steps: [`1. Phenol + Conc HNO3 -> 2,4,6-Trinitrophenol (Picric Acid).`, `2. Phenol + Na2Cr2O7/H2SO4 -> Benzoquinone (Conjugated Diketone).`] 
+                    },
+                    { 
+                        id: 'o14', 
+                        q: `Write the reaction of Phenol with Zinc dust. Explain the type of reaction involved.`, 
+                        m: 1, 
+                        tags: ['React'], 
+                        insight: `It is a reduction reaction where Oxygen is removed.`, 
+                        steps: [`1. Reaction: C6H5OH + Zn -> C6H6 (Benzene) + ZnO.`, `2. Used to convert phenol back to benzene.`] 
+                    },
+                    { 
+                        id: 'o15', 
+                        q: `Explain the Esterification reaction between a Carboxylic acid and an Alcohol. What is the role of concentrated H2SO4?`, 
+                        m: 2, 
+                        tags: ['React'], 
+                        insight: `Reaction is reversible. H2SO4 acts as a catalyst and dehydrating agent to shift equilibrium forward.`, 
+                        steps: [`1. RCOOH + R'OH <-> RCOOR' + H2O.`, `2. H2SO4 protonates the carbonyl oxygen increasing susceptibility to nucleophilic attack.`, `3. It also removes water formed.`] 
+                    }
+                ]
+            },
+            'ORGANIC_2': {
+                title: "ALDEHYDES & AMINES",
+                items: [
+                    { id: 'a1', q: `Explain Aldol Condensation with a suitable example. What are the essential conditions for a compound to undergo this reaction?`, m: 3, tags: ['Name Rxn', 'V.IMP'], insight: `Must have alpha-hydrogens. Reagent is Dilute Alkali (NaOH/Ba(OH)2).`, steps: [`1. Condensation of two molecules of aldehyde/ketone having alpha-H.`, `2. Product is beta-hydroxy aldehyde (Aldol).`, `3. Heating leads to dehydration forming alpha-beta unsaturated aldehyde.`] },
+                    { id: 'a2', q: `Write the reaction and mechanism for Cannizzaro Reaction. Which type of aldehydes undergo this reaction?`, m: 2, tags: ['Name Rxn'], insight: `Aldehydes with NO alpha-hydrogens (HCHO, Ph-CHO). Reagent: Conc NaOH.`, steps: [`1. Disproportionation reaction (Self Oxidation-Reduction).`, `2. One molecule is reduced to Alcohol.`, `3. One molecule is oxidized to Sodium salt of Carboxylic acid.`] },
+                    { id: 'a3', q: `Distinguish between Clemmensen Reduction and Wolff-Kishner Reduction with examples.`, m: 2, tags: ['Name Rxn'], insight: `Both reduce >C=O to >CH2. Difference is the medium.`, steps: [`1. Clemmensen: Zn-Hg + Conc HCl (Acidic medium). Good for acid-stable compounds.`, `2. Wolff-Kishner: NH2NH2 (Hydrazine) + KOH/Glycol (Basic medium). Good for base-stable compounds.`] },
+                    { id: 'a4', q: `How do Tollen's Reagent and Fehling's Solution help in distinguishing aldehydes from ketones?`, m: 3, tags: ['Test'], insight: `Aldehydes are easier to oxidize than ketones.`, steps: [`1. Tollen's (AgNO3+NH4OH): Silver Mirror formed with Aldehydes (Both Aliphatic & Aromatic).`, `2. Fehling's (CuSO4+Tartrate): Red PPT of Cu2O with Aliphatic Aldehydes ONLY.`, `3. Ketones do not respond to either.`] },
+                    { id: 'a5', q: `Write the chemical equation for Hoffmann Bromamide Degradation reaction. What is the utility of this reaction?`, m: 2, tags: ['Name Rxn'], insight: `Method to step down the series (remove one carbon).`, steps: [`1. Amide (R-CONH2) + Br2 + 4NaOH -> Primary Amine (R-NH2).`, `2. Byproducts: Na2CO3 + 2NaBr + 2H2O.`, `3. The product amine has one carbon less than the reactant amide.`] },
+                    { id: 'a6', q: `Describe the Carbylamine Test (Isocyanide Test). Which class of amines gives a positive test?`, m: 2, tags: ['Test'], insight: `Specific test for Primary Amines (both Aliphatic and Aromatic).`, steps: [`1. R-NH2 + CHCl3 + 3KOH (alc) -> R-NC (Isocyanide).`, `2. Observation: extremely foul/offensive smell.`, `3. Secondary and Tertiary amines do not react.`] },
+                    { id: 'a7', q: `Explain Gabriel Phthalimide Synthesis. Why can't aromatic primary amines be prepared by this method?`, m: 2, tags: ['Name Rxn'], insight: `Used for pure 1° Aliphatic amines.`, steps: [`1. Phthalimide + KOH -> Potassium Phthalimide.`, `2. Reacts with Alkyl Halide (R-X) -> N-Alkylphthalimide.`, `3. Hydrolysis -> 1° Amine.`, `4. Ar-X does not undergo Nucleophilic substitution easily, so Aniline can't be made.`] },
+                    { id: 'a8', q: `How does Hinsberg Reagent help to distinguish between primary, secondary, and tertiary amines?`, m: 2, tags: ['Test'], insight: `Reagent: Benzenesulfonyl Chloride.`, steps: [`1. 1° Amine: Forms precipitate soluble in alkali (due to acidic H).`, `2. 2° Amine: Forms precipitate insoluble in alkali (no acidic H).`, `3. 3° Amine: Does not react.`] },
+                    { id: 'a9', q: `Write the reactions involved in Diazotization and Sandmeyer Reaction.`, m: 2, tags: ['React'], insight: `Key route to introduce halogens into benzene ring.`, steps: [`1. Aniline + NaNO2 + HCl (0-5°C) -> Benzene Diazonium Chloride.`, `2. Sandmeyer: React with Cu2Cl2/HCl to form Chlorobenzene.`, `3. N2 gas is evolved.`] },
+                    { id: 'a10', q: `Write the Hell-Volhard-Zelinsky (HVZ) reaction. What is the function of Red Phosphorus?`, m: 2, tags: ['Name Rxn'], insight: `Alpha-halogenation of carboxylic acids.`, steps: [`1. R-CH2-COOH + X2 (Red P) -> R-CH(X)-COOH.`, `2. Only acids with alpha-hydrogens react.`, `3. Red P generates PCl3/PBr3 in situ to initiate reaction.`] },
+                    { id: 'a11', q: `Explain the Etard Reaction for the preparation of Benzaldehyde from Toluene.`, m: 2, tags: ['Name Rxn'], insight: `Controlled oxidation using Chromyl Chloride.`, steps: [`1. Toluene + CrO2Cl2 (in CS2) -> Brown Chromium Complex.`, `2. Hydrolysis of the complex -> Benzaldehyde.`] },
+                    { id: 'a12', q: `Why is acetylation (protection) of aniline carried out before nitration? Write the relevant equations.`, m: 2, tags: ['React'], insight: `NH2 is highly activating, leads to tri-substitution and oxidation.`, steps: [`1. Aniline + Acetic anhydride -> Acetanilide.`, `2. Acetanilide undergoes nitration (p-isomer major).`, `3. Hydrolysis restores the NH2 group to give p-Nitroaniline.`] },
+                    { id: 'a13', q: `Discuss the trend of basic strength of aliphatic amines in gaseous phase vs aqueous phase.`, m: 2, tags: ['Reason'], insight: `Gas: 3° > 2° > 1° (+I effect). Aqueous: Solvation & Steric factors complicate it.`, steps: [`1. Aqueous (Methyl): 2° > 1° > 3° > NH3.`, `2. Aqueous (Ethyl): 2° > 3° > 1° > NH3.`, `3. Solvation stabilizes the protonated amine (1° > 2° > 3°).`] },
+                    { id: 'a14', q: `Differentiate between DNA and RNA based on their sugar moiety and nitrogenous bases.`, m: 2, tags: ['Bio'], insight: `DNA = Genetic material. RNA = Protein synthesis.`, steps: [`1. Sugar: DNA has 2-Deoxyribose, RNA has Ribose.`, `2. Bases: DNA has Thymine (T), RNA has Uracil (U).`, `3. Structure: DNA is double stranded helix, RNA is single stranded.`] },
+                    { id: 'a15', q: `What is meant by the denaturation of proteins? Explain with examples. What happens to the structure?`, m: 2, tags: ['Bio'], insight: `Primary structure remains intact. 2° and 3° structures are destroyed.`, steps: [`1. Loss of biological activity due to change in pH, temp, or chemicals.`, `2. Hydrogen bonds break, globules unfold, helix uncoils.`, `3. Eg: Coagulation of egg white on boiling.`] }
+                ]
+            },
+            'PHYSICAL': {
+                title: "PHYSICAL CHEM",
+                items: [
+                    { id: 'p1', q: `Write the Nernst Equation for a general cell reaction. How is it used to calculate the EMF of a cell at non-standard conditions?`, m: 3, tags: ['Num', 'V.IMP'], insight: `E = E0 - (RT/nF) ln Q. At 298K, factor is 0.059.`, steps: [`1. For aA + bB -> cC + dD.`, `2. E_cell = E0_cell - (0.059/n) log ([C]^c [D]^d / [A]^a [B]^b).`, `3. Q is reaction quotient. n is moles of electrons transferred.`] },
+                    { id: 'p2', q: `Derive the integrated rate equation for a first-order reaction. Show that the half-life is independent of initial concentration.`, m: 3, tags: ['Deriv'], insight: `ln[R] = -kt + ln[R]0.`, steps: [`1. Rate = -d[R]/dt = k[R].`, `2. Rearrange: d[R]/[R] = -k dt.`, `3. Integrate: ln[R] = -kt + I. At t=0, I=ln[R]0.`, `4. k = (2.303/t) log([R]0/[R]).`, `5. At t1/2, [R]=[R]0/2. t1/2 = 0.693/k.`] },
+                    { id: 'p3', q: `Derive the integrated rate equation for a zero-order reaction. Derive the expression for its half-life.`, m: 2, tags: ['Deriv'], insight: `Rate is constant. Decomposition of NH3 on Pt is an example.`, steps: [`1. Rate = -d[R]/dt = k.`, `2. d[R] = -k dt. Integrate: [R] = -kt + [R]0.`, `3. k = ([R]0 - [R]) / t.`, `4. Half life t1/2 = [R]0 / 2k.`] },
+                    { id: 'p4', q: `State Kohlrausch's Law of independent migration of ions. How is it used to calculate the limiting molar conductivity of weak electrolytes?`, m: 2, tags: ['Law'], insight: `Lambda_0 (CH3COOH) = Lambda_0 (CH3COONa) + Lambda_0 (HCl) - Lambda_0 (NaCl).`, steps: [`1. Limiting molar conductivity of an electrolyte is the sum of limiting molar conductivities of its constituent ions.`, `2. λm0 = v+ λ+0 + v- λ-0.`, `3. Allows calculation for weak electrolytes using strong electrolytes.`] },
+                    { id: 'p5', q: `Define boiling point elevation. Derive the relation between molar mass of solute and elevation in boiling point.`, m: 3, tags: ['Num'], insight: `Colligative property. Depends on number of particles.`, steps: [`1. ΔTb is proportional to molality (m).`, `2. ΔTb = Kb × m.`, `3. m = (W_solute × 1000) / (M_solute × W_solvent).`, `4. M_solute = (Kb × W_solute × 1000) / (ΔTb × W_solvent).`] },
+                    { id: 'p6', q: `Define freezing point depression. Explain why NaCl is used to clear snow from roads.`, m: 3, tags: ['Num'], insight: `Adding solute lowers vapor pressure and thus freezing point.`, steps: [`1. ΔTf = Kf × m.`, `2. NaCl dissociates (i=2), doubling the effect compared to glucose.`, `3. It lowers the freezing point of water, melting the ice at ambient temps.`] },
+                    { id: 'p7', q: `Define Osmotic Pressure. Why is it considered the best method for determining the molecular mass of polymers?`, m: 2, tags: ['Num'], insight: `Measured at room temp. Magnitude is large even for dilute solutions.`, steps: [`1. π = CRT (for dilute solutions).`, `2. Advantage 1: Measured at room T (polymers don't degrade).`, `3. Advantage 2: Values are measurable (mmHg) unlike tiny ΔTb/ΔTf.`] },
+                    { id: 'p8', q: `State Henry's Law relating solubility of a gas in liquid to pressure. What is the significance of KH?`, m: 2, tags: ['Law'], insight: `p = KH * x.`, steps: [`1. Partial pressure of gas is proportional to mole fraction in solution.`, `2. KH is Henry's Constant.`, `3. Higher KH means Lower solubility at the same pressure.`, `4. Solubility decreases with temp (KH increases).`] },
+                    { id: 'p9', q: `State Raoult's Law for a solution of volatile liquids. Distinguish between Ideal and Non-Ideal solutions.`, m: 3, tags: ['Law'], insight: `Ideal: Follows Raoult's Law. ΔH_mix = 0, ΔV_mix = 0.`, steps: [`1. p_total = pA + pB = p0A xA + p0B xB.`, `2. Non-Ideal: Does not obey. ΔH != 0.`, `3. Positive Deviation: VP > Expected (A-B interaction weak).`, `4. Negative Deviation: VP < Expected (A-B interaction strong).`] },
+                    { id: 'p10', q: `State Faraday's First and Second Laws of Electrolysis.`, m: 2, tags: ['Law'], insight: `Quantitative aspect of electrolysis.`, steps: [`1. First Law: Mass deposited w ∝ Q (Charge). w = ZIt.`, `2. Second Law: For same Q, mass deposited ∝ Equivalent Weight. w1/w2 = E1/E2.`] },
+                    { id: 'p11', q: `Define Conductivity (κ) and Molar Conductivity (Λm). How do they vary with dilution?`, m: 2, tags: ['Def'], insight: `Kappa decreases, Lambda increases.`, steps: [`1. Conductivity decreases because number of ions per unit volume decreases.`, `2. Molar conductivity increases because volume V containing 1 mole increases significantly.`] },
+                    { id: 'p12', q: `What is a Pseudo First Order reaction? Give an example.`, m: 2, tags: ['Def'], insight: `Reaction is bimolecular but order is 1.`, steps: [`1. Occurs when one reactant is in large excess (e.g., solvent).`, `2. Example: Acid hydrolysis of ethyl acetate. CH3COOC2H5 + H2O -> Acid + Alcohol.`, `3. Rate = k[Ester]. [H2O] is constant.`] },
+                    { id: 'p13', q: `Write the Arrhenius Equation. Explain the effect of temperature on the rate constant k.`, m: 3, tags: ['Num'], insight: `k = A e^(-Ea/RT). Rate increases exponentially with Temp.`, steps: [`1. Log form: ln k = ln A - Ea/RT.`, `2. Two temps: log(k2/k1) = Ea/2.303R [ (T2-T1)/T1T2 ].`, `3. Used to calculate Activation Energy Ea.`] },
+                    { id: 'p14', q: `Describe the construction and working of a Hydrogen-Oxygen Fuel Cell. Write the electrode reactions.`, m: 2, tags: ['Theory'], insight: `Converts chemical energy directly to electrical. Product is water.`, steps: [`1. Anode: 2H2 + 4OH- -> 4H2O + 4e-.`, `2. Cathode: O2 + 2H2O + 4e- -> 4OH-.`, `3. Net: 2H2 + O2 -> 2H2O.`, `4. High efficiency (~70%) and pollution-free.`] },
+                    { id: 'p15', q: `Write the charging and discharging reactions of a Lead Storage Battery.`, m: 3, tags: ['React'], insight: `Secondary Cell. Electrolyte is 38% H2SO4.`, steps: [`1. Discharging (Anode): Pb + SO4 -> PbSO4. (Cathode): PbO2 + SO4 + 4H -> PbSO4 + 2H2O.`, `2. Charging: Reverse reactions. PbSO4 is converted back to Pb and PbO2.`] }
+                ]
+            },
+            'INORGANIC': {
+                title: "INORGANIC CHEM",
+                items: [
+                    { id: 'i1', q: `Describe the preparation of Potassium Dichromate from Chromite ore. Write balanced chemical equations for the steps involved.`, m: 3, tags: ['React'], insight: `Reaction involves change in pH. Chromate (Yellow) <-> Dichromate (Orange).`, steps: [`1. 4FeCr2O4 + 8Na2CO3 + 7O2 -> 8Na2CrO4 + 2Fe2O3 + 8CO2.`, `2. 2Na2CrO4 + 2H+ -> Na2Cr2O7 + 2Na+ + H2O.`, `3. Na2Cr2O7 + 2KCl -> K2Cr2O7 + 2NaCl.`] },
+                    { id: 'i2', q: `Describe the preparation of Potassium Permanganate from Pyrolusite ore (MnO2).`, m: 3, tags: ['React'], insight: `Manganate (Green, paramagnetic) -> Permanganate (Purple, diamagnetic).`, steps: [`1. Fusion: 2MnO2 + 4KOH + O2 -> 2K2MnO4 + 2H2O.`, `2. Disproportionation (Acidic): 3MnO4(2-) + 4H+ -> 2MnO4(-) + MnO2 + 2H2O.`, `3. Or Electrolytic Oxidation.`] },
+                    { id: 'i3', q: `What is Lanthanoid Contraction? What are its causes and consequences?`, m: 2, tags: ['Reason'], insight: `Steady decrease in ionic radii. Cause: 4f shielding.`, steps: [`1. Cause: Poor shielding effect of 4f electrons allows nuclear charge to pull outer electrons closer.`, `2. Consequences: Radii of 4d and 5d series (Zr/Hf) are similar. Basic strength of hydroxides decreases.`] },
+                    { id: 'i4', q: `Using Valence Bond Theory (VBT), predict the hybridization, geometry, and magnetic behavior of [Co(NH3)6]3+ and [CoF6]3-.`, m: 3, tags: ['Draw'], insight: `NH3 is strong field (Pairing). F- is weak field (No Pairing).`, steps: [`1. Co3+ is 3d6.`, `2. With NH3: Electrons pair up. d2sp3 (Inner orbital). Diamagnetic.`, `3. With F-: No pairing. sp3d2 (Outer orbital). Paramagnetic (4 unpaired e-).`] },
+                    { id: 'i5', q: `Explain Crystal Field Splitting in Octahedral complexes. Draw the diagram showing t2g and eg sets.`, m: 3, tags: ['Draw'], insight: `Ligands approach along axes. eg orbitals (dx2-y2, dz2) repel more.`, steps: [`1. d-orbitals split into lower energy t2g and higher energy eg.`, `2. Splitting energy is Delta_o.`, `3. If Delta_o > P, pairing occurs (Low Spin). If Delta_o < P, no pairing (High Spin).`] },
+                    { id: 'i6', q: `Describe Linkage Isomerism and Ionization Isomerism with one example for each.`, m: 2, tags: ['Draw'], insight: `Linkage involves Ambidentate ligands. Ionization involves counter ions.`, steps: [`1. Linkage: [Co(NH3)5(NO2)]Cl2 (Yellow) vs [Co(NH3)5(ONO)]Cl2 (Red).`, `2. Ionization: [Co(NH3)5SO4]Br vs [Co(NH3)5Br]SO4. Test with BaCl2/AgNO3.`] },
+                    { id: 'i7', q: `Discuss Werner's Coordination Theory. How does it explain the structure of coordination compounds?`, m: 2, tags: ['Theory'], insight: `Primary Valency = Oxidation State. Secondary Valency = Coordination Number.`, steps: [`1. Metals show two valencies.`, `2. Primary is ionizable (satisfied by anions).`, `3. Secondary is non-ionizable (satisfied by ligands, directional).`, `4. Structure is determined by secondary valency.`] },
+                    { id: 'i8', q: `Explain why Transition Metals and their compounds act as good catalysts.`, m: 2, tags: ['Reason'], insight: `Surface area + Variable Valency.`, steps: [`1. Ability to show multiple oxidation states (e.g., V2O5, Fe).`, `2. Ability to form complexes.`, `3. Provide large surface area for adsorption of reactants.`] },
+                    { id: 'i9', q: `Calculate the 'Spin Only' Magnetic Moment for M2+ ion (Z=27).`, m: 2, tags: ['Num'], insight: `Z=27 is Cobalt. Co2+ is 3d7.`, steps: [`1. Configuration: [Ar] 3d7.`, `2. Number of unpaired electrons n = 3.`, `3. Formula: mu = sqrt(n(n+2)) BM.`, `4. mu = sqrt(3*5) = sqrt(15) = 3.87 BM.`] },
+                    { id: 'i10', q: `Why are Zn, Cd, and Hg considered non-transition elements?`, m: 1, tags: ['Reason'], insight: `Transition element definition requires partially filled d-orbitals.`, steps: [`1. They have fully filled d10 configuration in ground state.`, `2. They have d10 in their common oxidation states (+2).`, `3. Hence, they do not show typical transition properties (colored ions, etc).`] },
+                    { id: 'i11', q: `Write balanced ionic equations for the oxidizing action of acidic KMnO4 on (i) Fe2+ and (ii) Oxalate ion.`, m: 2, tags: ['React'], insight: `MnO4- reduces to Mn2+.`, steps: [`1. MnO4- + 8H+ + 5e- -> Mn2+ + 4H2O.`, `2. 5Fe2+ -> 5Fe3+ + 5e-. Net: MnO4- + 5Fe2+ + 8H+ -> Mn2+ + 5Fe3+ + 4H2O.`, `3. 5C2O4(2-) -> 10CO2 + 10e-. Net: 2MnO4- + 5C2O4(2-) + 16H+ -> 2Mn2+ + 10CO2 + 8H2O.`] },
+                    { id: 'i12', q: `Why is the Actinoid Contraction greater than the Lanthanoid Contraction?`, m: 1, tags: ['Reason'], insight: `5f vs 4f shielding.`, steps: [`1. 5f orbitals are more diffused than 4f orbitals.`, `2. Shielding of 5f electrons is poorer than 4f.`, `3. Hence effective nuclear charge increases more rapidly.`] },
+                    { id: 'i13', q: `Arrange the following ligands in increasing order of crystal field splitting power (Spectrochemical Series): H2O, CN-, Cl-, NH3.`, m: 1, tags: ['List'], insight: `Halogens < Oxygen < Nitrogen < Carbon.`, steps: [`1. Order: Cl- < H2O < NH3 < CN-.`, `2. CN- is a strong field ligand (causes pairing). Cl- is weak.`] },
+                    { id: 'i14', q: `Why are transition metal ions generally colored? Why is Sc3+ colorless?`, m: 2, tags: ['Reason'], insight: `d-d transition requires unpaired electrons.`, steps: [`1. Presence of unpaired d-electrons allows absorption of visible light for d-d transition.`, `2. Sc3+ is 3d0 (Empty d-orbital). No transition possible.`, `3. Zn2+ is 3d10 (Full). No transition possible.`] },
+                    { id: 'i15', q: `Explain the nature of bonding in Metal Carbonyls. What is synergic bonding?`, m: 2, tags: ['Theory'], insight: `Sigma and Pi character.`, steps: [`1. M-C sigma bond: Donation of lone pair from C to M.`, `2. M-C pi bond: Back donation of electrons from filled metal d-orbital to empty antibonding pi* of CO.`, `3. This synergic effect strengthens the bond.`] }
+                ]
+            }
+        };
+
+        const app = {
+            data: JSON.parse(localStorage.getItem('CHEM_TITAN_V9') || '{"completed": []}'),
+            currentSector: 'ORGANIC_1',
+            maskMode: true,
+            seconds: 0,
+
+            init() {
+                this.renderTabs();
+                this.renderFeed(this.currentSector);
+                this.updateStats();
+                setInterval(() => {
+                    this.seconds++;
+                    const m = Math.floor(this.seconds/60).toString().padStart(2,'0');
+                    const s = (this.seconds%60).toString().padStart(2,'0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
+                }, 1000);
+            },
+
+            renderTabs() {
+                const nav = document.getElementById('nav-tabs');
+                nav.innerHTML = Object.keys(DB).map(key => {
+                    // Dynamic styling
+                    let active = key === this.currentSector;
+                    let colorClass = 'text-gray-500 hover:text-white border-dim';
+                    
+                    if (active) {
+                        if(key.includes('ORGANIC')) colorClass = 'text-black bg-org border-org';
+                        else if(key.includes('INORGANIC')) colorClass = 'text-black bg-inorg border-inorg';
+                        else if(key.includes('PHYSICAL')) colorClass = 'text-black bg-phys border-phys';
+                    }
+
+                    return `
+                        <button onclick="app.switchSector('${key}')" 
+                            class="whitespace-nowrap px-5 py-2 rounded-lg text-xs font-bold border transition-all ${colorClass}">
+                            ${DB[key].title}
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            switchSector(key) {
+                this.currentSector = key;
+                this.renderTabs();
+                this.renderFeed(key);
+            },
+
+            renderFeed(sectorKey, query = null) {
+                const feed = document.getElementById('main-feed');
+                let items = [];
+                
+                if(query) {
+                    Object.values(DB).forEach(s => items.push(...s.items.filter(i => i.q.toLowerCase().includes(query.toLowerCase()))));
+                } else {
+                    items = DB[sectorKey].items;
+                }
+
+                if(items.length === 0) {
+                    feed.innerHTML = `<div class="text-center text-dim mt-20 font-mono text-xs tracking-widest">NO REACTIONS FOUND</div>`;
+                    return;
+                }
+
+                feed.innerHTML = items.map(item => {
+                    const isDone = this.data.completed.includes(item.id);
+                    const ansDisplay = this.maskMode ? 'hidden' : 'block';
+                    const btnDisplay = this.maskMode ? 'flex' : 'hidden';
+                    
+                    // Accent color
+                    let accent = 'text-primary';
+                    if(sectorKey.includes('ORGANIC')) accent = 'text-org';
+                    if(sectorKey.includes('INORGANIC')) accent = 'text-inorg';
+                    if(sectorKey.includes('PHYSICAL')) accent = 'text-phys';
+
+                    return `
+                    <div class="bg-card border border-dim rounded-xl p-5 border-glow fade-in relative group shadow-lg">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-2">
+                                <span class="text-[10px] bg-dim text-gray-300 px-2 py-1 rounded font-bold border border-dim tracking-wider">${item.m} MARKS</span>
+                                ${item.tags.map(t => `<span class="text-[10px] border border-dim text-gray-500 px-2 py-1 rounded font-bold tracking-wider">${t}</span>`).join('')}
+                            </div>
+                            <button onclick="app.toggleDone('${item.id}')" 
+                                class="big-btn w-12 h-12 -mt-3 -mr-3 rounded-full flex items-center justify-center transition-all ${isDone ? 'text-accent drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-dim hover:text-gray-500'}">
+                                <i class="fa-solid ${isDone ? 'fa-circle-check text-2xl' : 'fa-flask text-xl'}"></i>
+                            </button>
+                        </div>
+
+                        <h3 class="font-bold text-gray-200 mb-6 text-sm md:text-base question-text">${item.q}</h3>
+
+                        <div id="btn-${item.id}" class="${btnDisplay} justify-center">
+                            <button onclick="document.getElementById('ans-${item.id}').classList.remove('hidden'); this.parentElement.classList.add('hidden');" 
+                                class="big-btn w-full bg-dim/20 border border-dim ${accent} text-xs font-bold rounded-lg uppercase tracking-[0.2em] hover:bg-dim/40 transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                REVEAL REACTION
+                            </button>
+                        </div>
+
+                        <div id="ans-${item.id}" class="${ansDisplay} space-y-5 pt-5 border-t border-dim/50 mt-2">
+                            
+                            <div class="bg-black/40 border-l-4 border-dim p-4 rounded-r-lg">
+                                <div class="text-[10px] ${accent} font-bold uppercase mb-2 tracking-widest"><i class="fa-solid fa-lightbulb mr-2"></i>TITAN INSIGHT</div>
+                                <p class="text-xs text-gray-400 leading-relaxed font-medium">${item.insight}</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                ${item.steps.map(step => `
+                                    <div class="flex gap-4 text-xs md:text-sm text-gray-300 items-start group/step">
+                                        <div class="mt-1.5 w-1.5 h-1.5 bg-dim rounded-full shrink-0 group-hover/step:bg-white transition-colors"></div>
+                                        <span class="leading-relaxed">${step}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            },
+
+            toggleMask() {
+                this.maskMode = !this.maskMode;
+                const btn = document.getElementById('mask-btn');
+                if(this.maskMode) {
+                    btn.innerText = "MASK: ON";
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('bg-primary', 'text-black');
+                } else {
+                    btn.innerText = "MASK: OFF";
+                    btn.classList.add('bg-primary', 'text-black');
+                    btn.classList.remove('text-gray-400');
+                }
+                this.renderFeed(this.currentSector);
+            },
+
+            toggleDone(id) {
+                if(this.data.completed.includes(id)) {
+                    this.data.completed = this.data.completed.filter(i => i !== id);
+                } else {
+                    this.data.completed.push(id);
+                }
+                localStorage.setItem('CHEM_TITAN_V9', JSON.stringify(this.data));
+                this.updateStats();
+                this.renderFeed(this.currentSector);
+            },
+
+            updateStats() {
+                let total = 0;
+                Object.values(DB).forEach(s => total += s.items.length);
+                const done = this.data.completed.length;
+                const pct = Math.round((done/total)*100);
+                document.getElementById('mastery-text').innerText = `${done}/${total}`;
+                document.getElementById('mastery-bar').style.width = `${pct}%`;
+            },
+
+            search(val) {
+                if(val.length > 0) this.renderFeed(null, val);
+                else this.renderFeed(this.currentSector);
+            },
+
+            backup() {
+                navigator.clipboard.writeText(JSON.stringify(this.data));
+                alert("TITAN DATA COPIED TO CLIPBOARD");
+            },
+
+            reset() {
+                if(confirm("HARD RESET: Wipe all progress?")) {
+                    this.data.completed = [];
+                    localStorage.setItem('CHEM_TITAN_V9', JSON.stringify(this.data));
+                    location.reload();
+                }
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>

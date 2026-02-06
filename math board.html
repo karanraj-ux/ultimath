@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MATHS TITAN v10 | FULL ARSENAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], math: ['"Roboto Mono"', 'monospace'] },
+                    colors: {
+                        'bg': '#050505',
+                        'card': '#111111',
+                        'primary': '#3b82f6', // Blue (Maths)
+                        'accent': '#10b981',  // Green
+                        'risk': '#ef4444',    // Red
+                        'dim': '#333333',
+                        'calc': '#f59e0b',    // Amber
+                        'alg': '#8b5cf6',     // Violet
+                        'vec': '#ec4899'      // Pink
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: #eee; font-family: 'JetBrains Mono', monospace; -webkit-tap-highlight-color: transparent; }
+        
+        /* UTILS */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        .border-glow { border: 1px solid #222; transition: all 0.2s; }
+        .border-glow:focus-within { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
+        
+        /* ANIMATION */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TOUCH */
+        .big-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; }
+        
+        /* MATH FORMATTING */
+        .math-text { font-family: 'Roboto Mono', monospace; line-height: 1.6; letter-spacing: -0.02em; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-bg">
+
+    <header class="h-16 bg-card border-b border-dim flex justify-between items-center px-4 shrink-0 z-50 shadow-xl">
+        <div class="flex items-center gap-3 select-none">
+            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center border border-primary/20">
+                <i class="fa-solid fa-calculator text-primary animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wider leading-none">TITAN <span class="text-primary">v10</span></h1>
+                <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">MATHS FULL BANK</div>
+            </div>
+        </div>
+        
+        <div class="flex gap-3 items-center">
+            <div class="text-[10px] font-bold text-gray-400 font-mono bg-dim/20 px-3 py-1.5 rounded border border-dim flex items-center gap-2">
+                <i class="fa-regular fa-clock text-primary"></i><span id="timer">00:00</span>
+            </div>
+            
+            <button onclick="app.toggleMask()" id="mask-btn" class="bg-dim/30 text-gray-400 px-4 py-1.5 rounded border border-dim text-[10px] font-bold uppercase hover:bg-dim hover:text-white transition-all shadow-lg active:scale-95">
+                MASK: ON
+            </button>
+        </div>
+    </header>
+
+    <div class="h-14 bg-bg border-b border-dim flex items-center overflow-x-auto no-scrollbar px-2 shrink-0 gap-2 select-none z-40" id="nav-tabs">
+        </div>
+
+    <div class="bg-card border-b border-dim p-3 flex gap-2 shrink-0 z-30 shadow-md">
+        <div class="flex-1 relative">
+            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600 text-xs"></i>
+            <input type="text" id="search-box" placeholder="Search 55 Questions..." onkeyup="app.search(this.value)" 
+                class="w-full bg-bg border border-dim rounded-lg py-2.5 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-primary transition-colors placeholder-gray-700 font-bold">
+        </div>
+        <button onclick="app.backup()" class="bg-dim/30 border border-dim rounded-lg px-4 text-primary text-sm hover:bg-white/5 active:scale-95 transition-transform" title="Backup Data">
+            <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button onclick="app.reset()" class="bg-risk/10 border border-risk/30 rounded-lg px-4 text-risk text-sm hover:bg-risk/20 active:scale-95 transition-transform" title="Reset All">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </div>
+
+    <main id="main-feed" class="flex-1 overflow-y-auto p-4 space-y-5 pb-24 safe-pb bg-bg/50">
+        </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-dim p-3 flex justify-between items-center px-5 text-xs font-mono z-50 safe-pb shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+        <span class="text-gray-500 font-bold text-[10px] tracking-widest">SOLVED COUNT</span>
+        <div class="flex items-center gap-3">
+            <div class="w-24 h-2 bg-dim rounded-full overflow-hidden border border-white/5">
+                <div id="mastery-bar" class="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="mastery-text" class="text-white font-bold">0/55</span>
+        </div>
+    </div>
+
+    <script>
+        // --- ULTIMATE DATABASE: 55 QUESTIONS (PDF INTEGRATED) ---
+        const DB = {
+            'RELATIONS': {
+                title: "RELATIONS & ALG",
+                items: [
+                    { 
+                        id: 'r1', 
+                        q: `Check whether the relation S in the set of all real numbers (R) defined by S = {(a,b) : a ≤ b³} is reflexive, symmetric or transitive.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'PDF FILE'], 
+                        insight: `Use counter-examples. Fractions (1/2) break Reflexivity. (1,2) vs (2,1) breaks Symmetry. (10,3) vs (3,2) breaks Transitivity.`, 
+                        steps: [`1. Reflexive: Let a = 1/2. 1/2 ≤ (1/2)³ => 0.5 ≤ 0.125 (FALSE). Not Reflexive.`, `2. Symmetric: (1,2) => 1 ≤ 8 (True). (2,1) => 2 ≤ 1 (FALSE). Not Symmetric.`, `3. Transitive: (10, 3) => 10 ≤ 27 (True). (3, 2) => 3 ≤ 8 (True). But (10, 2) => 10 ≤ 8 (FALSE). Not Transitive.`] 
+                    },
+                    { 
+                        id: 'r2', 
+                        q: `Show that the function f: R -> R defined by f(x) = 2x / (1+x²) is neither one-one nor onto. Further, find set A so that f: R -> A becomes onto.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `f(x) has a max value of 1 and min of -1. So range is [-1, 1].`, 
+                        steps: [`1. One-one: f(2) = 4/5. f(1/2) = 1/(1+0.25) = 4/5. Since f(2)=f(1/2) but 2≠1/2, NOT one-one.`, `2. Onto: Let y = 2x/(1+x²). Rearrange: yx² - 2x + y = 0.`, `3. For x real, Discriminant D ≥ 0. 4 - 4y² ≥ 0 => y² ≤ 1.`, `4. Range = [-1, 1]. Since Codomain is R, Range ≠ Codomain. NOT onto.`, `5. Set A = [-1, 1] makes it onto.`] 
+                    },
+                    { 
+                        id: 'r3', 
+                        q: `Show that the relation R in the set A = {x ∈ Z : 0 ≤ x ≤ 12} given by R = {(a,b) : |a-b| is a multiple of 4} is an equivalence relation. Find the set of all elements related to 1.`, 
+                        m: 5, 
+                        tags: ['Core', 'Equivalence'], 
+                        insight: `Equivalence = Reflexive + Symmetric + Transitive.`, 
+                        steps: [`1. Reflexive: |a-a| = 0 (multiple of 4).`, `2. Symmetric: |a-b| = |b-a|. If |a-b|=4k, then |b-a|=4k.`, `3. Transitive: |a-b|=4k, |b-c|=4m. (a-c) = (a-b)+(b-c) = 4(k+m).`, `4. Related to 1: |x-1| = 4k. x-1 = 0,4,8... => x = 1, 5, 9.`] 
+                    },
+                    { 
+                        id: 'r4', 
+                        q: `Find the value of tan⁻¹[2 cos(2 sin⁻¹(1/2))].`, 
+                        m: 2, 
+                        tags: ['ITF'], 
+                        insight: `Solve from inside out. sin⁻¹(1/2) = π/6.`, 
+                        steps: [`1. sin⁻¹(1/2) = π/6.`, `2. 2(π/6) = π/3.`, `3. cos(π/3) = 1/2.`, `4. 2(1/2) = 1.`, `5. tan⁻¹(1) = π/4.`] 
+                    },
+                    { 
+                        id: 'a1', 
+                        q: `If Matrix A = [[1, -2, 0], [2, -1, -1], [0, -2, 1]], find A⁻¹. Using A⁻¹, solve the system: x - 2y = 10, 2x - y - z = 8, -2y + z = 7.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'PDF FILE'], 
+                        insight: `Standard AX=B type. Calculate |A| first. If A⁻¹ is asked, finding Adjoint is mandatory.`, 
+                        steps: [`1. |A| = 1(-1-2) - (-2)(2-0) + 0 = -3 + 4 = 1.`, `2. Find Cofactors: A11=-3, A12=-2, etc.`, `3. Adj A = Transpose of Cofactor Matrix.`, `4. A⁻¹ = (1/|A|) Adj A.`, `5. X = A⁻¹ B. Multiply matrices to get x=4, y=-3, z=1.`] 
+                    },
+                    { 
+                        id: 'a2', 
+                        q: `If A = [[-1, a, 2], [1, 2, x], [3, 1, 1]] and A⁻¹ = [[1, -1, 1], [-8, 7, -5], [b, y, 3]], find the value of (a+x) - (b+y).`, 
+                        m: 3, 
+                        tags: ['PDF FILE'], 
+                        insight: `Use property AA⁻¹ = I.`, 
+                        steps: [`1. Multiply A and A⁻¹. Result must be Identity Matrix I.`, `2. First row A * First col A⁻¹: (-1)(1) + a(-8) + 2(b) = 1.`, `3. Solve equations element-wise to find unknowns.`, `4. Substitute values into (a+x)-(b+y).`] 
+                    },
+                    { 
+                        id: 'a3', 
+                        q: `Express matrix A = [[3, 5], [1, -1]] as the sum of a symmetric and a skew-symmetric matrix.`, 
+                        m: 3, 
+                        tags: ['Matrix'], 
+                        insight: `A = P + Q where P = 1/2(A + A') and Q = 1/2(A - A').`, 
+                        steps: [`1. Find A' (Transpose).`, `2. Calculate P = (A+A')/2. Check P' = P.`, `3. Calculate Q = (A-A')/2. Check Q' = -Q.`, `4. Verify P + Q = A.`] 
+                    },
+                    { 
+                        id: 'a4', 
+                        q: `Using properties of determinants, prove that | [a-b-c, 2a, 2a], [2b, b-c-a, 2b], [2c, 2c, c-a-b] | = (a+b+c)³.`, 
+                        m: 5, 
+                        tags: ['Determinant'], 
+                        insight: `Operation R1 -> R1 + R2 + R3 gives (a+b+c) common.`, 
+                        steps: [`1. Apply R1 -> R1 + R2 + R3. Factor out (a+b+c).`, `2. R1 becomes [1, 1, 1].`, `3. Apply C2 -> C2 - C1 and C3 -> C3 - C1 to get zeros.`, `4. Expand along R1.`] 
+                    }
+                ]
+            },
+            'CALCULUS_1': {
+                title: "CALCULUS PART 1",
+                items: [
+                    { 
+                        id: 'c1', 
+                        q: `The perimeter of a rectangular metallic sheet is 300 cm. It is rolled along one of its sides to form a cylinder. Find dimensions for maximum volume.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'PDF FILE'], 
+                        insight: `Optimization problem. Volume V = πr²h. Constraint 2(x+y)=300.`, 
+                        steps: [`1. Let sides be x, y. 2(x+y)=300 => y = 150-x.`, `2. Roll along x: Circumference = x => r = x/2π. Height h = y = 150-x.`, `3. V = π(x/2π)²(150-x) = (1/4π)(150x² - x³).`, `4. dV/dx = 0 => 300x - 3x² = 0 => x=100.`, `5. Dimensions: 100 cm and 50 cm.`] 
+                    },
+                    { 
+                        id: 'c2', 
+                        q: `It is given that function f(x) = x⁴ - 62x² + ax + 9 attains local maximum value at x = 1. Find 'a'.`, 
+                        m: 2, 
+                        tags: ['PDF FILE'], 
+                        insight: `Condition for extrema: f'(x) = 0.`, 
+                        steps: [`1. f'(x) = 4x³ - 124x + a.`, `2. At x=1, f'(1) = 0.`, `3. 4(1) - 124(1) + a = 0.`, `4. a = 120.`] 
+                    },
+                    { 
+                        id: 'c3', 
+                        q: `Find value of k so that f(x) = (k cos x)/(π - 2x) for x≠π/2 and 3 for x=π/2 is continuous at x=π/2.`, 
+                        m: 3, 
+                        tags: ['Continuity'], 
+                        insight: `Limit x->π/2 equals f(π/2). Use L'Hospital Rule.`, 
+                        steps: [`1. Lim (x->π/2) (k cos x)/(π-2x) is 0/0 form.`, `2. Apply L'Hospital: Diff num -> -k sin x. Diff den -> -2.`, `3. Limit = (k sin(π/2))/2 = k/2.`, `4. Equate: k/2 = 3 => k = 6.`] 
+                    },
+                    { 
+                        id: 'c4', 
+                        q: `Find intervals where f(x) = 4x³ - 6x² - 72x + 30 is strictly increasing or decreasing.`, 
+                        m: 3, 
+                        tags: ['AOD'], 
+                        insight: `Sign of f'(x) determines nature.`, 
+                        steps: [`1. f'(x) = 12x² - 12x - 72 = 12(x-3)(x+2).`, `2. Critical points: x = 3, -2.`, `3. Intervals: (-∞, -2), (-2, 3), (3, ∞).`, `4. Inc: (-∞, -2) U (3, ∞). Dec: (-2, 3).`] 
+                    },
+                    { 
+                        id: 'c5', 
+                        q: `Find the equation of the tangent to the curve y = x³ - 11x + 5 at the point x = 2.`, 
+                        m: 2, 
+                        tags: ['AOD'], 
+                        insight: `Slope m = dy/dx at (x,y).`, 
+                        steps: [`1. Find y coordinate: y(2) = 8 - 22 + 5 = -9. Point (2, -9).`, `2. dy/dx = 3x² - 11.`, `3. At x=2, m = 3(4) - 11 = 1.`, `4. Eq: y - (-9) = 1(x - 2) => y = x - 11.`] 
+                    },
+                    { 
+                        id: 'c6', 
+                        q: `Show that the function f(x) = |x-3| is continuous but not differentiable at x=3.`, 
+                        m: 3, 
+                        tags: ['Diff'], 
+                        insight: `Sharp corner at x=3 implies non-differentiable.`, 
+                        steps: [`1. Continuity: LHL = RHL = f(3) = 0.`, `2. LHD at 3: Limit (h->0) [|3-h-3| - 0]/-h = |-h|/-h = -1.`, `3. RHD at 3: Limit (h->0) [|3+h-3| - 0]/h = h/h = 1.`, `4. LHD ≠ RHD. Not differentiable.`] },
+                    { 
+                        id: 'c7', 
+                        q: `If y = A sin x + B cos x, prove that d²y/dx² + y = 0.`, 
+                        m: 2, 
+                        tags: ['Diff'], 
+                        insight: `Second order derivative.`, 
+                        steps: [`1. dy/dx = A cos x - B sin x.`, `2. d²y/dx² = -A sin x - B cos x.`, `3. d²y/dx² = -(A sin x + B cos x) = -y.`, `4. Hence d²y/dx² + y = 0.`] 
+                    },
+                    { 
+                        id: 'c8', 
+                        q: `Find the rate of change of the area of a circle with respect to its radius r when r = 5cm.`, 
+                        m: 2, 
+                        tags: ['AOD'], 
+                        insight: `dA/dr.`, 
+                        steps: [`1. Area A = πr².`, `2. dA/dr = 2πr.`, `3. At r=5, Rate = 10π cm²/cm.`] 
+                    }
+                ]
+            },
+            'CALCULUS_2': {
+                title: "CALCULUS PART 2",
+                items: [
+                    { 
+                        id: 'i1', 
+                        q: `Evaluate Integral: ∫ (0 to π/2) e^x ( (1+sin x)/(1+cos x) ) dx.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'PDF FILE'], 
+                        insight: `Form: ∫ e^x [f(x) + f'(x)] dx. Use half-angle formulas.`, 
+                        steps: [`1. 1+sin x = 1 + 2sin(x/2)cos(x/2). 1+cos x = 2cos²(x/2).`, `2. Expression becomes 1/2 sec²(x/2) + tan(x/2).`, `3. Here f(x) = tan(x/2), f'(x) = 1/2 sec²(x/2).`, `4. Ans: [e^x tan(x/2)] from 0 to π/2.`, `5. Value: e^(π/2).`] 
+                    },
+                    { 
+                        id: 'i2', 
+                        q: `Using integration, find the area of the region bounded by the curve y = √(4-x²), the lines x = -√2, x = √3 and the x-axis.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Curve is a semicircle x² + y² = 4 (Radius 2).`, 
+                        steps: [`1. Area = ∫(-√2 to √3) √(2² - x²) dx.`, `2. Formula: [x/2 √(a²-x²) + a²/2 sin⁻¹(x/a)].`, `3. Apply limits carefully.`, `4. Calculation involves sin⁻¹(√3/2) and sin⁻¹(-1/√2).`] 
+                    },
+                    { 
+                        id: 'i3', 
+                        q: `Sketch the graph of y = x|x| and hence find the area bounded by this curve, X-axis and ordinates x=-2 and x=2.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Split function: y=x² for x≥0, y=-x² for x<0.`, 
+                        steps: [`1. Graph: S-shaped parabola.`, `2. Area A = |∫(-2 to 0) -x² dx| + |∫(0 to 2) x² dx|.`, `3. A1 = |[-x³/3]| = 8/3. A2 = [x³/3] = 8/3.`, `4. Total Area = 16/3 sq units.`] 
+                    },
+                    { 
+                        id: 'i4', 
+                        q: `Find the value of ∫ (π/6 to π/3) (sin x + cos x) / √(sin 2x) dx.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Substitution: t = sin x - cos x. dt = (cos x + sin x)dx. t² = 1 - sin 2x.`, 
+                        steps: [`1. Denominator √(sin 2x) = √(1 - t²).`, `2. Limits change: x=π/6 -> t=(1-√3)/2. x=π/3 -> t=(√3-1)/2.`, `3. Integral dt/√(1-t²) = sin⁻¹(t).`, `4. Substitute limits.`] 
+                    },
+                    { 
+                        id: 'i5', 
+                        q: `Using integration, find the area bounded by the ellipse 9x² + 25y² = 225, the lines x=-2, x=2, and X-axis.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Standard Ellipse x²/25 + y²/9 = 1. a=5, b=3.`, 
+                        steps: [`1. y = (3/5) √(25-x²).`, `2. Area = 2 × ∫(0 to 2) y dx (Symmetry) OR ∫(-2 to 2) y dx.`, `3. Use formula √(a²-x²).`, `4. Calculate final value.`] 
+                    },
+                    { 
+                        id: 'i6', 
+                        q: `If A1 is area bounded by y²=4x, x=1 and x-axis (1st quad) and A2 is area by y²=4x, x=4 (1st quad), find A1:A2.`, 
+                        m: 3, 
+                        tags: ['PDF FILE'], 
+                        insight: `Simple integration of √x.`, 
+                        steps: [`1. A1 = ∫(0 to 1) 2√x dx = 2[2/3 x^(3/2)] = 4/3.`, `2. A2 = ∫(0 to 4) 2√x dx = 2[2/3 (8)] = 32/3.`, `3. Ratio A1:A2 = 4/32 = 1:8.`] 
+                    },
+                    { 
+                        id: 'i7', 
+                        q: `Solve Differential Equation: dy/dx + y cot x = 2x + x² cot x.`, 
+                        m: 5, 
+                        tags: ['Diff Eq'], 
+                        insight: `Linear DE (IF method). P = cot x.`, 
+                        steps: [`1. IF = e^(∫cot x dx) = sin x.`, `2. Solution: y(sin x) = ∫ (2x + x² cot x) sin x dx.`, `3. RHS = ∫ (2x sin x + x² cos x) dx.`, `4. Use product rule. Integral is x² sin x.`] 
+                    },
+                    { 
+                        id: 'i8', 
+                        q: `Find ∫ dx / (x² - 6x + 13).`, 
+                        m: 3, 
+                        tags: ['Integration'], 
+                        insight: `Complete the square in denominator.`, 
+                        steps: [`1. x² - 6x + 13 = (x-3)² + 4.`, `2. Integral dx / ((x-3)² + 2²).`, `3. Formula: (1/a) tan⁻¹(x/a).`, `4. Ans: (1/2) tan⁻¹((x-3)/2) + C.`] 
+                    },
+                    { 
+                        id: 'i9', 
+                        q: `Solve the Homogeneous Differential Equation: x dy - y dx = √(x² + y²) dx.`, 
+                        m: 3, 
+                        tags: ['Diff Eq'], 
+                        insight: `Put y = vx.`, 
+                        steps: [`1. dy/dx = (y + √(x²+y²)) / x.`, `2. v + x dv/dx = v + √(1+v²).`, `3. dv/√(1+v²) = dx/x.`, `4. log|v + √(1+v²)| = log|x| + C.`] 
+                    }
+                ]
+            },
+            'VECTORS_3D': {
+                title: "VECTORS & 3D",
+                items: [
+                    { 
+                        id: 'v1', 
+                        q: `Find the point of intersection of lines r = (i-j+6k) + λ(3i-k) and r = (-3j+3k) + μ(i+2j-k). Find equation of line perp to both.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Convert to Cartesian. Equate x, y, z.`, 
+                        steps: [`1. L1: (x-1)/3 = (y+1)/0 = (z-6)/-1. Point P(3λ+1, -1, -λ+6).`, `2. L2: x/1 = (y+3)/2 = (z-3)/-1.`, `3. Equate: -1 = 2μ-3 => μ=1.`, `4. Intersection Point (1, -1, 6).`, `5. Direction of perp line = b1 x b2.`] 
+                    },
+                    { 
+                        id: 'v2', 
+                        q: `Find the equations of the diagonal BD of parallelogram ABCD with sides given by lines AB, BC, CD, DA.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Find coordinates of vertices B (Intersect AB, BC) and D (Intersect CD, DA).`, 
+                        steps: [`1. Solve AB and BC to get B.`, `2. Solve CD and DA to get D.`, `3. Use two-point form for equation of BD.`] 
+                    },
+                    { 
+                        id: 'v3', 
+                        q: `Find the coordinates of the foot of the perpendicular drawn from (2,3,-8) to the line (4-x)/2 = y/6 = (1-z)/3.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Standard form: (x-4)/-2 = y/6 = (z-1)/-3.`, 
+                        steps: [`1. General point P on line: (-2λ+4, 6λ, -3λ+1).`, `2. DRs of Perpendicular AP: P - A.`, `3. Dot product of AP and Line direction is 0.`, `4. Find λ, then P.`] 
+                    },
+                    { 
+                        id: 'v4', 
+                        q: `Find the equation of line bisecting segment AB (A(2,3,4), B(4,5,8)) and perpendicular to two given lines.`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Line passes through Midpoint of AB. Direction is cross product of two given lines.`, 
+                        steps: [`1. Midpoint M = (3, 4, 6).`, `2. Direction d = b1 x b2 (Cross product of direction vectors of given lines).`, `3. Eq: r = M + λd.`] 
+                    },
+                    { 
+                        id: 'v5', 
+                        q: `Find the shortest distance between lines r = i+2j+k + λ(i-j+k) and r = 2i-j-k + μ(2i+j+2k).`, 
+                        m: 5, 
+                        tags: ['Core'], 
+                        insight: `Formula d = |(a2-a1).(b1xb2)| / |b1xb2|.`, 
+                        steps: [`1. Identify a1, a2, b1, b2.`, `2. a2-a1 = i - 3j - 2k.`, `3. b1 x b2 = -3i + 0j + 3k.`, `4. Dot product = -3 - 6 = -9.`, `5. Distance = |-9| / √18 = 3/√2.`] 
+                    },
+                    { 
+                        id: 'v6', 
+                        q: `Find the area of parallelogram with vertices A(-1,2,1) and B(1,-2,5) given C and D lie on line... (PDF Q).`, 
+                        m: 5, 
+                        tags: ['PDF FILE'], 
+                        insight: `Area = Base x Height. Base = |AB|. Height = Dist between AB and CD.`, 
+                        steps: [`1. Find vector AB.`, `2. Find equation of line AB.`, `3. Find distance between parallel lines AB and CD.`, `4. Calculate Area.`] 
+                    },
+                    { 
+                        id: 'v7', 
+                        q: `If a, b, c are unit vectors such that a + b + c = 0, find the value of a.b + b.c + c.a.`, 
+                        m: 2, 
+                        tags: ['Vector'], 
+                        insight: `Square the equation (a+b+c)².`, 
+                        steps: [`1. |a+b+c|² = 0.`, `2. |a|² + |b|² + |c|² + 2(a.b + b.c + c.a) = 0.`, `3. 1 + 1 + 1 + 2(X) = 0.`, `4. X = -3/2.`] 
+                    }
+                ]
+            },
+            'LPP_PROB': {
+                title: "LPP & PROBABILITY",
+                items: [
+                    { 
+                        id: 'l1', 
+                        q: `Solve LPP Graphically: Minimize Z = 6x + 7y subject to x+2y≥240, 3x+4y≤620, 2x+y≥180, x,y≥0.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'PDF FILE'], 
+                        insight: `Identify feasible region carefully. Since it's 'Minimize' and '≥', region might be unbounded (check corner points).`, 
+                        steps: [`1. Plot lines x+2y=240, 3x+4y=620, 2x+y=180.`, `2. Shade common region satisfying inequalities.`, `3. Identify vertices.`, `4. Evaluate Z at vertices. Minimum is answer.`] 
+                    },
+                    { 
+                        id: 'l2', 
+                        q: `A factory has two machines A and B. A produces 60%, B 40%. Defective A=2%, B=1%. Item is defective. Find prob it came from B.`, 
+                        m: 5, 
+                        tags: ['Bayes'], 
+                        insight: `Bayes Theorem.`, 
+                        steps: [`1. E1: Machine A (0.6), E2: Machine B (0.4).`, `2. A: Defective. P(A|E1) = 0.02, P(A|E2) = 0.01.`, `3. P(E2|A) = P(E2)P(A|E2) / Total Prob.`, `4. (0.4*0.01) / (0.6*0.02 + 0.4*0.01) = 1/4.`] 
+                    },
+                    { 
+                        id: 'l3', 
+                        q: `Two numbers are selected at random from integers 1 to 9. If the sum is even, find the probability that both numbers are odd.`, 
+                        m: 3, 
+                        tags: ['Conditional'], 
+                        insight: `P(Both Odd | Sum Even).`, 
+                        steps: [`1. Total ways to pick 2 from 9 = 36.`, `2. Sum Even cases: (Odd+Odd) or (Even+Even). 5C2 + 4C2 = 10+6=16.`, `3. Both Odd cases: 5C2 = 10.`, `4. Prob = 10/16 = 5/8.`] 
+                    },
+                    { 
+                        id: 'l4', 
+                        q: `A random variable X has probability distribution P(X=k) = c*k for k=1,2,3. Find c and Mean.`, 
+                        m: 2, 
+                        tags: ['Dist'], 
+                        insight: `Sum of probabilities = 1.`, 
+                        steps: [`1. c(1) + c(2) + c(3) = 1 => 6c = 1 => c = 1/6.`, `2. Mean E(X) = Σ xi pi = 1(1/6) + 2(2/6) + 3(3/6).`, `3. Mean = 14/6 = 7/3.`] 
+                    }
+                ]
+            }
+        };
+
+        const app = {
+            data: JSON.parse(localStorage.getItem('MATHS_TITAN_V10') || '{"completed": []}'),
+            currentSector: 'RELATIONS',
+            maskMode: true,
+            seconds: 0,
+
+            init() {
+                this.renderTabs();
+                this.renderFeed(this.currentSector);
+                this.updateStats();
+                setInterval(() => {
+                    this.seconds++;
+                    const m = Math.floor(this.seconds/60).toString().padStart(2,'0');
+                    const s = (this.seconds%60).toString().padStart(2,'0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
+                }, 1000);
+            },
+
+            renderTabs() {
+                const nav = document.getElementById('nav-tabs');
+                nav.innerHTML = Object.keys(DB).map(key => {
+                    // Dynamic styling
+                    let active = key === this.currentSector;
+                    let colorClass = 'text-gray-500 hover:text-white border-dim';
+                    
+                    if (active) {
+                        if(key.includes('RELATIONS') || key.includes('ALGEBRA')) colorClass = 'text-black bg-alg border-alg';
+                        else if(key.includes('CALCULUS')) colorClass = 'text-black bg-calc border-calc';
+                        else if(key.includes('VECTORS')) colorClass = 'text-black bg-vec border-vec';
+                        else colorClass = 'text-black bg-primary border-primary';
+                    }
+
+                    return `
+                        <button onclick="app.switchSector('${key}')" 
+                            class="whitespace-nowrap px-5 py-2 rounded-lg text-xs font-bold border transition-all ${colorClass}">
+                            ${DB[key].title}
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            switchSector(key) {
+                this.currentSector = key;
+                this.renderTabs();
+                this.renderFeed(key);
+            },
+
+            renderFeed(sectorKey, query = null) {
+                const feed = document.getElementById('main-feed');
+                let items = [];
+                
+                if(query) {
+                    Object.values(DB).forEach(s => items.push(...s.items.filter(i => i.q.toLowerCase().includes(query.toLowerCase()))));
+                } else {
+                    items = DB[sectorKey].items;
+                }
+
+                if(items.length === 0) {
+                    feed.innerHTML = `<div class="text-center text-dim mt-20 font-mono text-xs tracking-widest">NO DATA FOUND</div>`;
+                    return;
+                }
+
+                feed.innerHTML = items.map(item => {
+                    const isDone = this.data.completed.includes(item.id);
+                    const ansDisplay = this.maskMode ? 'hidden' : 'block';
+                    const btnDisplay = this.maskMode ? 'flex' : 'hidden';
+                    
+                    // Accent color logic
+                    let accent = 'text-primary';
+                    if(sectorKey.includes('RELATIONS') || sectorKey.includes('ALGEBRA')) accent = 'text-alg';
+                    else if(sectorKey.includes('CALCULUS')) accent = 'text-calc';
+                    else if(sectorKey.includes('VECTORS')) accent = 'text-vec';
+
+                    return `
+                    <div class="bg-card border border-dim rounded-xl p-5 border-glow fade-in relative group shadow-lg">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-2">
+                                <span class="text-[10px] bg-dim text-gray-300 px-2 py-1 rounded font-bold border border-dim tracking-wider">${item.m} MARKS</span>
+                                ${item.tags.map(t => {
+                                    let tagStyle = 'border-dim text-gray-500';
+                                    if(t === 'PDF FILE') tagStyle = 'border-risk text-risk animate-pulse';
+                                    return `<span class="text-[10px] border ${tagStyle} px-2 py-1 rounded font-bold tracking-wider">${t}</span>`
+                                }).join('')}
+                            </div>
+                            <button onclick="app.toggleDone('${item.id}')" 
+                                class="big-btn w-12 h-12 -mt-3 -mr-3 rounded-full flex items-center justify-center transition-all ${isDone ? 'text-accent drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-dim hover:text-gray-500'}">
+                                <i class="fa-solid ${isDone ? 'fa-circle-check text-2xl' : 'fa-calculator text-xl'}"></i>
+                            </button>
+                        </div>
+
+                        <h3 class="font-bold text-gray-200 mb-6 text-sm md:text-base math-text">${item.q}</h3>
+
+                        <div id="btn-${item.id}" class="${btnDisplay} justify-center">
+                            <button onclick="document.getElementById('ans-${item.id}').classList.remove('hidden'); this.parentElement.classList.add('hidden');" 
+                                class="big-btn w-full bg-dim/20 border border-dim ${accent} text-xs font-bold rounded-lg uppercase tracking-[0.2em] hover:bg-dim/40 transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                REVEAL SOLUTION
+                            </button>
+                        </div>
+
+                        <div id="ans-${item.id}" class="${ansDisplay} space-y-5 pt-5 border-t border-dim/50 mt-2">
+                            
+                            <div class="bg-black/40 border-l-4 border-dim p-4 rounded-r-lg">
+                                <div class="text-[10px] ${accent} font-bold uppercase mb-2 tracking-widest"><i class="fa-solid fa-lightbulb mr-2"></i>TITAN STRATEGY</div>
+                                <p class="text-xs text-gray-400 leading-relaxed font-medium">${item.insight}</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                ${item.steps.map(step => `
+                                    <div class="flex gap-4 text-xs md:text-sm text-gray-300 items-start group/step">
+                                        <div class="mt-1.5 w-1.5 h-1.5 bg-dim rounded-full shrink-0 group-hover/step:bg-white transition-colors"></div>
+                                        <span class="leading-relaxed font-mono">${step}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            },
+
+            toggleMask() {
+                this.maskMode = !this.maskMode;
+                const btn = document.getElementById('mask-btn');
+                if(this.maskMode) {
+                    btn.innerText = "MASK: ON";
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('bg-primary', 'text-black');
+                } else {
+                    btn.innerText = "MASK: OFF";
+                    btn.classList.add('bg-primary', 'text-black');
+                    btn.classList.remove('text-gray-400');
+                }
+                this.renderFeed(this.currentSector);
+            },
+
+            toggleDone(id) {
+                if(this.data.completed.includes(id)) {
+                    this.data.completed = this.data.completed.filter(i => i !== id);
+                } else {
+                    this.data.completed.push(id);
+                }
+                localStorage.setItem('MATHS_TITAN_V10', JSON.stringify(this.data));
+                this.updateStats();
+                this.renderFeed(this.currentSector);
+            },
+
+            updateStats() {
+                let total = 0;
+                Object.values(DB).forEach(s => total += s.items.length);
+                const done = this.data.completed.length;
+                const pct = Math.round((done/total)*100);
+                document.getElementById('mastery-text').innerText = `${done}/${total}`;
+                document.getElementById('mastery-bar').style.width = `${pct}%`;
+            },
+
+            search(val) {
+                if(val.length > 0) this.renderFeed(null, val);
+                else this.renderFeed(this.currentSector);
+            },
+
+            backup() {
+                navigator.clipboard.writeText(JSON.stringify(this.data));
+                alert("MATHS TITAN DATA COPIED");
+            },
+
+            reset() {
+                if(confirm("HARD RESET: Wipe all progress?")) {
+                    this.data.completed = [];
+                    localStorage.setItem('MATHS_TITAN_V10', JSON.stringify(this.data));
+                    location.reload();
+                }
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>

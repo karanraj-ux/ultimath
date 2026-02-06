@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PHYSICS TITAN v9 | FULL QUESTION BANK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: {
+                        'bg': '#050505',
+                        'card': '#111111',
+                        'primary': '#fbbf24', // Amber
+                        'accent': '#10b981',  // Green
+                        'risk': '#ef4444',    // Red
+                        'dim': '#333333'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: #eee; font-family: 'JetBrains Mono', monospace; -webkit-tap-highlight-color: transparent; }
+        
+        /* UTILS */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        .border-glow { border: 1px solid #222; transition: all 0.2s; }
+        .border-glow:focus-within { border-color: #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.15); }
+        
+        /* ANIMATION */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TOUCH */
+        .big-btn { min-height: 52px; display: flex; align-items: center; justify-content: center; }
+        
+        /* TEXT WRAPPING */
+        .question-text { line-height: 1.6; letter-spacing: 0.01em; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-bg">
+
+    <header class="h-16 bg-card border-b border-dim flex justify-between items-center px-4 shrink-0 z-50 shadow-xl">
+        <div class="flex items-center gap-3 select-none">
+            <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center border border-primary/20">
+                <i class="fa-solid fa-bolt text-primary animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wider leading-none">TITAN <span class="text-primary">v9</span></h1>
+                <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">CBSE FULL TEXT</div>
+            </div>
+        </div>
+        
+        <div class="flex gap-3 items-center">
+            <div class="text-[10px] font-bold text-gray-400 font-mono bg-dim/20 px-3 py-1.5 rounded border border-dim flex items-center gap-2">
+                <i class="fa-regular fa-clock text-primary"></i><span id="timer">00:00</span>
+            </div>
+            
+            <button onclick="app.toggleMask()" id="mask-btn" class="bg-dim/30 text-gray-400 px-4 py-1.5 rounded border border-dim text-[10px] font-bold uppercase hover:bg-dim hover:text-white transition-all shadow-lg active:scale-95">
+                MASK: ON
+            </button>
+        </div>
+    </header>
+
+    <div class="h-14 bg-bg border-b border-dim flex items-center overflow-x-auto no-scrollbar px-2 shrink-0 gap-2 select-none z-40" id="nav-tabs">
+        </div>
+
+    <div class="bg-card border-b border-dim p-3 flex gap-2 shrink-0 z-30 shadow-md">
+        <div class="flex-1 relative">
+            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600 text-xs"></i>
+            <input type="text" id="search-box" placeholder="Search 65 Full Questions..." onkeyup="app.search(this.value)" 
+                class="w-full bg-bg border border-dim rounded-lg py-2.5 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-primary transition-colors placeholder-gray-700 font-bold">
+        </div>
+        <button onclick="app.backup()" class="bg-dim/30 border border-dim rounded-lg px-4 text-primary text-sm hover:bg-white/5 active:scale-95 transition-transform" title="Backup Data">
+            <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button onclick="app.reset()" class="bg-risk/10 border border-risk/30 rounded-lg px-4 text-risk text-sm hover:bg-risk/20 active:scale-95 transition-transform" title="Reset All">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </div>
+
+    <main id="main-feed" class="flex-1 overflow-y-auto p-4 space-y-5 pb-24 safe-pb bg-bg/50">
+        </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-dim p-3 flex justify-between items-center px-5 text-xs font-mono z-50 safe-pb shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+        <span class="text-gray-500 font-bold text-[10px] tracking-widest">PROTOCOL MASTERY</span>
+        <div class="flex items-center gap-3">
+            <div class="w-24 h-2 bg-dim rounded-full overflow-hidden border border-white/5">
+                <div id="mastery-bar" class="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="mastery-text" class="text-white font-bold">0/65</span>
+        </div>
+    </div>
+
+    <script>
+        // --- EXPANDED DATABASE: FULL CBSE QUESTIONS (NO SHORTCUTS) ---
+        // Using backticks for strict string preservation
+        const DB = {
+            'ELECTRO': {
+                title: "ELECTROSTATICS",
+                items: [
+                    { 
+                        id: 'e1', 
+                        q: `Using Gauss's Law, derive the expression for the electric field intensity at a point due to an infinitely long, straight, uniformly charged wire of linear charge density λ.`, 
+                        m: 3, 
+                        tags: ['Gauss', 'JEE'], 
+                        insight: `The graph of E vs r is a rectangular hyperbola (E ∝ 1/r). If the wire has finite length, integration is required (JEE case).`, 
+                        steps: [`1. Construct a cylindrical Gaussian surface of radius r and length l coaxial with the wire.`, `2. Calculate Flux Φ = E(2πrl) through the curved surface. Flux through flat ends is zero (E ⊥ dA).`, `3. Total Charge enclosed q = λl.`, `4. Apply Gauss's Law: E(2πrl) = λl/ε₀.`, `5. Final Result: E = λ/(2πε₀r). Direction is radially outward.`] 
+                    },
+                    { 
+                        id: 'e2', 
+                        q: `Apply Gauss's Law to find the electric field intensity due to an infinitely large, thin plane sheet of uniform charge density σ.`, 
+                        m: 3, 
+                        tags: ['Gauss'], 
+                        insight: `The field E is independent of the distance r from the sheet. For a thick metallic sheet, E = σ/ε₀ (charges on both sides).`, 
+                        steps: [`1. Construct a Gaussian Pillbox piercing the sheet with flat faces of area A parallel to the sheet.`, `2. Total Flux Φ = EA + EA = 2EA (contribution from both ends). Curved surface flux is zero.`, `3. Charge enclosed q = σA.`, `4. Apply Gauss's Law: 2EA = σA/ε₀.`, `5. Final Result: E = σ/2ε₀.`] 
+                    },
+                    { 
+                        id: 'e3', 
+                        q: `Derive an expression for the electric field intensity at a point on the axial line of an electric dipole of dipole moment p.`, 
+                        m: 3, 
+                        tags: ['Deriv', 'Core'], 
+                        insight: `The direction of the net electric field is along the direction of the dipole moment vector p.`, 
+                        steps: [`1. Consider a dipole with charges -q and +q separated by 2a. Point P is at distance r from center.`, `2. E_net = E(+q) - E(-q) (Superposition Principle).`, `3. Substitute distances: k[q/(r-a)² - q/(r+a)²].`, `4. Solve algebra to get E = 4arkq / (r²-a²)².`, `5. For short dipole (r>>a): E = 2kp/r³.`] 
+                    },
+                    { 
+                        id: 'e4', 
+                        q: `Derive the expression for the electric field intensity at a point on the equatorial line (perpendicular bisector) of an electric dipole.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `The direction of the electric field is antiparallel (opposite) to the dipole moment vector p.`, 
+                        steps: [`1. Resolve E(+q) and E(-q) into components.`, `2. Vertical components (sinθ) cancel out. Horizontal components (cosθ) add up.`, `3. E_net = 2E cosθ. Substitute E = kq/(r²+a²).`, `4. Substitute cosθ = a/√(r²+a²).`, `5. Final Result: E = kp/(r²+a²)^(3/2). For r>>a, E = -kp/r³.`] 
+                    },
+                    { 
+                        id: 'e5', 
+                        q: `Deduce the expression for the torque acting on an electric dipole placed in a uniform electric field. Under what condition is the torque maximum?`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `Stable equilibrium at θ=0°. Unstable at θ=180°. Maximum torque at θ=90°.`, 
+                        steps: [`1. Forces on charges are qE and -qE. Net Force = 0.`, `2. These forces form a couple. Torque = Force × Perpendicular Distance.`, `3. Perpendicular distance = 2a sinθ.`, `4. τ = qE (2a sinθ) = (q × 2a) E sinθ.`, `5. Final Result: τ = pE sinθ or Vector τ = p × E.`] 
+                    },
+                    { 
+                        id: 'e6', 
+                        q: `Derive the expression for the electric potential at any general point (r, θ) due to an electric dipole.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `This is the generalized case. V = kp cosθ / r². V=0 on the equatorial line (θ=90°).`, 
+                        steps: [`1. Potential V is a scalar sum: V = V(+q) + V(-q).`, `2. V = kq/r1 - kq/r2.`, `3. Use geometry approximation: path difference r2 - r1 ≈ 2a cosθ.`, `4. Substitute and simplify.`, `5. Final Result: V = p cosθ / (4πε₀r²).`] 
+                    },
+                    { 
+                        id: 'e7', 
+                        q: `Derive the expression for the capacitance of a parallel plate capacitor when a dielectric slab of dielectric constant K and thickness t (where t < d) is introduced between the plates.`, 
+                        m: 3, 
+                        tags: ['V.IMP', 'King'], 
+                        insight: `If the slab is conducting (metal, K=∞), the effective distance becomes (d-t), maximizing capacitance.`, 
+                        steps: [`1. Electric field in air = E₀. Electric field in dielectric = E = E₀/K.`, `2. Potential difference V = E₀(distance in air) + E(distance in slab).`, `3. V = E₀(d-t) + (E₀/K)t.`, `4. Factor out E₀: V = E₀ [d - t + t/K].`, `5. Use C = Q/V and E₀ = σ/ε₀ = Q/Aε₀. Final: C = ε₀A / [d - t(1 - 1/K)].`] 
+                    },
+                    { 
+                        id: 'e8', 
+                        q: `Obtain the expression for the energy stored in a charged parallel plate capacitor. Hence derive the expression for energy density of the electric field.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `The energy is stored in the electric field between the plates. Energy Density u = ½ε₀E².`, 
+                        steps: [`1. Work done to move small charge dq against potential V: dW = V dq.`, `2. V = q/C. So, dW = (q/C) dq.`, `3. Integrate from 0 to Q: W = ∫(q/C)dq = Q²/2C.`, `4. Other forms: U = ½CV² = ½QV.`, `5. For density: Divide U by Volume (Ad).`] 
+                    },
+                    { 
+                        id: 'e9', 
+                        q: `Derive an expression for the potential energy of a system of three point charges q1, q2, and q3 located at r1, r2, and r3 respectively.`, 
+                        m: 2, 
+                        tags: ['Formula'], 
+                        insight: `Total Potential Energy is the sum of interaction energies of all unique pairs. U = U12 + U23 + U13.`, 
+                        steps: [`1. Work done to bring q1 is zero (no external field).`, `2. Work to bring q2 in field of q1: W2 = k q1q2 / r12.`, `3. Work to bring q3 in field of q1 and q2: W3 = k q1q3/r13 + k q2q3/r23.`, `4. Total U = Sum of W.`, `5. General formula: U = (1/4πε₀) Σ (qi qj / rij).`] 
+                    },
+                    { 
+                        id: 'e10', 
+                        q: `Using Gauss's Law, show that the electric field inside a uniformly charged spherical shell is zero. Also plot a graph showing the variation of E with distance r from the center.`, 
+                        m: 3, 
+                        tags: ['Gauss'], 
+                        insight: `This is the principle behind Electrostatic Shielding.`, 
+                        steps: [`1. For r < R (Inside): Construct Gaussian sphere inside the shell.`, `2. Charge enclosed q_enc = 0 (charge resides on surface).`, `3. From Gauss Law E(Area) = 0/ε₀, implies E = 0.`, `4. For r >= R: Behaves like a point charge at center. E ∝ 1/r².`, `5. Graph: E=0 until r=R, then jumps to max, then decays as hyperbola.`] 
+                    }
+                ]
+            },
+            'CURRENT': {
+                title: "CURRENT ELEC",
+                items: [
+                    { 
+                        id: 'c1', 
+                        q: `Establish the relationship between electric current (I) and drift velocity (vd) of charge carriers in a conductor.`, 
+                        m: 2, 
+                        tags: ['Deriv', 'JEE'], 
+                        insight: `The formula I = nAevd is fundamental. Note that drift velocity is very slow (mm/s), yet current is instantaneous due to the field.`, 
+                        steps: [`1. Consider conductor of length l, area A, electron density n.`, `2. Total charge q = (Volume × n) × e = (Al)ne.`, `3. Time taken t = l/vd.`, `4. Current I = q/t = (Alne) / (l/vd).`, `5. Result: I = nAevd.`] 
+                    },
+                    { 
+                        id: 'c2', 
+                        q: `Deduce Ohm's Law using the concept of drift velocity and relaxation time. Hence obtain the expression for electrical resistivity.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Resistivity ρ = m / (ne²τ). This explains why resistance increases with temperature (relaxation time τ decreases).`, 
+                        steps: [`1. Drift velocity vd = (eE/m)τ.`, `2. Current I = nAevd = nAe(eE/m)τ = (nAe²τ/m)E.`, `3. Substitute E = V/l. I = (nAe²τ/ml)V.`, `4. Rearrange: V/I = ml / (ne²τA) = R.`, `5. Comparison with R = ρl/A gives ρ = m/(ne²τ).`] 
+                    },
+                    { 
+                        id: 'c3', 
+                        q: `State Kirchhoff's Rules (Junction Rule and Loop Rule) and explain the principle of conservation of charge and energy underlying them.`, 
+                        m: 2, 
+                        tags: ['Rule'], 
+                        insight: `Junction Rule (KCL) -> Conservation of Charge. Loop Rule (KVL) -> Conservation of Energy.`, 
+                        steps: [`1. Junction Rule: ΣI = 0 (Incoming current = Outgoing current).`, `2. Loop Rule: ΣΔV = 0 (Sum of potential changes in a closed loop is zero).`, `3. Sign Convention: Current direction drop (-IR), Gain (+IR).`] 
+                    },
+                    { 
+                        id: 'c4', 
+                        q: `Draw the circuit diagram of a Wheatstone Bridge and derive the condition for a balanced bridge using Kirchhoff's Rules.`, 
+                        m: 3, 
+                        tags: ['V.IMP'], 
+                        insight: `Balanced condition implies no current flows through the galvanometer (Ig = 0), meaning potential at B equals potential at D.`, 
+                        steps: [`1. Draw quadrilateral circuit with resistors P, Q, R, S and Galvanometer G.`, `2. Apply KVL to Loop 1 (ABDA): I1P + Ig G - I2R = 0.`, `3. Apply KVL to Loop 2 (BCDB): (I1-Ig)Q - (I2+Ig)S - Ig G = 0.`, `4. Set Ig = 0 for null point.`, `5. Divide the resulting equations to get P/Q = R/S.`] 
+                    },
+                    { 
+                        id: 'c5', 
+                        q: `Explain the principle of a Potentiometer. Describe how it is used to compare the EMFs of two primary cells with a circuit diagram.`, 
+                        m: 3, 
+                        tags: ['Exp'], 
+                        insight: `Potentiometer measures EMF accurately because it draws NO current at the null point (acts as ideal voltmeter).`, 
+                        steps: [`1. Principle: V ∝ l (Potential drop is proportional to length) provided I and A are constant.`, `2. Circuit: Driver cell, wire AB, two cells E1 and E2 in secondary circuit.`, `3. Balance E1 at length l1: E1 = kl1.`, `4. Balance E2 at length l2: E2 = kl2.`, `5. Ratio: E1/E2 = l1/l2.`] 
+                    },
+                    { 
+                        id: 'c6', 
+                        q: `Describe the method to determine the internal resistance of a primary cell using a Potentiometer. Derive the necessary formula.`, 
+                        m: 3, 
+                        tags: ['Exp'], 
+                        insight: `Formula: r = R(l1/l2 - 1). l1 is balancing length for open circuit (EMF), l2 is for closed circuit (Terminal Voltage).`, 
+                        steps: [`1. Balance open cell (EMF E) at length l1. E = kl1.`, `2. Close switch with shunt resistance R. Balance terminal voltage V at l2. V = kl2.`, `3. We know r = (E/V - 1)R.`, `4. Substitute ratios: r = (l1/l2 - 1)R.`] 
+                    },
+                    { 
+                        id: 'c7', 
+                        q: `Draw the circuit diagram for a Meter Bridge to determine the unknown resistance of a wire. Write the formula used.`, 
+                        m: 2, 
+                        tags: ['Exp'], 
+                        insight: `Based on Wheatstone Bridge principle. Most accurate when the null point is near the center (50cm).`, 
+                        steps: [`1. Circuit: Wire AC (1m), Resistance Box R, Unknown S, Galvanometer.`, `2. Adjust R to get null point at length l.`, `3. Wheatstone condition: R/S = l/(100-l).`, `4. Formula: S = R(100-l)/l.`] 
+                    },
+                    { 
+                        id: 'c8', 
+                        q: `Derive expressions for the equivalent EMF and internal resistance of two cells connected in (i) Series and (ii) Parallel.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Parallel combination formula E_eq = (E1r2 + E2r1)/(r1+r2) is frequently asked in numericals.`, 
+                        steps: [`1. Series: V = V1 + V2 = (E1-Ir1) + (E2-Ir2). Result: E_eq = E1+E2, r_eq = r1+r2.`, `2. Parallel: I = I1 + I2. V is same.`, `3. I1 = (E1-V)/r1, I2 = (E2-V)/r2.`, `4. Solve for V to get E_eq and r_eq formulas.`] 
+                    },
+                    { 
+                        id: 'c9', 
+                        q: `State the condition for maximum power transfer from a cell to an external resistor. Derive the relation for power dissipated.`, 
+                        m: 2, 
+                        tags: ['Num'], 
+                        insight: `Maximum Power Transfer Theorem: Power is max when External Resistance R = Internal Resistance r.`, 
+                        steps: [`1. Current I = E / (R+r).`, `2. Power P = I²R = E²R / (R+r)².`, `3. dP/dR = 0 gives R = r.`, `4. Power in series bulbs: 1/P_total = 1/P1 + 1/P2. Parallel: P_total = P1 + P2.`] 
+                    }
+                ]
+            },
+            'MAGNETISM': {
+                title: "MAGNETISM",
+                items: [
+                    { 
+                        id: 'm1', 
+                        q: `State Biot-Savart Law. Use it to derive the expression for the magnetic field on the axis of a circular current-carrying loop.`, 
+                        m: 3, 
+                        tags: ['V.IMP', 'Calc'], 
+                        insight: `Graph of B vs distance x has inflection points at x = ±R/2. Field at center is μ₀I/2R.`, 
+                        steps: [`1. Consider element dl. Magnetic field dB = (μ₀/4π) Idl sin90 / r².`, `2. Resolve dB into components along axis (dB sinθ) and perpendicular (dB cosθ).`, `3. Perpendicular components cancel due to symmetry.`, `4. Integrate dB sinθ over the loop.`, `5. Final Result: B = μ₀IR² / 2(R²+x²)^(3/2).`] 
+                    },
+                    { 
+                        id: 'm2', 
+                        q: `Using Ampere's Circuital Law, derive the expression for the magnetic field inside a long straight solenoid carrying current I.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Field inside is uniform (μ₀nI). Field outside is approximately zero. Field at ends is μ₀nI/2.`, 
+                        steps: [`1. Draw a rectangular Amperian loop abcd partly inside and partly outside.`, `2. Line integral ∮B.dl over the loop.`, `3. Only side inside the solenoid contributes (Bl). Outside is 0, perpendicular sides are 0.`, `4. Enclosed current I_enc = (nl)I where n is turns per unit length.`, `5. Apply Ampere Law: Bl = μ₀(nlI) => B = μ₀nI.`] 
+                    },
+                    { 
+                        id: 'm3', 
+                        q: `Derive the expression for the force per unit length between two infinitely long straight parallel conductors carrying currents. Hence define 1 Ampere.`, 
+                        m: 3, 
+                        tags: ['V.IMP'], 
+                        insight: `Currents in same direction ATTRACT. Currents in opposite direction REPEL. (Counter-intuitive compared to charges).`, 
+                        steps: [`1. Magnetic field B1 due to wire 1 at distance d: B1 = μ₀I1/2πd.`, `2. Force on length L of wire 2: F2 = I2 L B1 sin90.`, `3. Force per unit length f = F2/L = B1 I2.`, `4. Substitute B1: f = μ₀ I1 I2 / 2πd.`, `5. Definition: 1A is current which produces force of 2e-7 N/m at 1m separation.`] 
+                    },
+                    { 
+                        id: 'm4', 
+                        q: `Derive the expression for the torque acting on a rectangular current loop placed in a uniform magnetic field.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `This is the principle of the Electric Motor. Torque τ = M × B.`, 
+                        steps: [`1. Forces on arms parallel to axis cancel out.`, `2. Forces on arms perpendicular to axis form a couple.`, `3. Force F = IlB. Perpendicular distance between forces = b sinθ.`, `4. Torque = F × distance = IlB × b sinθ.`, `5. Area A = lb. Final: τ = IAB sinθ = NIAB sinθ.`] 
+                    },
+                    { 
+                        id: 'm5', 
+                        q: `Explain the principle, construction, and working of a Moving Coil Galvanometer. Why is a radial magnetic field used?`, 
+                        m: 3, 
+                        tags: ['Device'], 
+                        insight: `Radial field ensures the plane of the coil is always parallel to B, making θ=90° and Torque constant/maximum.`, 
+                        steps: [`1. Principle: Current loop in B field experiences torque.`, `2. Deflecting Torque τ_d = NIAB.`, `3. Restoring Torque τ_r = kα (k = torsional constant).`, `4. Equilibrium: NIAB = kα.`, `5. Current Sensitivity: α/I = NBA/k.`] 
+                    },
+                    { 
+                        id: 'm6', 
+                        q: `Derive the expression for the cyclotron frequency. Show that it is independent of the speed of the charged particle.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `Cyclotron frequency f = qB/2πm. Limitations: Cannot accelerate electrons (too light) or neutrals.`, 
+                        steps: [`1. Magnetic force provides centripetal force: qvB = mv²/r.`, `2. Radius of path: r = mv/qB.`, `3. Time period T = 2πr/v.`, `4. Substitute r: T = 2π(mv/qB)/v = 2πm/qB.`, `5. Frequency f = 1/T = qB/2πm.`] 
+                    },
+                    { 
+                        id: 'm7', 
+                        q: `Derive the expression for the magnetic dipole moment of an electron revolving in the nth orbit of a hydrogen atom.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `Leads to the concept of Bohr Magneton (μ_B).`, 
+                        steps: [`1. Current I = Charge/Time = e/T = e/(2πr/v) = ev/2πr.`, `2. Magnetic Moment M = I × Area = (ev/2πr) × πr² = evr/2.`, `3. Angular momentum L = mvr. So vr = L/m.`, `4. M = e(L/m)/2 = (e/2m)L.`, `5. Using Bohr's postulate L=nh/2π, M = n(eh/4πm).`] 
+                    },
+                    { 
+                        id: 'm8', 
+                        q: `Define the elements of Earth's magnetic field (Declination, Dip, Horizontal Component). Establish the relation between them.`, 
+                        m: 2, 
+                        tags: ['Theory'], 
+                        insight: `At magnetic poles, Dip is 90°. At equator, Dip is 0°.`, 
+                        steps: [`1. B_horizontal (H) = B_total cos(δ).`, `2. B_vertical (V) = B_total sin(δ).`, `3. tan(δ) = V/H.`, `4. B_total = √(H² + V²).`] 
+                    }
+                ]
+            },
+            'EMI_AC': {
+                title: "EMI & AC",
+                items: [
+                    { 
+                        id: 'ea1', 
+                        q: `Derive the expression for the motional EMF induced in a straight conductor moving perpendicular to a uniform magnetic field.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Standard formula e = Blv. Can be derived via Lorentz Force or Faraday's Flux Rule.`, 
+                        steps: [`1. Consider conductor length l moving with velocity v in field B.`, `2. Area swept in time dt: dA = l(v dt).`, `3. Change in flux dΦ = B dA = Blv dt.`, `4. EMF e = |dΦ/dt| = Blv.`, `5. Alternatively, magnetic force on electron Fm = evB balances electric force Fe = eE. E = vB. V = El = vBl.`] 
+                    },
+                    { 
+                        id: 'ea2', 
+                        q: `Derive the expression for the self-inductance of a long solenoid of length l, cross-sectional area A, and having N turns.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `L = μ₀N²A/l. Inductance depends only on geometry and core material (μr).`, 
+                        steps: [`1. Magnetic field inside solenoid B = μ₀(N/l)I.`, `2. Flux per turn Φ = B × A = μ₀NIA/l.`, `3. Total Flux Φ_total = N × Φ = μ₀N²IA/l.`, `4. By definition Φ_total = LI.`, `5. Equating gives L = μ₀N²A/l.`] 
+                    },
+                    { 
+                        id: 'ea3', 
+                        q: `Derive the expression for the mutual inductance of two long coaxial solenoids of same length l.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Reciprocity Theorem holds: M12 = M21.`, 
+                        steps: [`1. Current I2 in outer solenoid produces B2 = μ₀n2I2.`, `2. Flux through inner solenoid Φ1 = N1 B2 A1.`, `3. Φ1 = N1 (μ₀n2I2) A1.`, `4. Φ1 = M I2.`, `5. Result: M = μ₀ n1 n2 A l.`] 
+                    },
+                    { 
+                        id: 'ea4', 
+                        q: `Describe the principle and working of an AC Generator. Derive the expression for the instantaneous EMF induced.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Generates sinusoidal EMF e = e₀ sin(ωt).`, 
+                        steps: [`1. Coil rotates with angular velocity ω in B field.`, `2. Angle θ = ωt. Flux Φ = NBA cos(ωt).`, `3. Faraday's Law: e = -dΦ/dt.`, `4. e = -d/dt (NBA cos ωt) = NBAω sin(ωt).`, `5. Max EMF e₀ = NBAω.`] 
+                    },
+                    { 
+                        id: 'ea5', 
+                        q: `Derive the expression for the impedance of a series LCR circuit using the phasor diagram method. Find the phase angle.`, 
+                        m: 5, 
+                        tags: ['V.IMP', 'Phasor'], 
+                        insight: `The Impedance Triangle is key. Z = √[R²+(XL-XC)²].`, 
+                        steps: [`1. Draw Phasor Diagram: Vr along I, Vl leads I by 90°, Vc lags I by 90°.`, `2. Net voltage V = √[Vr² + (Vl-Vc)²].`, `3. Substitute V=IZ, Vr=IR, etc.`, `4. Z = √[R² + (Xl-Xc)²].`, `5. Phase angle tanφ = (Xl-Xc)/R.`] 
+                    },
+                    { 
+                        id: 'ea6', 
+                        q: `What is electrical resonance in a series LCR circuit? Derive the expression for the resonant frequency.`, 
+                        m: 2, 
+                        tags: ['Cond'], 
+                        insight: `At resonance, Z is minimum (Z=R) and Current is maximum. Power factor is 1.`, 
+                        steps: [`1. Resonance occurs when Xl = Xc.`, `2. ωL = 1/ωC.`, `3. ω² = 1/LC.`, `4. Resonant angular frequency ω₀ = 1/√LC.`, `5. Frequency ν₀ = 1/(2π√LC).`] 
+                    },
+                    { 
+                        id: 'ea7', 
+                        q: `Derive the expression for average power dissipated in an AC circuit. Define Power Factor.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `P = Vrms Irms cosφ. Wattless current flows when φ=90° (Pure Inductor/Capacitor).`, 
+                        steps: [`1. Instantaneous Power P = VI = (Vm sinωt)(Im sin(ωt+φ)).`, `2. Use trig identity 2sinA sinB = cos(A-B) - cos(A+B).`, `3. Integrate over one cycle. Average of cos(2ωt) term is 0.`, `4. P_avg = (VmIm/2) cosφ = Vrms Irms cosφ.`] 
+                    },
+                    { 
+                        id: 'ea8', 
+                        q: `Explain the principle, construction, and working of a Transformer. Mention the various energy losses.`, 
+                        m: 3, 
+                        tags: ['Device'], 
+                        insight: `Works on Mutual Induction. DC cannot be transformed. Ideal transformer: P_in = P_out.`, 
+                        steps: [`1. Relation: Vs/Vp = Ns/Np = Ip/Is (Transformation Ratio).`, `2. Step-up (Ns>Np) vs Step-down (Ns<Np).`, `3. Losses: Copper Loss (I²R), Eddy Currents (Heat in core), Hysteresis (Magnetization cycle), Flux Leakage.`] 
+                    },
+                    { 
+                        id: 'ea9', 
+                        q: `Define RMS value of alternating current. Derive the relation between RMS and Peak value of current.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `RMS value produces the same heating effect as steady DC. I_rms = I₀/√2 = 0.707 I₀.`, 
+                        steps: [`1. Heat produced H = ∫ i²R dt over one cycle T.`, `2. Mean Square Current = (1/T) ∫ I₀² sin²(ωt) dt.`, `3. Integral of sin² over cycle is T/2.`, `4. I²_avg = I₀²/2.`, `5. I_rms = √(I²_avg) = I₀/√2.`] 
+                    }
+                ]
+            },
+            'OPTICS': {
+                title: "OPTICS",
+                items: [
+                    { 
+                        id: 'o1', 
+                        q: `Derive the Lens Maker's Formula for a double convex lens. State the assumptions made and sign convention used.`, 
+                        m: 5, 
+                        tags: ['King', 'JEE'], 
+                        insight: `The most important derivation in Optics. Remember: 1/f = (n2/n1 - 1)(1/R1 - 1/R2).`, 
+                        steps: [`1. Draw diagram showing refraction at two spherical surfaces.`, `2. Apply refraction formula for Surface 1: n1/(-u) + n2/v1 = (n2-n1)/R1.`, `3. Apply for Surface 2 (Image I1 acts as object): n2/(-v1) + n1/v = (n1-n2)/R2.`, `4. Add the two equations.`, `5. Use lens formula 1/v - 1/u = 1/f to get final result.`] 
+                    },
+                    { 
+                        id: 'o2', 
+                        q: `Derive the relation between object distance, image distance, and radius of curvature for refraction at a convex spherical surface (rarer to denser medium).`, 
+                        m: 3, 
+                        tags: ['Core'], 
+                        insight: `Relation: n2/v - n1/u = (n2-n1)/R. This is the building block for lens formulas.`, 
+                        steps: [`1. Draw ray diagram with Normal passing through Center of Curvature.`, `2. Use Snell's law n1 sin i = n2 sin r. Small angle approx: n1 i = n2 r.`, `3. Use exterior angle property of triangles to express i and r in terms of α, β, γ.`, `4. Use tan approx (α ≈ h/u, etc).`, `5. Substitute and rearrange.`] 
+                    },
+                    { 
+                        id: 'o3', 
+                        q: `Derive the expression for the refractive index of the material of a prism in terms of the angle of the prism and angle of minimum deviation.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `At minimum deviation, the ray passes symmetrically (i = e and r1 = r2).`, 
+                        steps: [`1. From quadrilateral geometry: r1 + r2 = A.`, `2. From deviation: δ = (i+e) - A.`, `3. At min deviation: r1=r2=r => r=A/2. And i=e => δm = 2i - A.`, `4. i = (A+δm)/2.`, `5. Apply Snell's Law: n = sin((A+δm)/2) / sin(A/2).`] 
+                    },
+                    { 
+                        id: 'o4', 
+                        q: `Draw a ray diagram for a Compound Microscope. Derive the expression for its total magnifying power.`, 
+                        m: 3, 
+                        tags: ['Instru'], 
+                        insight: `Total Magnification M = Mo × Me. For large mag, fo and fe should be small.`, 
+                        steps: [`1. Objective forms real, inverted, magnified image. Eyepiece acts as simple magnifier.`, `2. Mo = vo/uo ≈ L/fo.`, `3. Me = 1 + D/fe (Image at D) or D/fe (Image at infinity).`, `4. Combine: M = (L/fo)(1+D/fe).`] 
+                    },
+                    { 
+                        id: 'o5', 
+                        q: `Draw a ray diagram for an Astronomical Telescope in normal adjustment. Derive the expression for its magnifying power.`, 
+                        m: 3, 
+                        tags: ['Instru'], 
+                        insight: `Image formed at infinity. M = fo/fe. Objective has large focal length, Eyepiece has small.`, 
+                        steps: [`1. Parallel rays from infinity form image at fo.`, `2. Eyepiece adjusted so image is at its focus fe.`, `3. Angle subtended by image β ≈ h/fe. Angle by object α ≈ h/fo.`, `4. Magnification m = β/α = fo/fe.`] 
+                    },
+                    { 
+                        id: 'o6', 
+                        q: `Using Huygens' Principle, verify the laws of refraction (Snell's Law) for a plane wavefront incident on a plane surface.`, 
+                        m: 3, 
+                        tags: ['Wave'], 
+                        insight: `Requires clear wavefront diagram. Diagram carries 1-1.5 marks.`, 
+                        steps: [`1. Draw incident wavefront AB and refracted wavefront CD.`, `2. Time taken 't' for secondary wavelet to travel BC (v1 t) and AD (v2 t).`, `3. Consider common hypotenuse AC.`, `4. sin i = BC/AC = v1 t / AC. sin r = AD/AC = v2 t / AC.`, `5. sin i / sin r = v1/v2 = n2/n1.`] 
+                    },
+                    { 
+                        id: 'o7', 
+                        q: `In Young's Double Slit Experiment (YDSE), derive the expression for the fringe width of interference fringes.`, 
+                        m: 3, 
+                        tags: ['V.IMP'], 
+                        insight: `Condition: Coherent sources. Path difference Δx = nλ (Bright), (n+0.5)λ (Dark).`, 
+                        steps: [`1. Path difference Δx = S2P - S1P ≈ yd/D (for d<<D).`, `2. For Bright Fringe: yd/D = nλ => y = nλD/d.`, `3. Fringe Width β = y(n+1) - y(n).`, `4. Result: β = λD/d.`] 
+                    },
+                    { 
+                        id: 'o8', 
+                        q: `Derive the condition for the formation of the first minimum in the diffraction pattern of a single slit of width 'a'.`, 
+                        m: 3, 
+                        tags: ['Theory'], 
+                        insight: `Diffraction minima condition: a sinθ = nλ. (Note: This looks like interference MAXIMA condition, don't confuse them).`, 
+                        steps: [`1. Divide slit into two halves. Path diff between top and middle ray is (a/2)sinθ.`, `2. Destructive interference if path diff = λ/2.`, `3. (a/2)sinθ = λ/2 => a sinθ = λ (1st Minimum).`, `4. Central Maximum Width = 2λD/a.`] 
+                    },
+                    { 
+                        id: 'o9', 
+                        q: `State Brewster's Law. Show that the reflected and refracted rays are perpendicular to each other at the polarizing angle.`, 
+                        m: 2, 
+                        tags: ['Law'], 
+                        insight: `μ = tan(ip). Light reflected at polarizing angle is completely plane polarized.`, 
+                        steps: [`1. From Snell's Law: μ = sin(ip)/sin(r).`, `2. From Brewster Law: μ = tan(ip) = sin(ip)/cos(ip).`, `3. Therefore, cos(ip) = sin(r) => sin(90-ip) = sin(r).`, `4. r = 90 - ip => ip + r = 90.`, `5. Angle between rays = 180 - (ip+r) = 90°.`] 
+                    }
+                ]
+            },
+            'MODERN': {
+                title: "MODERN PHY",
+                items: [
+                    { 
+                        id: 'mod1', 
+                        q: `Write Einstein's Photoelectric Equation. Explain the laws of photoelectric emission based on this equation.`, 
+                        m: 2, 
+                        tags: ['Eq'], 
+                        insight: `K_max = hν - Φ₀. Explains threshold frequency and instantaneous nature.`, 
+                        steps: [`1. Energy of photon = Work function + Max Kinetic Energy.`, `2. hν = hν₀ + K_max.`, `3. K_max depends linearly on frequency ν, not intensity.`, `4. Existence of threshold frequency ν₀ below which no emission occurs.`] 
+                    },
+                    { 
+                        id: 'mod2', 
+                        q: `Derive the expression for the de-Broglie wavelength associated with an electron accelerated through a potential difference V.`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `λ = 1.227 / √V nm. Wave nature of matter.`, 
+                        steps: [`1. de-Broglie relation: λ = h/p.`, `2. Kinetic Energy K = p²/2m = eV.`, `3. Momentum p = √(2meV).`, `4. λ = h / √(2meV).`, `5. Substitute constants to get λ ≈ 12.27/√V Å.`] 
+                    },
+                    { 
+                        id: 'mod3', 
+                        q: `Using Bohr's postulates, derive the expression for the radius of the nth orbit of a hydrogen atom.`, 
+                        m: 3, 
+                        tags: ['Deriv'], 
+                        insight: `Radius r ∝ n². This derivation combines classical mechanics with quantum quantization.`, 
+                        steps: [`1. Centripetal force = Electrostatic force: mv²/r = kZe²/r².`, `2. Bohr's Quantization condition: mvr = nh/2π.`, `3. Solve for v from (2) and substitute into (1).`, `4. Final Result: r = (ε₀n²h²) / (πmZe²).`] 
+                    },
+                    { 
+                        id: 'mod4', 
+                        q: `Derive the expression for the total energy of an electron in the nth stationary orbit of a hydrogen atom. What does the negative sign signify?`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `E_total = -13.6/n² eV. Negative sign implies the electron is bound to the nucleus.`, 
+                        steps: [`1. Kinetic Energy K = ½mv² = kZe²/2r.`, `2. Potential Energy U = -kZe²/r.`, `3. Total E = K + U = -kZe²/2r.`, `4. Substitute value of r. E = -me⁴/8ε₀²n²h².`] 
+                    },
+                    { 
+                        id: 'mod5', 
+                        q: `Draw the energy level diagram for Hydrogen atom. Calculate the shortest and longest wavelengths in the Lyman series.`, 
+                        m: 2, 
+                        tags: ['Series'], 
+                        insight: `Lyman (UV): n1=1. Balmer (Visible): n1=2. Shortest λ corresponds to max energy transition (∞ -> 1).`, 
+                        steps: [`1. Rydberg Formula: 1/λ = R(1/n1² - 1/n2²).`, `2. Lyman: n1=1.`, `3. Longest λ (min E): n2=2. 1/λ = R(1 - 1/4) = 3R/4.`, `4. Shortest λ (max E): n2=∞. 1/λ = R.`] 
+                    },
+                    { 
+                        id: 'mod6', 
+                        q: `Draw the graph showing variation of Binding Energy per nucleon with Mass Number A. Explain Nuclear Fission and Fusion based on this graph.`, 
+                        m: 2, 
+                        tags: ['Graph'], 
+                        insight: `Stability maximum at Iron (Fe-56). Region A<20 (Fusion). Region A>170 (Fission).`, 
+                        steps: [`1. Axes: BE/A (y-axis) vs Mass Number A (x-axis).`, `2. Peak at 8.75 MeV for Fe-56.`, `3. Fission: Heavy nuclei break to move towards peak stability.`, `4. Fusion: Light nuclei combine to move towards peak stability.`] 
+                    },
+                    { 
+                        id: 'mod7', 
+                        q: `State the Law of Radioactive Decay. Derive the mathematical relation N = N₀ e^(-λt).`, 
+                        m: 2, 
+                        tags: ['Deriv'], 
+                        insight: `Rate of decay is proportional to number of undecayed nuclei.`, 
+                        steps: [`1. dN/dt ∝ -N.`, `2. dN/dt = -λN.`, `3. dN/N = -λ dt.`, `4. Integrate both sides: ln N = -λt + C.`, `5. At t=0, N=N₀ => C=ln N₀. Result: N = N₀ e^(-λt).`] 
+                    },
+                    { 
+                        id: 'mod8', 
+                        q: `Show that nuclear density is constant and independent of the mass number A.`, 
+                        m: 2, 
+                        tags: ['Proof'], 
+                        insight: `Nuclear density ~ 2.3 × 10¹⁷ kg/m³. Incredibly dense.`, 
+                        steps: [`1. Radius R = R₀ A^(1/3).`, `2. Volume V = 4/3 π R³ = 4/3 π R₀³ A.`, `3. Mass M = A × amu (approx).`, `4. Density = Mass/Volume. 'A' cancels out.`, `5. Conclusion: Constant.`] 
+                    },
+                    { 
+                        id: 'mod9', 
+                        q: `Explain the formation of the depletion region and potential barrier in a p-n junction diode. How does biasing affect the width of the depletion layer?`, 
+                        m: 2, 
+                        tags: ['Theory'], 
+                        insight: `Forward Bias: Width decreases. Reverse Bias: Width increases.`, 
+                        steps: [`1. Diffusion of electrons from n->p and holes from p->n.`, `2. Leaves behind immobile ions (positive in n-side, negative in p-side).`, `3. Creates electric field opposing further diffusion (Barrier).`, `4. Fwd Bias opposes barrier (thinner). Rev Bias aids barrier (thicker).`] 
+                    },
+                    { 
+                        id: 'mod10', 
+                        q: `Draw the circuit diagram of a Full Wave Rectifier using a center-tap transformer. Explain its working with input and output waveforms.`, 
+                        m: 3, 
+                        tags: ['Device'], 
+                        insight: `Converts AC to pulsating DC. Efficiency higher than Half Wave. Frequency of ripple is 2f.`, 
+                        steps: [`1. Diagram: Transformer, 2 Diodes (D1, D2), Load Resistance.`, `2. Positive cycle: D1 forward biased (conducts), D2 reverse.`, `3. Negative cycle: D2 forward biased (conducts), D1 reverse.`, `4. Current flows in same direction through Load R.`] 
+                    },
+                    { 
+                        id: 'mod11', 
+                        q: `Distinguish between Conductors, Semiconductors, and Insulators on the basis of Energy Band Theory.`, 
+                        m: 2, 
+                        tags: ['Theory'], 
+                        insight: `Focus on Band Gap (Eg).`, 
+                        steps: [`1. Metals: Valence and Conduction bands overlap.`, `2. Semiconductors: Small gap (Eg < 3 eV). Electrons can jump at room temp.`, `3. Insulators: Large gap (Eg > 3 eV). No conduction.`] 
+                    }
+                ]
+            }
+        };
+
+        const app = {
+            data: JSON.parse(localStorage.getItem('OMEGA_TITAN_V9') || '{"completed": []}'),
+            currentSector: 'ELECTRO',
+            maskMode: true,
+            seconds: 0,
+
+            init() {
+                this.renderTabs();
+                this.renderFeed(this.currentSector);
+                this.updateStats();
+                setInterval(() => {
+                    this.seconds++;
+                    const m = Math.floor(this.seconds/60).toString().padStart(2,'0');
+                    const s = (this.seconds%60).toString().padStart(2,'0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
+                }, 1000);
+            },
+
+            renderTabs() {
+                const nav = document.getElementById('nav-tabs');
+                nav.innerHTML = Object.keys(DB).map(key => {
+                    const active = key === this.currentSector ? 'bg-primary text-black border-primary' : 'bg-card border-dim text-gray-500 hover:text-white';
+                    return `
+                        <button onclick="app.switchSector('${key}')" 
+                            class="whitespace-nowrap px-5 py-2 rounded-lg text-xs font-bold border transition-all ${active}">
+                            ${DB[key].title}
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            switchSector(key) {
+                this.currentSector = key;
+                this.renderTabs();
+                this.renderFeed(key);
+            },
+
+            renderFeed(sectorKey, query = null) {
+                const feed = document.getElementById('main-feed');
+                let items = [];
+                
+                if(query) {
+                    Object.values(DB).forEach(s => items.push(...s.items.filter(i => i.q.toLowerCase().includes(query.toLowerCase()))));
+                } else {
+                    items = DB[sectorKey].items;
+                }
+
+                if(items.length === 0) {
+                    feed.innerHTML = `<div class="text-center text-dim mt-20 font-mono text-xs tracking-widest">NO PROTOCOLS FOUND</div>`;
+                    return;
+                }
+
+                feed.innerHTML = items.map(item => {
+                    const isDone = this.data.completed.includes(item.id);
+                    // Mask Logic
+                    const ansDisplay = this.maskMode ? 'hidden' : 'block';
+                    const btnDisplay = this.maskMode ? 'flex' : 'hidden';
+
+                    return `
+                    <div class="bg-card border border-dim rounded-xl p-5 border-glow fade-in relative group shadow-lg">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-2">
+                                <span class="text-[10px] bg-dim text-gray-300 px-2 py-1 rounded font-bold border border-white/5 tracking-wider">${item.m} MARKS</span>
+                                ${item.tags.map(t => `<span class="text-[10px] border border-dim text-gray-500 px-2 py-1 rounded font-bold tracking-wider">${t}</span>`).join('')}
+                            </div>
+                            <button onclick="app.toggleDone('${item.id}')" 
+                                class="big-btn w-12 h-12 -mt-3 -mr-3 rounded-full flex items-center justify-center transition-all ${isDone ? 'text-accent drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-dim hover:text-gray-500'}">
+                                <i class="fa-solid ${isDone ? 'fa-circle-check text-2xl' : 'fa-circle text-xl'}"></i>
+                            </button>
+                        </div>
+
+                        <h3 class="font-bold text-gray-200 mb-6 text-sm md:text-base question-text">${item.q}</h3>
+
+                        <div id="btn-${item.id}" class="${btnDisplay} justify-center">
+                            <button onclick="document.getElementById('ans-${item.id}').classList.remove('hidden'); this.parentElement.classList.add('hidden');" 
+                                class="big-btn w-full bg-dim/20 border border-dim text-primary text-xs font-bold rounded-lg uppercase tracking-[0.2em] hover:bg-dim/40 transition-all hover:shadow-[0_0_15px_rgba(251,191,36,0.1)]">
+                                REVEAL PROTOCOL
+                            </button>
+                        </div>
+
+                        <div id="ans-${item.id}" class="${ansDisplay} space-y-5 pt-5 border-t border-dim/50 mt-2">
+                            
+                            <div class="bg-black/40 border-l-4 border-primary p-4 rounded-r-lg">
+                                <div class="text-[10px] text-primary font-bold uppercase mb-2 tracking-widest"><i class="fa-solid fa-lightbulb mr-2"></i>TITAN INSIGHT</div>
+                                <p class="text-xs text-gray-400 leading-relaxed font-medium">${item.insight}</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                ${item.steps.map(step => `
+                                    <div class="flex gap-4 text-xs md:text-sm text-gray-300 items-start group/step">
+                                        <div class="mt-1.5 w-1.5 h-1.5 bg-dim rounded-full shrink-0 group-hover/step:bg-primary transition-colors"></div>
+                                        <span class="leading-relaxed">${step}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            },
+
+            toggleMask() {
+                this.maskMode = !this.maskMode;
+                const btn = document.getElementById('mask-btn');
+                if(this.maskMode) {
+                    btn.innerText = "MASK: ON";
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('bg-primary', 'text-black');
+                } else {
+                    btn.innerText = "MASK: OFF";
+                    btn.classList.add('bg-primary', 'text-black');
+                    btn.classList.remove('text-gray-400');
+                }
+                this.renderFeed(this.currentSector);
+            },
+
+            toggleDone(id) {
+                if(this.data.completed.includes(id)) {
+                    this.data.completed = this.data.completed.filter(i => i !== id);
+                } else {
+                    this.data.completed.push(id);
+                }
+                localStorage.setItem('OMEGA_TITAN_V9', JSON.stringify(this.data));
+                this.updateStats();
+                this.renderFeed(this.currentSector); 
+            },
+
+            updateStats() {
+                let total = 0;
+                Object.values(DB).forEach(s => total += s.items.length);
+                const done = this.data.completed.length;
+                const pct = Math.round((done/total)*100);
+                
+                document.getElementById('mastery-text').innerText = `${done}/${total}`;
+                document.getElementById('mastery-bar').style.width = `${pct}%`;
+            },
+
+            search(val) {
+                if(val.length > 0) this.renderFeed(null, val);
+                else this.renderFeed(this.currentSector);
+            },
+
+            backup() {
+                navigator.clipboard.writeText(JSON.stringify(this.data));
+                alert("TITAN DATA COPIED TO CLIPBOARD");
+            },
+
+            reset() {
+                if(confirm("HARD RESET: Wipe all progress?")) {
+                    this.data.completed = [];
+                    localStorage.setItem('OMEGA_TITAN_V9', JSON.stringify(this.data));
+                    location.reload();
+                }
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>
