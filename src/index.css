@@ -1,0 +1,694 @@
+/* stylelint-disable */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* streamdown styling */
+@source "../node_modules/streamdown/dist/*.js";
+
+/* ─── Fonts ─────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('https://resource-static.bj.bcebos.com/fonts/Montserrat-VariableFont_wght.woff2') format('woff2');
+  font-display: swap;
+}
+
+/*
+  FORGE Design System v2
+  ──────────────────────
+  Direction: Editorial dark-first. Electric violet primary on near-black.
+  Light mode: crisp white with deep ink text + violet accents.
+  The goal: look intentional, not template. Sharp, confident, alive.
+*/
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+
+    /* Base surfaces — light */
+    --background:          0 0% 98%;
+    --foreground:          240 10% 8%;
+    --card:                0 0% 100%;
+    --card-foreground:     240 10% 8%;
+    --popover:             0 0% 100%;
+    --popover-foreground:  240 10% 8%;
+
+    /* Primary — Electric violet */
+    --primary:             262 83% 58%;
+    --primary-foreground:  0 0% 100%;
+
+    /* Secondary — cool slate */
+    --secondary:           240 6% 93%;
+    --secondary-foreground:240 10% 20%;
+
+    /* Muted */
+    --muted:               240 6% 93%;
+    --muted-foreground:    240 5% 44%;
+
+    /* Accent — violet tint */
+    --accent:              262 40% 92%;
+    --accent-foreground:   262 50% 30%;
+
+    /* Status */
+    --destructive:         0 82% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success:             152 68% 38%;
+    --success-foreground:  0 0% 100%;
+    --warning:             36 92% 48%;
+    --warning-foreground:  36 50% 10%;
+    --info:                205 82% 52%;
+    --info-foreground:     0 0% 100%;
+
+    /* Borders / inputs */
+    --border:              240 6% 88%;
+    --input:               240 6% 88%;
+    --ring:                262 83% 58%;
+
+    /* Charts */
+    --chart-1:             262 83% 58%;
+    --chart-2:             152 68% 38%;
+    --chart-3:             36 92% 48%;
+    --chart-4:             316 70% 52%;
+    --chart-5:             205 82% 52%;
+
+    /* Sidebar — deep ink even in light mode */
+    --sidebar-background:  240 14% 10%;
+    --sidebar-foreground:  240 8% 72%;
+    --sidebar-primary:     262 83% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent:      240 12% 16%;
+    --sidebar-accent-foreground: 240 8% 90%;
+    --sidebar-border:      240 12% 15%;
+    --sidebar-ring:        262 83% 58%;
+
+    /* Mood palette */
+    --mood-happy:      152 68% 40%;
+    --mood-excited:    36 92% 48%;
+    --mood-neutral:    240 5% 50%;
+    --mood-sad:        205 82% 52%;
+    --mood-angry:      0 82% 56%;
+    --mood-frustrated: 22 90% 50%;
+    --mood-trusting:   152 72% 34%;
+    --mood-suspicious: 280 60% 56%;
+  }
+
+  .dark {
+    /* Deep ink base — richer than before */
+    --background:          240 14% 6%;
+    --foreground:          240 10% 92%;
+    --card:                240 14% 9%;
+    --card-foreground:     240 10% 92%;
+    --popover:             240 14% 9%;
+    --popover-foreground:  240 10% 92%;
+
+    /* Primary — brighter violet in dark */
+    --primary:             262 90% 66%;
+    --primary-foreground:  0 0% 100%;
+
+    /* Secondary */
+    --secondary:           240 12% 14%;
+    --secondary-foreground:240 8% 76%;
+
+    /* Muted */
+    --muted:               240 12% 14%;
+    --muted-foreground:    240 8% 54%;
+
+    /* Accent */
+    --accent:              262 30% 18%;
+    --accent-foreground:   262 80% 80%;
+
+    /* Status */
+    --destructive:         0 68% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success:             152 68% 44%;
+    --success-foreground:  0 0% 100%;
+    --warning:             36 92% 52%;
+    --warning-foreground:  36 50% 8%;
+    --info:                205 82% 56%;
+    --info-foreground:     0 0% 100%;
+
+    /* Borders / inputs */
+    --border:              240 12% 16%;
+    --input:               240 12% 16%;
+    --ring:                262 90% 66%;
+
+    /* Charts */
+    --chart-1:             262 90% 66%;
+    --chart-2:             152 68% 44%;
+    --chart-3:             36 92% 52%;
+    --chart-4:             316 70% 58%;
+    --chart-5:             205 82% 56%;
+
+    /* Sidebar — deepest surface */
+    --sidebar-background:  240 16% 4%;
+    --sidebar-foreground:  240 8% 68%;
+    --sidebar-primary:     262 90% 66%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent:      240 14% 10%;
+    --sidebar-accent-foreground: 240 8% 88%;
+    --sidebar-border:      240 14% 9%;
+    --sidebar-ring:        262 90% 66%;
+
+    /* Mood palette */
+    --mood-happy:      152 68% 46%;
+    --mood-excited:    36 92% 54%;
+    --mood-neutral:    240 5% 56%;
+    --mood-sad:        205 82% 58%;
+    --mood-angry:      0 68% 50%;
+    --mood-frustrated: 22 90% 54%;
+    --mood-trusting:   152 72% 40%;
+    --mood-suspicious: 280 60% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  *::-webkit-scrollbar        { width: 6px; background: transparent; }
+  *::-webkit-scrollbar-thumb  { background: hsl(var(--border)); border-radius: 3px; }
+
+  body {
+    @apply bg-background text-foreground font-montserrat;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sharper heading weights */
+  h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; }
+  h4, h5, h6 { font-weight: 600; }
+}
+
+/* ─── Streamdown wrapper ────────────────────────────────────────────── */
+@layer components {
+  .prose-chat {
+    @apply text-sm leading-relaxed min-w-0 overflow-hidden;
+  }
+}
+
+/* ─── Gradient helpers ──────────────────────────────────────────────── */
+.gradient-text {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(316 70% 58%) 100%);
+}
+
+.gradient-bg-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(316 70% 52%) 100%);
+}
+
+/* ─── Forge card style — elevated surface ───────────────────────────── */
+@layer components {
+  .forge-card {
+    @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200;
+  }
+  .forge-card-active {
+    @apply border-primary/50 shadow-[0_0_0_1px_hsl(var(--primary)/0.15),0_4px_20px_hsl(var(--primary)/0.08)];
+  }
+}
+
+/* ─── Subtle noise grain overlay for dark surfaces ──────────────────── */
+@layer utilities {
+  .grain {
+    position: relative;
+  }
+  .grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}
+
+/* ─── Glowing ring on primary interactive elements ──────────────────── */
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.25),
+                0 0 20px hsl(var(--primary) / 0.15);
+  }
+}
+
+/* ─── Pill tag ──────────────────────────────────────────────────────── */
+@layer components {
+  .forge-tag {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border;
+  }
+  .forge-tag-violet { @apply bg-primary/10 text-primary border-primary/25; }
+  .forge-tag-green  { @apply bg-success/10 text-success border-success/25; }
+  .forge-tag-amber  { @apply bg-warning/10 text-warning border-warning/25; }
+  .forge-tag-red    { @apply bg-destructive/10 text-destructive border-destructive/25; }
+}
+
+/* ─── Step indicator ────────────────────────────────────────────────── */
+@layer components {
+  .step-dot {
+    @apply h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all duration-300;
+  }
+  .step-dot-active     { @apply bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.4)]; }
+  .step-dot-completed  { @apply bg-success text-success-foreground; }
+  .step-dot-inactive   { @apply bg-muted text-muted-foreground; }
+}
+
+/* ─── Personality slider track ──────────────────────────────────────── */
+@layer components {
+  .slider-track {
+    @apply relative h-2 w-full rounded-full bg-muted overflow-hidden;
+  }
+  .slider-fill {
+    @apply absolute left-0 top-0 h-full rounded-full transition-all duration-200;
+    background: linear-gradient(90deg, hsl(var(--primary)/0.6), hsl(var(--primary)));
+  }
+}
+
+/* ─── Streaming cursor ──────────────────────────────────────────────── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.streaming-cursor::after {
+  content: '▋';
+  @apply text-primary;
+  animation: cursor-blink 0.7s step-start infinite;
+  margin-left: 1px;
+}
+
+/* ─── Mood indicators ───────────────────────────────────────────────── */
+@layer components {
+  .mood-indicator  { @apply w-2 h-2 rounded-full transition-colors duration-300; }
+  .mood-happy      { @apply bg-[hsl(var(--mood-happy))]; }
+  .mood-excited    { @apply bg-[hsl(var(--mood-excited))]; }
+  .mood-neutral    { @apply bg-[hsl(var(--mood-neutral))]; }
+  .mood-sad        { @apply bg-[hsl(var(--mood-sad))]; }
+  .mood-angry      { @apply bg-[hsl(var(--mood-angry))]; }
+  .mood-frustrated { @apply bg-[hsl(var(--mood-frustrated))]; }
+  .mood-trusting   { @apply bg-[hsl(var(--mood-trusting))]; }
+  .mood-suspicious { @apply bg-[hsl(var(--mood-suspicious))]; }
+}
+
+/* ─── Page entry animation ──────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.35s ease forwards;
+}
+.animate-fade-up-delay-1 { animation-delay: 0.05s; opacity: 0; animation-fill-mode: forwards; animation-name: fade-up; animation-duration: 0.35s; animation-timing-function: ease; }
+.animate-fade-up-delay-2 { animation-delay: 0.10s; opacity: 0; animation-fill-mode: forwards; animation-name: fade-up; animation-duration: 0.35s; animation-timing-function: ease; }
+.animate-fade-up-delay-3 { animation-delay: 0.15s; opacity: 0; animation-fill-mode: forwards; animation-name: fade-up; animation-duration: 0.35s; animation-timing-function: ease; }
+
+/* ─── Hero mesh gradient animation ─────────────────────────────────── */
+@keyframes mesh-drift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hero-mesh {
+  position: relative;
+  overflow: hidden;
+}
+.hero-mesh::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(ellipse 80% 60% at 20% 40%, hsl(262 90% 66% / 0.12) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 80% at 80% 60%, hsl(316 70% 58% / 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse 100% 100% at 50% 0%, hsl(205 82% 56% / 0.05) 0%, transparent 70%);
+  animation: mesh-drift 12s ease-in-out infinite;
+  background-size: 200% 200%;
+  pointer-events: none;
+}
+
+/* ─── Title glow ────────────────────────────────────────────────────── */
+.glow-title {
+  text-shadow: 0 0 40px hsl(var(--primary) / 0.4),
+               0 0 80px hsl(var(--primary) / 0.2);
+}
+
+/* ─── Gradient border card ──────────────────────────────────────────── */
+.gradient-border-card {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: 12px;
+}
+.gradient-border-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(262 90% 66% / 0.4), hsl(316 70% 58% / 0.2), hsl(205 82% 56% / 0.15));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Beta badge ────────────────────────────────────────────────────── */
+.badge-beta {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, hsl(262 90% 66% / 0.25), hsl(316 70% 58% / 0.2));
+  border: 1px solid hsl(262 90% 66% / 0.35);
+  color: hsl(var(--primary));
+}
+
+/* ─── Feature card hover glow ───────────────────────────────────────── */
+.feature-card-glow:hover {
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3),
+              0 8px 32px hsl(var(--primary) / 0.12);
+}
+
+/* ─── AI moderator message gradient border ──────────────────────────── */
+.ai-moderator-bubble {
+  position: relative;
+  border-radius: 16px 16px 16px 4px;
+}
+.ai-moderator-bubble::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(262 90% 66% / 0.5), hsl(205 82% 56% / 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Verdict card locked style ─────────────────────────────────────── */
+.verdict-sealed {
+  position: relative;
+  overflow: hidden;
+}
+.verdict-sealed::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(185 85% 50% / 0.8), hsl(262 90% 66% / 0.8));
+}
+
+/* ─── Card hover lift ────────────────────────────────────────────────── */
+@layer components {
+  .forge-card-hover {
+    @apply transition-all duration-200 cursor-pointer;
+  }
+  .forge-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px hsl(var(--primary) / 0.14), 0 4px 16px hsl(0 0% 0% / 0.25);
+    @apply border-primary/40;
+  }
+}
+
+/* ─── Cyan tag ───────────────────────────────────────────────────────── */
+@layer components {
+  .forge-tag-cyan { @apply bg-[hsl(185_85%_50%/0.10)] text-[hsl(185_85%_55%)] border-[hsl(185_85%_50%/0.25)]; }
+}
+
+/* ─── Pricing card — Pro highlighted ─────────────────────────────────── */
+.pricing-card-pro {
+  position: relative;
+  border-radius: 16px;
+  background: hsl(var(--card));
+}
+.pricing-card-pro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, hsl(262 90% 66% / 0.8), hsl(316 70% 58% / 0.7), hsl(205 82% 56% / 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Bento grid ────────────────────────────────────────────────────── */
+@layer components {
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 768px) {
+    .bento-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .bento-grid { grid-template-columns: 1fr; }
+  }
+  .bento-span-2 { grid-column: span 2; }
+  .bento-row-2  { grid-row: span 2; }
+}
+
+/* ─── FAQ accordion ─────────────────────────────────────────────────── */
+@layer components {
+  .faq-item {
+    @apply border border-border rounded-xl overflow-hidden transition-all duration-200;
+  }
+  .faq-item:hover {
+    @apply border-primary/30;
+  }
+  .faq-answer {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease, padding 0.2s ease;
+  }
+  .faq-answer.open {
+    max-height: 300px;
+  }
+}
+
+/* ─── Trust row ─────────────────────────────────────────────────────── */
+@layer components {
+  .trust-row {
+    @apply flex items-center justify-center gap-4 flex-wrap text-xs text-muted-foreground;
+  }
+  .trust-item {
+    @apply flex items-center gap-1.5;
+  }
+}
+
+/* ─── Activity dot ──────────────────────────────────────────────────── */
+@keyframes activity-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+.activity-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: hsl(152 68% 44%);
+  box-shadow: 0 0 6px hsl(152 68% 44% / 0.6);
+  animation: activity-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Onboarding orb pulse ──────────────────────────────────────────── */
+@keyframes orb-drift {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  33%       { transform: scale(1.06) rotate(2deg); }
+  66%       { transform: scale(0.96) rotate(-2deg); }
+}
+.orb-drift {
+  animation: orb-drift 6s ease-in-out infinite;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   FORGE 2026 — Next-Gen Enhancement Layer
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Dashboard hero ────────────────────────────────────────────────── */
+.dashboard-hero {
+  background:
+    radial-gradient(ellipse 70% 90% at 10% 20%, hsl(262 90% 66% / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 85% 70%, hsl(316 70% 58% / 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 120% at 50% 0%, hsl(205 82% 56% / 0.04) 0%, transparent 65%),
+    hsl(var(--background));
+}
+
+/* ─── Dashboard subtle grid background ──────────────────────────────── */
+.dashboard-grid-bg {
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.6) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Group Chat hero ────────────────────────────────────────────────── */
+.gc-hero {
+  background: linear-gradient(135deg, hsl(262 83% 42%), hsl(316 70% 38%));
+  min-height: 180px;
+}
+.gc-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ─── Glassmorphism panel ────────────────────────────────────────────── */
+.glass-panel {
+  background: hsl(var(--card) / 0.75);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
+/* ─── Animated gradient line (top accent) ───────────────────────────── */
+.gradient-line-top {
+  position: relative;
+}
+.gradient-line-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    hsl(262 90% 66%),
+    hsl(316 70% 58%),
+    hsl(205 82% 56%),
+    hsl(262 90% 66%)
+  );
+  background-size: 200% 100%;
+  animation: gradient-slide 4s linear infinite;
+  border-radius: 2px 2px 0 0;
+}
+@keyframes gradient-slide {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ─── Forge card hover lift ─────────────────────────────────────────── */
+.forge-card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.forge-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px hsl(var(--primary) / 0.1), 0 2px 8px hsl(var(--foreground) / 0.06);
+  border-color: hsl(var(--primary) / 0.28);
+}
+
+/* ─── Neon glow on active chat persona ─────────────────────────────── */
+@keyframes persona-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--persona-color, hsl(var(--primary))),
+                          0 0 12px var(--persona-color, hsl(var(--primary) / 0.4)); }
+  50%       { box-shadow: 0 0 0 2px var(--persona-color, hsl(var(--primary))),
+                          0 0 24px var(--persona-color, hsl(var(--primary) / 0.6)); }
+}
+.persona-speaking {
+  animation: persona-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Typing indicator fade-in ──────────────────────────────────────── */
+@keyframes typing-appear {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.typing-appear {
+  animation: typing-appear 0.2s ease forwards;
+}
+
+/* ─── Number counter animation ──────────────────────────────────────── */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: count-up 0.4s ease forwards;
+}
+
+/* ─── Subtle shimmer for loading states ─────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted-foreground) / 0.15) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Scan line effect for AI responses ─────────────────────────────── */
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100%); }
+}
+
+/* ─── Elevated surface tokens ───────────────────────────────────────── */
+@layer utilities {
+  .surface-elevated {
+    @apply bg-card border border-border;
+    box-shadow:
+      0 1px 3px hsl(var(--foreground) / 0.04),
+      0 4px 16px hsl(var(--foreground) / 0.04);
+  }
+  .surface-floating {
+    @apply bg-card border border-border;
+    box-shadow:
+      0 4px 12px hsl(var(--foreground) / 0.06),
+      0 12px 40px hsl(var(--foreground) / 0.06);
+  }
+}
+
+/* ─── Persona color border utility ─────────────────────────────────── */
+.persona-border-active {
+  border-color: var(--persona-color, hsl(var(--primary)));
+  background-color: color-mix(in srgb, var(--persona-color, hsl(var(--primary))) 6%, transparent);
+}
+
+/* ─── Status pill ───────────────────────────────────────────────────── */
+.status-pill {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border;
+}
+.status-pill-live {
+  @apply bg-success/10 text-success border-success/25;
+}
+.status-pill-idle {
+  @apply bg-muted text-muted-foreground border-border;
+}
+.status-pill-new {
+  @apply bg-primary/10 text-primary border-primary/25;
+}
+
+/* ─── Quick access list hover ───────────────────────────────────────── */
+.quick-nav-item {
+  transition: background-color 0.12s ease, padding-left 0.12s ease;
+}
+.quick-nav-item:hover {
+  padding-left: calc(1rem + 4px);
+}
+
+/* ─── Reduced motion overrides ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
